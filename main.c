@@ -58,10 +58,44 @@ int kbhit(void)
 }
 
 
-bool open_video_encoder()
+
+
+
+#define MAX_INPUTS 10
+#define MAX_OUTPUTS 10
+
+struct Context {
+    char *pSourceFileName;
+    AVFormatContext *ifmt_ctx;
+    
+    AVCodec* input_codecs[MAX_INPUTS];
+    AVCodecContext* input_codec_contexts[MAX_INPUTS];
+    
+    AVCodec* output_codec[MAX_OUTPUTS];
+    AVCodecContext* output_codec_contexts[MAX_OUTPUTS];
+    int outputs;
+};
+
+
+void initContext(struct Context *pContext)
+{
+    pContext->ifmt_ctx=NULL;
+    for (int i=0;i<MAX_INPUTS;i++) {
+        pContext->input_codecs[i]=NULL;
+        pContext->input_codec_contexts[i]=NULL;
+    }
+    for (int i=0;i<MAX_OUTPUTS;i++) {
+        pContext->output_codec[i]=NULL;
+        pContext->output_codec_contexts[i]=NULL;
+    }
+    pContext->outputs=0;
+    
+}
+
+bool open_video_encoder(struct Context *pContext,AVCodecContext* pDecoderContext,int width,int height,int bitrate)
 {
     AVCodec *codec      = NULL;
-    AVCodecContext *vc  = NULL;
+    AVCodecContext *enc_ctx  = NULL;
     int ret = 0;
     
     
@@ -70,10 +104,20 @@ bool open_video_encoder()
         logger("Unable to find libx264");
         return false;
     }
-    vc = avcodec_alloc_context3(codec);
+    enc_ctx = avcodec_alloc_context3(codec);
+    enc_ctx->height = height;
+    enc_ctx->width = width;
+    enc_ctx->sample_aspect_ratio = pDecoderContext->sample_aspect_ratio;
+    enc_ctx->pix_fmt = pDecoderContext->pix_fmt;
+    /* video time_base can be set to whatever is handy and supported by encoder */
+    enc_ctx->time_base = av_inv_q(pDecoderContext->framerate);
+    enc_ctx->bit_rate=bitrate;
+    ret = avcodec_open2(enc_ctx, codec, NULL);
     
-    ret = avcodec_open2(vc, codec, NULL);
-    
+    pContext->output_codec[pContext->outputs]=codec;
+    pContext->output_codec_contexts[pContext->outputs]=enc_ctx;
+
+    pContext->outputs++;
     return true;
 }
 
@@ -96,75 +140,6 @@ bool open_audio_encoder()
     return true;
 }
 
-
-
-int process_in(AVFormatContext *pFC, AVFrame *frame, AVPacket *pkt)
-{
-    int ret = 0;
-    
-    av_init_packet(pkt);
-    // loop until a new frame has been decoded, or EAGAIN
-    while (1) {
-        AVStream *ist = NULL;
-        AVCodecContext *decoder = NULL;
-        ret = av_read_frame(pFC, pkt);
-        /*
-        if (ret == AVERROR_EOF) {
-            break;
-        }
-        else
-        {
-            if (ret < 0) {
-                dec_err("Unable to read input\n");
-            }
-        }
-        ist = pFC->streams[pkt->stream_index];
-        if (ist->index == ictx->vi && ictx->vc) {
-            decoder = ictx->vc;
-        }
-        else {
-            if (ist->index == ictx->ai && ictx->ac) {
-                decoder = ictx->ac;
-            }
-        }
-        else {
-            dec_err("Could not find decoder for stream\n");
-        }
-        
-        ret = avcodec_send_packet(decoder, pkt);
-        if (ret < 0) dec_err("Error sending packet to decoder\n");
-        ret = avcodec_receive_frame(decoder, frame);
-        if (ret == AVERROR(EAGAIN)) {
-            av_packet_unref(pkt);
-            continue;
-        }
-        else if (ret < 0) dec_err("Error receiving frame from decoder\n");
-        break;*/
-    }
-    
-    return ret;
-    
-#undef dec_err
-}
-
-#define MAX_INPUTS 10
-
-struct Context {
-    char *pSourceFileName;
-    AVFormatContext *ifmt_ctx;
-    AVCodec* input_codecs[MAX_INPUTS];
-    AVCodecContext* input_codec_contexts[MAX_INPUTS];
-};
-
-
-void initContext(struct Context *pContext)
-{
-    pContext->ifmt_ctx=NULL;
-    for (int i=0;i<MAX_INPUTS;i++) {
-        pContext->input_codecs[i]=NULL;
-        pContext->input_codec_contexts[i]=NULL;
-    }
-}
 
 bool open_input(struct Context * pContext)
 {
@@ -215,6 +190,10 @@ bool open_input(struct Context * pContext)
             }
         }
         pContext->input_codec_contexts[i] = codec_ctx;
+        
+        open_video_encoder(pContext,codec_ctx,codec_ctx->width,codec_ctx->height,1000);
+        open_video_encoder(pContext,codec_ctx,codec_ctx->width,codec_ctx->height,300);
+
     }
     return true;
 }
@@ -242,7 +221,48 @@ void print_av_frame(AVFrame *pFrame,AVRational *time_base) {
 }
 
 
+void sendFrameToEncoder(int i,struct AVCodecContext *pEncoderContext,const AVFrame* pFrame) {
+    
+    int ret=0;
+    
+    ret = avcodec_send_frame(pEncoderContext, pFrame);
+    if (ret < 0) {
+        fprintf(stderr, "Error sending a packet for decoding\n");
+        return;
+    }
+    
+    while (ret >= 0) {
+        AVPacket *pPacket = av_packet_alloc();
+        ret = avcodec_receive_packet(pEncoderContext, pPacket);
+        if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
+            av_packet_free(pPacket);
+            return;
+        }
+        else if (ret < 0)
+        {
+            logger("Error during encoding\n");
+            return;
+        }
+        logger("encoded packet output %d, %s, %d\n",i,av_ts2str(pPacket->pts),pPacket->size);
+        
+    }
+}
 
+void encodeFrame(struct Context *ctx,const AVFrame* pFrame) {
+    
+    int ret;
+
+    
+    for (int i=0;i<1;i++) {
+        logger("Sending  frame to encoder #%d\n",i);
+
+        AVCodecContext* pEncoderContext=ctx->output_codec_contexts[i];
+
+        sendFrameToEncoder(i,pEncoderContext,pFrame);
+        
+    }
+    
+}
 
 
 void OnInputFrame(struct Context *ctx,AVCodecContext* pDecoderContext,const AVFrame *pFrame)
@@ -250,14 +270,18 @@ void OnInputFrame(struct Context *ctx,AVCodecContext* pDecoderContext,const AVFr
     print_av_frame(pFrame,&pDecoderContext->time_base);
     
     if (pDecoderContext->codec_type==AVMEDIA_TYPE_VIDEO) {
-        printf("saving frame %3d\n", pDecoderContext->frame_number);
+      //  printf("saving frame %3d\n", pDecoderContext->frame_number);
     } else {
+
+        return;
         
     }
     
+    encodeFrame(ctx,pFrame);
 }
 
-void processPacket(struct Context *ctx,const AVPacket* pkt) {
+
+void decodePacket(struct Context *ctx,const AVPacket* pkt) {
 
     int ret;
     
@@ -312,7 +336,7 @@ void process(struct Context *ctx)
         if ((ret = av_read_frame(ifmt_ctx, &packet)) < 0)
             break;
         
-        processPacket(ctx,&packet);
+        decodePacket(ctx,&packet);
     
     }
 }
