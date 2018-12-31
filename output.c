@@ -16,3 +16,8 @@ int init_Transcode_output(struct TranscodeOutput* pOutput)  {
     pOutput->vid_passthrough=pOutput->aud_passthrough=true;
     return 0;
 }
+
+int send_output_packet(struct TranscodeOutput *pOutput,struct AVPacket* output)
+{
+    return 0;
+}

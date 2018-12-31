@@ -15,7 +15,7 @@
 struct InputContext;
 struct TranscodeContext;
 
-typedef int (*OnPacketCallBack)(struct TranscodeContext *transcodingCtx,struct InputContext *inputCtx,AVPacket* packet);
+typedef int (*OnPacketCallBack)(struct TranscodeContext *transcodingCtx,struct InputContext *inputCtx,AVStream* pStream,AVPacket* packet);
 
 struct InputContext {
     

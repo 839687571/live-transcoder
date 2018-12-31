@@ -43,9 +43,8 @@ void process(struct InputContext *ctx)
     while (1) {
         if ((ret = av_read_frame(ifmt_ctx, &packet)) < 0)
             break;
-        
         if (ctx->pOnPacketCB) {
-            ctx->pOnPacketCB(ctx->pTranscodingContext,ctx,&packet);
+            ctx->pOnPacketCB(ctx->pTranscodingContext,ctx,ifmt_ctx->streams[packet.stream_index],&packet);
         }
         
     }

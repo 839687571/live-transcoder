@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include <stdbool.h>
+#include <libavformat/avformat.h>
 
 struct TranscodeOutput
 {
@@ -22,7 +23,7 @@ struct TranscodeOutput
 
 int init_Transcode_output(struct TranscodeOutput* pOutput) ;
 
-int send_packet(struct AVPacket* atput) ;
+int send_output_packet(struct TranscodeOutput *pOutput,struct AVPacket* output) ;
     
 #endif /* output_h */
 

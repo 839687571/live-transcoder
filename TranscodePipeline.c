@@ -58,7 +58,6 @@ void OnInputFrame(struct TranscodeContext *ctx,AVCodecContext* pDecoderContext,c
         
         logger(AV_LOG_ERROR,"decoded video: pts=%s (%s), frame type=%s;width=%d;height=%d",
                av_ts2str(pFrame->pts), av_ts2timestr(pFrame->pts, &pDecoderContext->time_base),
-               av_ts2str(pFrame->pkt_duration),
                pict_type_to_string(pFrame->pict_type),pFrame->width,pFrame->height);
         
         //  printf("saving frame %3d\n", pDecoderContext->frame_number);
@@ -92,7 +91,6 @@ int decodePacket(struct TranscodeContext *transcodingContext,struct InputContext
     
     while (ret >= 0) {
         AVFrame *pFrame = av_frame_alloc();
-        int got_frame;
         
         ret = avcodec_receive_frame(pDecoderContext, pFrame);
         if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
@@ -113,9 +111,16 @@ int decodePacket(struct TranscodeContext *transcodingContext,struct InputContext
     return 0;
 }
 
-int on_packet_cb(struct TranscodeContext *pContext,struct InputContext *ctx,AVPacket* packet)
+int on_packet_cb(struct TranscodeContext *pContext,struct InputContext *ctx,struct AVStream* pStream, struct AVPacket* packet)
 {
-    //packet->stream_index
+    for (int i=0;i<pContext->outputs;i++) {
+        struct TranscodeOutput *pOutput=pContext->output[i];
+        if ((pStream->codecpar->codec_type==AVMEDIA_TYPE_VIDEO && pOutput->vid_passthrough) ||
+            (pStream->codecpar->codec_type==AVMEDIA_TYPE_AUDIO && pOutput->aud_passthrough) ||
+            pStream->codecpar->codec_type==AVMEDIA_TYPE_DATA) {
+            send_output_packet(pOutput,packet);
+        }
+    }
     return decodePacket(pContext,ctx,packet);
 }
 

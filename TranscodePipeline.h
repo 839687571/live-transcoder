@@ -31,6 +31,7 @@ struct TranscodeContext {
     AVCodec* input_codecs[MAX_INPUTS];
     AVCodecContext* input_codec_contexts[MAX_INPUTS];
     
+    
     int outputs;
     struct TranscodeOutput* output[MAX_OUTPUTS];
     
@@ -41,6 +42,5 @@ struct TranscodeContext {
 
 
 int init_transcoding_context(struct TranscodeContext *ctx,struct InputContext* inputContext);
-int add_output(struct TranscodeContext*, struct TranscodeOutput * pOutput);
 
 #endif /* TranscodePipeline_hpp */
