@@ -14,6 +14,10 @@
 		084335DC21D8C1FF0031BF3B /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 084335DB21D8C1FF0031BF3B /* CoreVideo.framework */; };
 		08516DF91FA10B5D0077B9F0 /* Makefile in Sources */ = {isa = PBXBuildFile; fileRef = 08516DF81FA10B5D0077B9F0 /* Makefile */; };
 		085E1F601EA6BA470056B80C /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 085E1F5F1EA6BA470056B80C /* main.c */; };
+		0869F1E721D9F9F4003F3538 /* TranscodePipeline.c in Sources */ = {isa = PBXBuildFile; fileRef = 0869F1E521D9F9F4003F3538 /* TranscodePipeline.c */; };
+		0869F1EA21DA089F003F3538 /* logger.c in Sources */ = {isa = PBXBuildFile; fileRef = 0869F1E921DA089F003F3538 /* logger.c */; };
+		0869F1ED21DA1A3E003F3538 /* input.c in Sources */ = {isa = PBXBuildFile; fileRef = 0869F1EC21DA1A3E003F3538 /* input.c */; };
+		0869F1F121DA216A003F3538 /* output.c in Sources */ = {isa = PBXBuildFile; fileRef = 0869F1F021DA216A003F3538 /* output.c */; };
 		0874212E21D8E80500F0D6E6 /* CoreMediaIO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0874212C21D8E80500F0D6E6 /* CoreMediaIO.framework */; };
 		0874212F21D8E80500F0D6E6 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0874212D21D8E80500F0D6E6 /* CoreMedia.framework */; };
 		0874213921D8E9C100F0D6E6 /* libswscale.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0874213021D8E9C100F0D6E6 /* libswscale.a */; };
@@ -54,7 +58,15 @@
 		084335DB21D8C1FF0031BF3B /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
 		08516DF81FA10B5D0077B9F0 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		085E1F5F1EA6BA470056B80C /* main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
-		086E7ACD1E044C7500206F21 /* ts_to_mp4_convertor */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ts_to_mp4_convertor; sourceTree = BUILT_PRODUCTS_DIR; };
+		0869F1E521D9F9F4003F3538 /* TranscodePipeline.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = TranscodePipeline.c; sourceTree = "<group>"; };
+		0869F1E621D9F9F4003F3538 /* TranscodePipeline.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TranscodePipeline.h; sourceTree = "<group>"; };
+		0869F1E821DA0885003F3538 /* logger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = logger.h; sourceTree = "<group>"; };
+		0869F1E921DA089F003F3538 /* logger.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = logger.c; sourceTree = "<group>"; };
+		0869F1EB21DA1A3E003F3538 /* input.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = input.h; sourceTree = "<group>"; };
+		0869F1EC21DA1A3E003F3538 /* input.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = input.c; sourceTree = "<group>"; };
+		0869F1EF21DA216A003F3538 /* output.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = output.h; sourceTree = "<group>"; };
+		0869F1F021DA216A003F3538 /* output.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = output.c; sourceTree = "<group>"; };
+		086E7ACD1E044C7500206F21 /* live_transcoder */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = live_transcoder; sourceTree = BUILT_PRODUCTS_DIR; };
 		0874212C21D8E80500F0D6E6 /* CoreMediaIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMediaIO.framework; path = System/Library/Frameworks/CoreMediaIO.framework; sourceTree = SDKROOT; };
 		0874212D21D8E80500F0D6E6 /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
 		0874213021D8E9C100F0D6E6 /* libswscale.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libswscale.a; path = ThirdParty/compiled/lib/libswscale.a; sourceTree = "<group>"; };
@@ -111,6 +123,14 @@
 		086E7AC41E044C7400206F21 = {
 			isa = PBXGroup;
 			children = (
+				0869F1EF21DA216A003F3538 /* output.h */,
+				0869F1F021DA216A003F3538 /* output.c */,
+				0869F1EB21DA1A3E003F3538 /* input.h */,
+				0869F1EC21DA1A3E003F3538 /* input.c */,
+				0869F1E921DA089F003F3538 /* logger.c */,
+				0869F1E821DA0885003F3538 /* logger.h */,
+				0869F1E521D9F9F4003F3538 /* TranscodePipeline.c */,
+				0869F1E621D9F9F4003F3538 /* TranscodePipeline.h */,
 				084335A021D89A7C0031BF3B /* install_ffmpeg.sh */,
 				08516DF81FA10B5D0077B9F0 /* Makefile */,
 				085E1F5F1EA6BA470056B80C /* main.c */,
@@ -122,7 +142,7 @@
 		086E7ACE1E044C7500206F21 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				086E7ACD1E044C7500206F21 /* ts_to_mp4_convertor */,
+				086E7ACD1E044C7500206F21 /* live_transcoder */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -160,9 +180,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		086E7ACC1E044C7400206F21 /* ts_to_mp4_convertor */ = {
+		086E7ACC1E044C7400206F21 /* live_transcoder */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 086E7AD41E044C7500206F21 /* Build configuration list for PBXNativeTarget "ts_to_mp4_convertor" */;
+			buildConfigurationList = 086E7AD41E044C7500206F21 /* Build configuration list for PBXNativeTarget "live_transcoder" */;
 			buildPhases = (
 				086E7AC91E044C7400206F21 /* Sources */,
 				086E7ACA1E044C7400206F21 /* Frameworks */,
@@ -172,9 +192,9 @@
 			);
 			dependencies = (
 			);
-			name = ts_to_mp4_convertor;
-			productName = ts_to_mp4_convertor;
-			productReference = 086E7ACD1E044C7500206F21 /* ts_to_mp4_convertor */;
+			name = live_transcoder;
+			productName = live_transcoder;
+			productReference = 086E7ACD1E044C7500206F21 /* live_transcoder */;
 			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
@@ -204,7 +224,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				086E7ACC1E044C7400206F21 /* ts_to_mp4_convertor */,
+				086E7ACC1E044C7400206F21 /* live_transcoder */,
 			);
 		};
 /* End PBXProject section */
@@ -214,6 +234,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0869F1F121DA216A003F3538 /* output.c in Sources */,
+				0869F1E721D9F9F4003F3538 /* TranscodePipeline.c in Sources */,
+				0869F1EA21DA089F003F3538 /* logger.c in Sources */,
+				0869F1ED21DA1A3E003F3538 /* input.c in Sources */,
 				08516DF91FA10B5D0077B9F0 /* Makefile in Sources */,
 				085E1F601EA6BA470056B80C /* main.c in Sources */,
 			);
@@ -227,7 +251,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
@@ -275,7 +299,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
@@ -331,6 +355,7 @@
 					"$(PROJECT_DIR)/ThirdParty/ffmpeg/libavformat",
 					"$(PROJECT_DIR)/ThirdParty/ffmpeg/libavcodec",
 					"$(PROJECT_DIR)/ThirdParty/ffmpeg/libavutil",
+					./,
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
 				ONLY_ACTIVE_ARCH = NO;
@@ -364,6 +389,7 @@
 					"$(PROJECT_DIR)/ThirdParty/ffmpeg/libavformat",
 					"$(PROJECT_DIR)/ThirdParty/ffmpeg/libavcodec",
 					"$(PROJECT_DIR)/ThirdParty/ffmpeg/libavutil",
+					./,
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
 				OTHER_CFLAGS = "-fno-strict-aliasing";
@@ -388,7 +414,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		086E7AD41E044C7500206F21 /* Build configuration list for PBXNativeTarget "ts_to_mp4_convertor" */ = {
+		086E7AD41E044C7500206F21 /* Build configuration list for PBXNativeTarget "live_transcoder" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				086E7AD51E044C7500206F21 /* Debug */,
