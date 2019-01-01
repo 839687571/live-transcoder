@@ -18,6 +18,10 @@
 		0869F1EA21DA089F003F3538 /* logger.c in Sources */ = {isa = PBXBuildFile; fileRef = 0869F1E921DA089F003F3538 /* logger.c */; };
 		0869F1ED21DA1A3E003F3538 /* input.c in Sources */ = {isa = PBXBuildFile; fileRef = 0869F1EC21DA1A3E003F3538 /* input.c */; };
 		0869F1F121DA216A003F3538 /* output.c in Sources */ = {isa = PBXBuildFile; fileRef = 0869F1F021DA216A003F3538 /* output.c */; };
+		0869F20021DA9D3E003F3538 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0869F1FF21DA9D3E003F3538 /* QuartzCore.framework */; };
+		0869F20221DA9DE2003F3538 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0869F20121DA9DE2003F3538 /* AppKit.framework */; };
+		0869F20421DA9E0D003F3538 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0869F20321DA9E0D003F3538 /* OpenGL.framework */; };
+		0869F20721DB3B60003F3538 /* filter.c in Sources */ = {isa = PBXBuildFile; fileRef = 0869F20621DB3B60003F3538 /* filter.c */; };
 		0874212E21D8E80500F0D6E6 /* CoreMediaIO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0874212C21D8E80500F0D6E6 /* CoreMediaIO.framework */; };
 		0874212F21D8E80500F0D6E6 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0874212D21D8E80500F0D6E6 /* CoreMedia.framework */; };
 		0874213921D8E9C100F0D6E6 /* libswscale.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0874213021D8E9C100F0D6E6 /* libswscale.a */; };
@@ -66,6 +70,15 @@
 		0869F1EC21DA1A3E003F3538 /* input.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = input.c; sourceTree = "<group>"; };
 		0869F1EF21DA216A003F3538 /* output.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = output.h; sourceTree = "<group>"; };
 		0869F1F021DA216A003F3538 /* output.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = output.c; sourceTree = "<group>"; };
+		0869F1F521DA9BC2003F3538 /* CoreImage.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreImage.framework; path = System/Library/Frameworks/CoreImage.framework; sourceTree = SDKROOT; };
+		0869F1F721DA9BCD003F3538 /* ImageIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageIO.framework; path = System/Library/Frameworks/ImageIO.framework; sourceTree = SDKROOT; };
+		0869F1FB21DA9C1D003F3538 /* ImageCaptureCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageCaptureCore.framework; path = System/Library/Frameworks/ImageCaptureCore.framework; sourceTree = SDKROOT; };
+		0869F1FD21DA9CA0003F3538 /* libcupsimage.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libcupsimage.tbd; path = usr/lib/libcupsimage.tbd; sourceTree = SDKROOT; };
+		0869F1FF21DA9D3E003F3538 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		0869F20121DA9DE2003F3538 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
+		0869F20321DA9E0D003F3538 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
+		0869F20521DB3B60003F3538 /* filter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = filter.h; sourceTree = "<group>"; };
+		0869F20621DB3B60003F3538 /* filter.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = filter.c; sourceTree = "<group>"; };
 		086E7ACD1E044C7500206F21 /* live_transcoder */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = live_transcoder; sourceTree = BUILT_PRODUCTS_DIR; };
 		0874212C21D8E80500F0D6E6 /* CoreMediaIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMediaIO.framework; path = System/Library/Frameworks/CoreMediaIO.framework; sourceTree = SDKROOT; };
 		0874212D21D8E80500F0D6E6 /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
@@ -92,6 +105,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0869F20421DA9E0D003F3538 /* OpenGL.framework in Frameworks */,
+				0869F20221DA9DE2003F3538 /* AppKit.framework in Frameworks */,
+				0869F20021DA9D3E003F3538 /* QuartzCore.framework in Frameworks */,
 				0874214F21D8ED6E00F0D6E6 /* libbz2.tbd in Frameworks */,
 				0874214B21D8EC3200F0D6E6 /* libz.tbd in Frameworks */,
 				0874214921D8EC1500F0D6E6 /* CoreFoundation.framework in Frameworks */,
@@ -123,6 +139,8 @@
 		086E7AC41E044C7400206F21 = {
 			isa = PBXGroup;
 			children = (
+				0869F20521DB3B60003F3538 /* filter.h */,
+				0869F20621DB3B60003F3538 /* filter.c */,
 				0869F1EF21DA216A003F3538 /* output.h */,
 				0869F1F021DA216A003F3538 /* output.c */,
 				0869F1EB21DA1A3E003F3538 /* input.h */,
@@ -150,6 +168,13 @@
 		086E7AD71E044DEB00206F21 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				0869F20321DA9E0D003F3538 /* OpenGL.framework */,
+				0869F20121DA9DE2003F3538 /* AppKit.framework */,
+				0869F1FF21DA9D3E003F3538 /* QuartzCore.framework */,
+				0869F1FD21DA9CA0003F3538 /* libcupsimage.tbd */,
+				0869F1FB21DA9C1D003F3538 /* ImageCaptureCore.framework */,
+				0869F1F721DA9BCD003F3538 /* ImageIO.framework */,
+				0869F1F521DA9BC2003F3538 /* CoreImage.framework */,
 				0874214E21D8ED6E00F0D6E6 /* libbz2.tbd */,
 				0874214C21D8ECF900F0D6E6 /* libz.1.2.11.tbd */,
 				0874214A21D8EC3200F0D6E6 /* libz.tbd */,
@@ -237,6 +262,7 @@
 				0869F1F121DA216A003F3538 /* output.c in Sources */,
 				0869F1E721D9F9F4003F3538 /* TranscodePipeline.c in Sources */,
 				0869F1EA21DA089F003F3538 /* logger.c in Sources */,
+				0869F20721DB3B60003F3538 /* filter.c in Sources */,
 				0869F1ED21DA1A3E003F3538 /* input.c in Sources */,
 				08516DF91FA10B5D0077B9F0 /* Makefile in Sources */,
 				085E1F601EA6BA470056B80C /* main.c in Sources */,

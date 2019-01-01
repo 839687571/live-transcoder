@@ -51,7 +51,7 @@ int init_decoder(struct TranscodeContext * pContext,AVStream *pInputStream) {
 
 
 
-void OnInputFrame(struct TranscodeContext *ctx,AVCodecContext* pDecoderContext,const AVFrame *pFrame)
+int OnInputFrame(struct TranscodeContext *pContext,AVCodecContext* pDecoderContext,const AVFrame *pFrame)
 {
     
     if (pDecoderContext->codec_type==AVMEDIA_TYPE_VIDEO) {
@@ -66,11 +66,38 @@ void OnInputFrame(struct TranscodeContext *ctx,AVCodecContext* pDecoderContext,c
                av_ts2str(pFrame->pts), av_ts2timestr(pFrame->pts, &pDecoderContext->time_base),
                pFrame->channels,pFrame->sample_rate,pFrame->nb_samples,pFrame->format);
         
-        return;
+        return 0;
         
     }
     
-    //encodeFrame(ctx,pFrame);
+    for (int i=0;i<pContext->filters;i++) {
+        struct TranscodeFilter *pFilter=&pContext->filter[i];
+        send_filter_frame(pFilter,pFrame);
+        
+        int ret=0;
+        while (ret >= 0) {
+            AVFrame *pOutFrame = av_frame_alloc();
+            
+            ret = receive_filter_frame(pFilter,pOutFrame);
+            if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
+                av_frame_free(&pOutFrame);
+                return 0;
+            }
+            else if (ret < 0)
+            {
+                logger(AV_LOG_ERROR,"Error during decoding");
+                return -1;
+            }
+            
+            logger(AV_LOG_ERROR,"filtered video: pts=%s (%s), frame type=%s;width=%d;height=%d",
+                   av_ts2str(pOutFrame->pts), av_ts2timestr(pOutFrame->pts, &pDecoderContext->time_base),
+                   pict_type_to_string(pOutFrame->pict_type),pOutFrame->width,pOutFrame->height);
+            
+            //encodeFrame(pContext,pFrame);
+            av_frame_free(&pOutFrame);
+        }
+    }
+    return 0;
 }
 
 int decodePacket(struct TranscodeContext *transcodingContext,struct InputContext *inputContext,const AVPacket* pkt) {
@@ -142,6 +169,7 @@ int init_transcoding_context(struct TranscodeContext *pContext,struct InputConte
     
     pInputContext->pTranscodingContext=pContext;
     pContext->pInputContext=pInputContext;
+    pContext->filters=0;
     
     
     for (int i = 0; i < pInputContext->ifmt_ctx->nb_streams; i++) {
@@ -149,9 +177,17 @@ int init_transcoding_context(struct TranscodeContext *pContext,struct InputConte
         
         init_decoder(pContext,pStream);
         
+        AVCodecContext *pDecoderContext=pContext->input_codec_contexts[pContext->inputs-1];
+        
+        struct TranscoderFilter* pFilter=&pContext->filter[pContext->filters++];
+        if (pStream->codecpar->codec_type==AVMEDIA_TYPE_VIDEO) {
+            init_filter(pFilter,pStream,pDecoderContext,"scale=100x100:force_original_aspect_ratio=decrease");
+        }
+
         //open_video_encoder(pContext,codec_ctx,codec_ctx->width,codec_ctx->height,1000*1000);
         //open_video_encoder(pContext,codec_ctx,codec_ctx->width,codec_ctx->height,300*1000);
         
+
     }
     pInputContext->pOnPacketCB=on_packet_cb;
     return 0;
