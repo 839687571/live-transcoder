@@ -72,6 +72,10 @@ int init_video_encoder(struct TranscoderCodecContext * pContext,
     enc_ctx->time_base = inputTimeBase;
     enc_ctx->bit_rate=bitrate;
     ret = avcodec_open2(enc_ctx, codec, NULL);
+    if (ret<0) {
+        logger(AV_LOG_DEBUG,"error initilizing video encoder %d",ret);
+        return -1;
+    }
     
     pContext->codec=codec;
     pContext->ctx=enc_ctx;

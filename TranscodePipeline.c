@@ -33,8 +33,9 @@ int encodeFrame(struct TranscodeContext *pContext,AVFrame *pFrame) {
             return -1;
         }
         
-        logger(AV_LOG_ERROR,"encoded frame: pts=%s (%s)",
-               av_ts2str(pOutPacket->pts), av_ts2timestr(pOutPacket->pts, &pEncoder->ctx->time_base));
+        logger(AV_LOG_ERROR,"encoded frame: pts=%s (%s) size=%d",
+               av_ts2str(pOutPacket->pts), av_ts2timestr(pOutPacket->pts, &pEncoder->ctx->time_base),
+               pOutPacket->size);
         
         av_packet_free(&pOutPacket);
     }
@@ -164,13 +165,13 @@ int init_transcoding_context(struct TranscodeContext *pContext,struct InputConte
         
         struct TranscoderFilter* pFilter=&pContext->filter[pContext->filters++];
         if (pStream->codecpar->codec_type==AVMEDIA_TYPE_VIDEO) {
-            init_filter(pFilter,pStream,pDecoderContext->ctx,"scale=100x100:force_original_aspect_ratio=decrease");
+            init_filter(pFilter,pStream,pDecoderContext->ctx,"scale=512x384:force_original_aspect_ratio=decrease");
             struct TranscoderCodecContext* pCodec=&pContext->encoder[pContext->encoders++];
 
             int width=av_buffersink_get_w(pFilter->sink_ctx);
             int height=av_buffersink_get_h(pFilter->sink_ctx);
-            AVRational frameRate=av_buffersink_get_frame_rate(pFilter->sink_ctx);
-           
+            AVRational frameRate=pStream->avg_frame_rate;
+            
             enum AVPixelFormat format= av_buffersink_get_format(pFilter->sink_ctx);
             init_video_encoder(pCodec, pDecoderContext->ctx->sample_aspect_ratio,format,frameRate,width,height,1000*1000);
         }

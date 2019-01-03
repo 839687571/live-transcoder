@@ -82,9 +82,6 @@ int receive_filter_frame(struct TranscoderFilter *pFilter,struct AVFrame* pOutFr
 {
     int ret=0;
     ret = av_buffersink_get_frame(pFilter->sink_ctx, pOutFrame);
-    if (ret<0) {
-        logger(0,"error %d",ret);
-    }
     return ret;
 }
 
