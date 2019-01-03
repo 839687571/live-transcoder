@@ -13,15 +13,15 @@
 		084335DA21D8C1DF0031BF3B /* libiconv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 084335D921D8C1DF0031BF3B /* libiconv.tbd */; };
 		084335DC21D8C1FF0031BF3B /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 084335DB21D8C1FF0031BF3B /* CoreVideo.framework */; };
 		08516DF91FA10B5D0077B9F0 /* Makefile in Sources */ = {isa = PBXBuildFile; fileRef = 08516DF81FA10B5D0077B9F0 /* Makefile */; };
-		085E1F601EA6BA470056B80C /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 085E1F5F1EA6BA470056B80C /* main.cpp */; };
-		0869F1E721D9F9F4003F3538 /* TranscodePipeline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0869F1E521D9F9F4003F3538 /* TranscodePipeline.cpp */; };
-		0869F1EA21DA089F003F3538 /* logger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0869F1E921DA089F003F3538 /* logger.cpp */; };
-		0869F1ED21DA1A3E003F3538 /* input.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0869F1EC21DA1A3E003F3538 /* input.cpp */; };
-		0869F1F121DA216A003F3538 /* output.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0869F1F021DA216A003F3538 /* output.cpp */; };
+		085E1F601EA6BA470056B80C /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 085E1F5F1EA6BA470056B80C /* main.c */; };
+		0869F1E721D9F9F4003F3538 /* TranscodePipeline.c in Sources */ = {isa = PBXBuildFile; fileRef = 0869F1E521D9F9F4003F3538 /* TranscodePipeline.c */; };
+		0869F1EA21DA089F003F3538 /* logger.c in Sources */ = {isa = PBXBuildFile; fileRef = 0869F1E921DA089F003F3538 /* logger.c */; };
+		0869F1ED21DA1A3E003F3538 /* input.c in Sources */ = {isa = PBXBuildFile; fileRef = 0869F1EC21DA1A3E003F3538 /* input.c */; };
+		0869F1F121DA216A003F3538 /* output.c in Sources */ = {isa = PBXBuildFile; fileRef = 0869F1F021DA216A003F3538 /* output.c */; };
 		0869F20021DA9D3E003F3538 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0869F1FF21DA9D3E003F3538 /* QuartzCore.framework */; };
 		0869F20221DA9DE2003F3538 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0869F20121DA9DE2003F3538 /* AppKit.framework */; };
 		0869F20421DA9E0D003F3538 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0869F20321DA9E0D003F3538 /* OpenGL.framework */; };
-		0869F20721DB3B60003F3538 /* filter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0869F20621DB3B60003F3538 /* filter.cpp */; };
+		0869F20721DB3B60003F3538 /* filter.c in Sources */ = {isa = PBXBuildFile; fileRef = 0869F20621DB3B60003F3538 /* filter.c */; };
 		0874212E21D8E80500F0D6E6 /* CoreMediaIO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0874212C21D8E80500F0D6E6 /* CoreMediaIO.framework */; };
 		0874212F21D8E80500F0D6E6 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0874212D21D8E80500F0D6E6 /* CoreMedia.framework */; };
 		0874213921D8E9C100F0D6E6 /* libswscale.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0874213021D8E9C100F0D6E6 /* libswscale.a */; };
@@ -39,7 +39,6 @@
 		0874214921D8EC1500F0D6E6 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0874214821D8EC1500F0D6E6 /* CoreFoundation.framework */; };
 		0874214B21D8EC3200F0D6E6 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 0874214A21D8EC3200F0D6E6 /* libz.tbd */; };
 		0874214F21D8ED6E00F0D6E6 /* libbz2.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 0874214E21D8ED6E00F0D6E6 /* libbz2.tbd */; };
-		08F2959B21DDEAFE0028EEE5 /* BaseComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 08F2959921DDEAFE0028EEE5 /* BaseComponent.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -62,15 +61,15 @@
 		084335D921D8C1DF0031BF3B /* libiconv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libiconv.tbd; path = usr/lib/libiconv.tbd; sourceTree = SDKROOT; };
 		084335DB21D8C1FF0031BF3B /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
 		08516DF81FA10B5D0077B9F0 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
-		085E1F5F1EA6BA470056B80C /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
-		0869F1E521D9F9F4003F3538 /* TranscodePipeline.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = TranscodePipeline.cpp; sourceTree = "<group>"; };
-		0869F1E621D9F9F4003F3538 /* TranscodePipeline.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = TranscodePipeline.hpp; sourceTree = "<group>"; };
-		0869F1E821DA0885003F3538 /* logger.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = logger.hpp; sourceTree = "<group>"; };
-		0869F1E921DA089F003F3538 /* logger.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = logger.cpp; sourceTree = "<group>"; };
-		0869F1EB21DA1A3E003F3538 /* input.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = input.hpp; sourceTree = "<group>"; };
-		0869F1EC21DA1A3E003F3538 /* input.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = input.cpp; sourceTree = "<group>"; };
-		0869F1EF21DA216A003F3538 /* output.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = output.hpp; sourceTree = "<group>"; };
-		0869F1F021DA216A003F3538 /* output.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = output.cpp; sourceTree = "<group>"; };
+		085E1F5F1EA6BA470056B80C /* main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
+		0869F1E521D9F9F4003F3538 /* TranscodePipeline.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = TranscodePipeline.c; sourceTree = "<group>"; };
+		0869F1E621D9F9F4003F3538 /* TranscodePipeline.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TranscodePipeline.h; sourceTree = "<group>"; };
+		0869F1E821DA0885003F3538 /* logger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = logger.h; sourceTree = "<group>"; };
+		0869F1E921DA089F003F3538 /* logger.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = logger.c; sourceTree = "<group>"; };
+		0869F1EB21DA1A3E003F3538 /* input.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = input.h; sourceTree = "<group>"; };
+		0869F1EC21DA1A3E003F3538 /* input.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = input.c; sourceTree = "<group>"; };
+		0869F1EF21DA216A003F3538 /* output.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = output.h; sourceTree = "<group>"; };
+		0869F1F021DA216A003F3538 /* output.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = output.c; sourceTree = "<group>"; };
 		0869F1F521DA9BC2003F3538 /* CoreImage.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreImage.framework; path = System/Library/Frameworks/CoreImage.framework; sourceTree = SDKROOT; };
 		0869F1F721DA9BCD003F3538 /* ImageIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageIO.framework; path = System/Library/Frameworks/ImageIO.framework; sourceTree = SDKROOT; };
 		0869F1FB21DA9C1D003F3538 /* ImageCaptureCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageCaptureCore.framework; path = System/Library/Frameworks/ImageCaptureCore.framework; sourceTree = SDKROOT; };
@@ -78,8 +77,8 @@
 		0869F1FF21DA9D3E003F3538 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		0869F20121DA9DE2003F3538 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		0869F20321DA9E0D003F3538 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
-		0869F20521DB3B60003F3538 /* filter.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = filter.hpp; sourceTree = "<group>"; };
-		0869F20621DB3B60003F3538 /* filter.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = filter.cpp; sourceTree = "<group>"; };
+		0869F20521DB3B60003F3538 /* filter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = filter.h; sourceTree = "<group>"; };
+		0869F20621DB3B60003F3538 /* filter.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = filter.c; sourceTree = "<group>"; };
 		086E7ACD1E044C7500206F21 /* live_transcoder */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = live_transcoder; sourceTree = BUILT_PRODUCTS_DIR; };
 		0874212C21D8E80500F0D6E6 /* CoreMediaIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMediaIO.framework; path = System/Library/Frameworks/CoreMediaIO.framework; sourceTree = SDKROOT; };
 		0874212D21D8E80500F0D6E6 /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
@@ -99,8 +98,6 @@
 		0874214A21D8EC3200F0D6E6 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		0874214C21D8ECF900F0D6E6 /* libz.1.2.11.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.1.2.11.tbd; path = usr/lib/libz.1.2.11.tbd; sourceTree = SDKROOT; };
 		0874214E21D8ED6E00F0D6E6 /* libbz2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libbz2.tbd; path = usr/lib/libbz2.tbd; sourceTree = SDKROOT; };
-		08F2959921DDEAFE0028EEE5 /* BaseComponent.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = BaseComponent.cpp; sourceTree = "<group>"; };
-		08F2959A21DDEAFE0028EEE5 /* BaseComponent.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = BaseComponent.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -142,21 +139,19 @@
 		086E7AC41E044C7400206F21 = {
 			isa = PBXGroup;
 			children = (
-				08F2959921DDEAFE0028EEE5 /* BaseComponent.cpp */,
-				08F2959A21DDEAFE0028EEE5 /* BaseComponent.hpp */,
-				0869F20521DB3B60003F3538 /* filter.hpp */,
-				0869F20621DB3B60003F3538 /* filter.cpp */,
-				0869F1EF21DA216A003F3538 /* output.hpp */,
-				0869F1F021DA216A003F3538 /* output.cpp */,
-				0869F1EB21DA1A3E003F3538 /* input.hpp */,
-				0869F1EC21DA1A3E003F3538 /* input.cpp */,
-				0869F1E921DA089F003F3538 /* logger.cpp */,
-				0869F1E821DA0885003F3538 /* logger.hpp */,
-				0869F1E521D9F9F4003F3538 /* TranscodePipeline.cpp */,
-				0869F1E621D9F9F4003F3538 /* TranscodePipeline.hpp */,
+				0869F20521DB3B60003F3538 /* filter.h */,
+				0869F20621DB3B60003F3538 /* filter.c */,
+				0869F1EF21DA216A003F3538 /* output.h */,
+				0869F1F021DA216A003F3538 /* output.c */,
+				0869F1EB21DA1A3E003F3538 /* input.h */,
+				0869F1EC21DA1A3E003F3538 /* input.c */,
+				0869F1E921DA089F003F3538 /* logger.c */,
+				0869F1E821DA0885003F3538 /* logger.h */,
+				0869F1E521D9F9F4003F3538 /* TranscodePipeline.c */,
+				0869F1E621D9F9F4003F3538 /* TranscodePipeline.h */,
 				084335A021D89A7C0031BF3B /* install_ffmpeg.sh */,
 				08516DF81FA10B5D0077B9F0 /* Makefile */,
-				085E1F5F1EA6BA470056B80C /* main.cpp */,
+				085E1F5F1EA6BA470056B80C /* main.c */,
 				086E7ACE1E044C7500206F21 /* Products */,
 				086E7AD71E044DEB00206F21 /* Frameworks */,
 			);
@@ -264,14 +259,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				08F2959B21DDEAFE0028EEE5 /* BaseComponent.cpp in Sources */,
-				0869F1F121DA216A003F3538 /* output.cpp in Sources */,
-				0869F1E721D9F9F4003F3538 /* TranscodePipeline.cpp in Sources */,
-				0869F1EA21DA089F003F3538 /* logger.cpp in Sources */,
-				0869F20721DB3B60003F3538 /* filter.cpp in Sources */,
-				0869F1ED21DA1A3E003F3538 /* input.cpp in Sources */,
+				0869F1F121DA216A003F3538 /* output.c in Sources */,
+				0869F1E721D9F9F4003F3538 /* TranscodePipeline.c in Sources */,
+				0869F1EA21DA089F003F3538 /* logger.c in Sources */,
+				0869F20721DB3B60003F3538 /* filter.c in Sources */,
+				0869F1ED21DA1A3E003F3538 /* input.c in Sources */,
 				08516DF91FA10B5D0077B9F0 /* Makefile in Sources */,
-				085E1F601EA6BA470056B80C /* main.cpp in Sources */,
+				085E1F601EA6BA470056B80C /* main.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -6,7 +6,7 @@
 //  Copyright © 2018 Kaltura. All rights reserved.
 //
 
-#include "output.hpp"
+#include "output.h"
 
 
 int init_Transcode_output(struct TranscodeOutput* pOutput)  {

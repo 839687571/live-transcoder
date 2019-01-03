@@ -10,10 +10,8 @@
 #define filter_h
 
 #include <stdio.h>
-extern "C" {
-    #include <libavformat/avformat.h>
-    #include <libavfilter/avfilter.h>
-}
+#include <libavformat/avformat.h>
+#include <libavfilter/avfilter.h>
 
 struct TranscoderFilter
 {

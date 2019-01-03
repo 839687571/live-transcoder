@@ -6,10 +6,11 @@
 //  Copyright © 2018 Kaltura. All rights reserved.
 //
 
-#include "TranscodePipeline.hpp"
-#include "logger.hpp"
-#include "filter.hpp"
+#include "TranscodePipeline.h"
+#include "logger.h"
+
     
+
 
 
 int init_decoder(struct TranscodeContext * pContext,AVStream *pInputStream) {
@@ -68,9 +69,9 @@ int OnInputFrame(struct TranscodeContext *pContext,AVCodecContext* pDecoderConte
         return 0;
         
     }
-    /*
+    
     for (int i=0;i<pContext->filters;i++) {
-        struct TranscodeFilter *pFilter=(TranscodeFilter *)&pContext->filter[i];
+        struct TranscodeFilter *pFilter=&pContext->filter[i];
         send_filter_frame(pFilter,pFrame);
         
         int ret=0;
@@ -95,7 +96,7 @@ int OnInputFrame(struct TranscodeContext *pContext,AVCodecContext* pDecoderConte
             //encodeFrame(pContext,pFrame);
             av_frame_free(&pOutFrame);
         }
-    }*/
+    }
     return 0;
 }
 

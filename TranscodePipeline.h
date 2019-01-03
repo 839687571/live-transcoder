@@ -9,17 +9,14 @@
 #ifndef TranscodePipeline_hpp
 #define TranscodePipeline_hpp
 
-#define __STDC_CONSTANT_MACROS
-extern "C" {
-    #include <libavutil/timestamp.h>
-    #include <libavformat/avformat.h>
-    #include <libavfilter/buffersink.h>
-    #include <libavfilter/buffersrc.h>
-}
 
-#include "input.hpp"
-#include "output.hpp"
-#include "filter.hpp"
+#include <libavutil/timestamp.h>
+#include <libavformat/avformat.h>
+#include <libavfilter/buffersink.h>
+#include <libavfilter/buffersrc.h>
+#include "input.h"
+#include "output.h"
+#include "filter.h"
 
 #define MAX_INPUTS 10
 #define MAX_OUTPUTS 10
