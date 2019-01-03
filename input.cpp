@@ -6,7 +6,7 @@
 //  Copyright © 2018 Kaltura. All rights reserved.
 //
 
-#include "input.h"
+#include "input.hpp"
 
 int init_input(struct InputContext *ctx,const char* fileName)
 {

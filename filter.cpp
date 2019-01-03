@@ -6,8 +6,8 @@
 //  Copyright © 2019 Kaltura. All rights reserved.
 //
 
-#include "filter.h"
-#include "logger.h"
+#include "filter.hpp"
+#include "logger.hpp"
 
 int init_filter(struct TranscoderFilter *pFilter,struct AVStream *pInputStream, AVCodecContext *dec_ctx,const char *filters_descr)
 {
@@ -68,6 +68,12 @@ end:
     avfilter_inout_free(&outputs);
     
     return ret;
+}
+
+extern "C" {
+#include <libavfilter/buffersink.h>
+#include <libavfilter/buffersrc.h>
+
 }
 
 int send_filter_frame(struct TranscoderFilter *pFilter,struct AVFrame* pInFrame)

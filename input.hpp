@@ -10,7 +10,10 @@
 #define input_h
 
 #include <stdio.h>
-#include <libavformat/avformat.h>
+#include "logger.hpp"
+extern "C" {
+    #include <libavformat/avformat.h>
+}
 
 struct InputContext;
 struct TranscodeContext;

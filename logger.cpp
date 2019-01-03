@@ -7,7 +7,9 @@
 //
 
 #include <stdio.h>
+extern "C" {
 #include <libavformat/avformat.h>
+}
 
 #include <sys/ioctl.h> // For FIONREAD
 #include <termios.h>

@@ -11,7 +11,10 @@
 
 #include <stdio.h>
 #include <stdbool.h>
+
+extern "C" {
 #include <libavformat/avformat.h>
+}
 
 struct TranscodeOutput
 {
