@@ -9,7 +9,8 @@
 #include "codec.h"
 
 
-int init_decoder(struct TranscoderCodecContext * pContext,AVStream *pInputStream) {
+int init_decoder(struct TranscoderCodecContext * pContext,AVStream *pInputStream)
+{
     
     const AVCodecParameters *params=pInputStream->codecpar;
     AVCodec *dec = pContext->codec=avcodec_find_decoder(params->codec_id);
@@ -47,15 +48,61 @@ int init_decoder(struct TranscoderCodecContext * pContext,AVStream *pInputStream
 }
 
 
-int encode_frame(struct TranscoderCodecContext *encoder,const AVFrame* pFrame) {
+int init_video_encoder(struct TranscoderCodecContext * pContext,
+                       AVRational inputAspectRatio,
+                       enum AVPixelFormat inputPixelFormat,
+                       AVRational inputTimeBase,
+                       int width,int height,int bitrate)
+{
+    AVCodec *codec      = NULL;
+    AVCodecContext *enc_ctx  = NULL;
+    int ret = 0;
     
-    int ret;
     
+    codec = avcodec_find_encoder_by_name("libx264");
+    if (!codec) {
+        logger(AV_LOG_DEBUG,"Unable to find libx264");
+        return -1;
+    }
+    enc_ctx = avcodec_alloc_context3(codec);
+    enc_ctx->height = height;
+    enc_ctx->width = width;
+    enc_ctx->sample_aspect_ratio = inputAspectRatio;
+    enc_ctx->pix_fmt = inputPixelFormat;
+    enc_ctx->time_base = inputTimeBase;
+    enc_ctx->bit_rate=bitrate;
+    ret = avcodec_open2(enc_ctx, codec, NULL);
+    
+    pContext->codec=codec;
+    pContext->ctx=enc_ctx;
+    return 0;
+}
 
+int init_audio_encoder(struct TranscoderCodecContext * pContext)
+{
+    return 0;
+}
+
+int send_encode_frame(struct TranscoderCodecContext *encoder,const AVFrame* pFrame)
+{
+    int ret = avcodec_send_frame(encoder->ctx, pFrame);
+    if (ret < 0) {
+        logger(AV_LOG_ERROR, "Error sending a packet for encoding");
+        exit(1);
+    }
+    return ret;
+}
+int receive_encoder_packet(struct TranscoderCodecContext *encoder,AVPacket* pkt)
+{
+    int ret;
+    ret = avcodec_receive_packet(encoder->ctx, pkt);
+    if (ret<0) {
+        return ret;
+    }
+    
     return 0;
     
 }
-
 
 
 int send_decoder_packet(struct TranscoderCodecContext *decoder,const AVPacket* pkt) {

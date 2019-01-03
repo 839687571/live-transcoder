@@ -37,7 +37,7 @@ struct TranscodeContext {
     
     int encoders;
     struct TranscoderCodecContext encoder[MAX_OUTPUTS];
-    
+
     
     int filters;
     struct TranscoderFilter filter[10];

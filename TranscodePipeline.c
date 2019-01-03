@@ -12,7 +12,34 @@
     
 
 
-
+int encodeFrame(struct TranscodeContext *pContext,AVFrame *pFrame) {
+ 
+    int ret=0;
+    
+    struct TranscoderCodecContext* pEncoder=&pContext->encoder[0];
+    ret=send_encode_frame(pEncoder,pFrame);
+    
+    while (ret >= 0) {
+        AVPacket *pOutPacket = av_packet_alloc();
+        
+        ret = receive_encoder_packet(pEncoder,pOutPacket);
+        if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
+            av_packet_free(&pOutPacket);
+            return 0;
+        }
+        else if (ret < 0)
+        {
+            logger(AV_LOG_ERROR,"Error during decoding");
+            return -1;
+        }
+        
+        logger(AV_LOG_ERROR,"encoded frame: pts=%s (%s)",
+               av_ts2str(pOutPacket->pts), av_ts2timestr(pOutPacket->pts, &pEncoder->ctx->time_base));
+        
+        av_packet_free(&pOutPacket);
+    }
+    return 0;
+}
 
 int OnInputFrame(struct TranscodeContext *pContext,AVCodecContext* pDecoderContext,const AVFrame *pFrame)
 {
@@ -56,7 +83,7 @@ int OnInputFrame(struct TranscodeContext *pContext,AVCodecContext* pDecoderConte
                    av_ts2str(pOutFrame->pts), av_ts2timestr(pOutFrame->pts, &pDecoderContext->time_base),
                    pict_type_to_string(pOutFrame->pict_type),pOutFrame->width,pOutFrame->height);
             
-            //encodeFrame(pContext,pFrame);
+            encodeFrame(pContext,pFrame);
             av_frame_free(&pOutFrame);
         }
     }
@@ -138,7 +165,14 @@ int init_transcoding_context(struct TranscodeContext *pContext,struct InputConte
         struct TranscoderFilter* pFilter=&pContext->filter[pContext->filters++];
         if (pStream->codecpar->codec_type==AVMEDIA_TYPE_VIDEO) {
             init_filter(pFilter,pStream,pDecoderContext->ctx,"scale=100x100:force_original_aspect_ratio=decrease");
-            
+            struct TranscoderCodecContext* pCodec=&pContext->encoder[pContext->encoders++];
+
+            int width=av_buffersink_get_w(pFilter->sink_ctx);
+            int height=av_buffersink_get_h(pFilter->sink_ctx);
+            AVRational frameRate=av_buffersink_get_frame_rate(pFilter->sink_ctx);
+           
+            enum AVPixelFormat format= av_buffersink_get_format(pFilter->sink_ctx);
+            init_video_encoder(pCodec, pDecoderContext->ctx->sample_aspect_ratio,format,frameRate,width,height,1000*1000);
         }
 
         //open_video_encoder(pContext,codec_ctx,codec_ctx->width,codec_ctx->height,1000*1000);
