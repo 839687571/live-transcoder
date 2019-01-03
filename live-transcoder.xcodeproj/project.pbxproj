@@ -39,6 +39,7 @@
 		0874214921D8EC1500F0D6E6 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0874214821D8EC1500F0D6E6 /* CoreFoundation.framework */; };
 		0874214B21D8EC3200F0D6E6 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 0874214A21D8EC3200F0D6E6 /* libz.tbd */; };
 		0874214F21D8ED6E00F0D6E6 /* libbz2.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 0874214E21D8ED6E00F0D6E6 /* libbz2.tbd */; };
+		08F2959E21DDF7FF0028EEE5 /* codec.c in Sources */ = {isa = PBXBuildFile; fileRef = 08F2959D21DDF7FF0028EEE5 /* codec.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -98,6 +99,8 @@
 		0874214A21D8EC3200F0D6E6 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		0874214C21D8ECF900F0D6E6 /* libz.1.2.11.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.1.2.11.tbd; path = usr/lib/libz.1.2.11.tbd; sourceTree = SDKROOT; };
 		0874214E21D8ED6E00F0D6E6 /* libbz2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libbz2.tbd; path = usr/lib/libbz2.tbd; sourceTree = SDKROOT; };
+		08F2959C21DDF7FF0028EEE5 /* codec.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = codec.h; sourceTree = "<group>"; };
+		08F2959D21DDF7FF0028EEE5 /* codec.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = codec.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -139,6 +142,8 @@
 		086E7AC41E044C7400206F21 = {
 			isa = PBXGroup;
 			children = (
+				08F2959C21DDF7FF0028EEE5 /* codec.h */,
+				08F2959D21DDF7FF0028EEE5 /* codec.c */,
 				0869F20521DB3B60003F3538 /* filter.h */,
 				0869F20621DB3B60003F3538 /* filter.c */,
 				0869F1EF21DA216A003F3538 /* output.h */,
@@ -260,6 +265,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0869F1F121DA216A003F3538 /* output.c in Sources */,
+				08F2959E21DDF7FF0028EEE5 /* codec.c in Sources */,
 				0869F1E721D9F9F4003F3538 /* TranscodePipeline.c in Sources */,
 				0869F1EA21DA089F003F3538 /* logger.c in Sources */,
 				0869F20721DB3B60003F3538 /* filter.c in Sources */,

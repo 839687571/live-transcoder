@@ -16,6 +16,7 @@
 #include <libavfilter/buffersrc.h>
 #include "input.h"
 #include "output.h"
+#include "codec.h"
 #include "filter.h"
 
 #define MAX_INPUTS 10
@@ -28,16 +29,14 @@ struct TranscodeContext {
     
     
     int inputs;
-    AVCodec* input_codecs[MAX_INPUTS];
-    AVCodecContext* input_codec_contexts[MAX_INPUTS];
+    struct TranscoderCodecContext decoder[MAX_INPUTS];
     
     
     int outputs;
     struct TranscodeOutput* output[MAX_OUTPUTS];
     
     int encoders;
-    AVCodec* output_codec[MAX_OUTPUTS];
-    AVCodecContext* output_codec_contexts[MAX_OUTPUTS];
+    struct TranscoderCodecContext encoder[MAX_OUTPUTS];
     
     
     int filters;

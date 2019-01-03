@@ -13,43 +13,6 @@
 
 
 
-int init_decoder(struct TranscodeContext * pContext,AVStream *pInputStream) {
-    
-    AVCodec *dec = pContext->input_codecs[pContext->inputs]=avcodec_find_decoder(pInputStream->codecpar->codec_id);
-    AVCodecContext *codec_ctx;
-    if (!dec) {
-        logger(AV_LOG_ERROR, "Failed to find decoder for stream #%u", pContext->inputs);
-        return AVERROR_DECODER_NOT_FOUND;
-    }
-    codec_ctx = avcodec_alloc_context3(dec);
-    if (!codec_ctx) {
-        logger(AV_LOG_ERROR, "Failed to allocate the decoder context for stream #%u", pContext->inputs);
-        return AVERROR(ENOMEM);
-    }
-    int ret = avcodec_parameters_to_context(codec_ctx, pInputStream->codecpar);
-    if (ret < 0) {
-        logger(AV_LOG_ERROR, "Failed to copy decoder parameters to input decoder context "
-               "for stream #%u", pContext->inputs);
-        return ret;
-    }
-    /* Reencode video & audio and remux subtitles etc. */
-    if (codec_ctx->codec_type == AVMEDIA_TYPE_VIDEO || codec_ctx->codec_type == AVMEDIA_TYPE_AUDIO) {
-        if (codec_ctx->codec_type == AVMEDIA_TYPE_VIDEO)
-            codec_ctx->framerate = av_guess_frame_rate(pContext->pInputContext->ifmt_ctx, pInputStream, NULL);
-        /* Open decoder */
-        ret = avcodec_open2(codec_ctx, dec, NULL);
-        if (ret < 0) {
-            logger( AV_LOG_ERROR, "Failed to open decoder for stream #%u\n", pContext->inputs);
-            return ret;
-        }
-    }
-    pContext->input_codec_contexts[pContext->inputs] = codec_ctx;
-    
-    pContext->inputs++;
-    return 0;
-}
-
-
 
 int OnInputFrame(struct TranscodeContext *pContext,AVCodecContext* pDecoderContext,const AVFrame *pFrame)
 {
@@ -108,9 +71,12 @@ int decodePacket(struct TranscodeContext *transcodingContext,struct InputContext
     
     logger(AV_LOG_DEBUG, "Demuxer gave frame of stream_index %u",stream_index);
     
-    AVCodecContext* pDecoderContext=transcodingContext->input_codec_contexts[stream_index];
+    struct TranscoderCodecContext* pDecoder=&transcodingContext->decoder[stream_index];
     
-    ret = avcodec_send_packet(pDecoderContext, pkt);
+    
+    
+
+    ret = send_decoder_packet(pDecoder, pkt);
     if (ret < 0) {
         logger(AV_LOG_ERROR, "Error sending a packet for decoding");
         exit(1);
@@ -119,7 +85,7 @@ int decodePacket(struct TranscodeContext *transcodingContext,struct InputContext
     while (ret >= 0) {
         AVFrame *pFrame = av_frame_alloc();
         
-        ret = avcodec_receive_frame(pDecoderContext, pFrame);
+        ret = receive_decoder_frame(pDecoder, pFrame);
         if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
             av_frame_free(&pFrame);
             return 0;
@@ -129,9 +95,7 @@ int decodePacket(struct TranscodeContext *transcodingContext,struct InputContext
             logger(AV_LOG_ERROR,"Error during decoding");
             return -1;
         }
-        pFrame->pts = pFrame->best_effort_timestamp;
-        
-        OnInputFrame(transcodingContext,pDecoderContext,pFrame);
+        OnInputFrame(transcodingContext,pDecoder->ctx,pFrame);
         
         av_frame_free(&pFrame);
     }
@@ -155,14 +119,6 @@ int on_packet_cb(struct TranscodeContext *pContext,struct InputContext *ctx,stru
 
 int init_transcoding_context(struct TranscodeContext *pContext,struct InputContext* pInputContext)
 {
-    for (int i=0;i<MAX_INPUTS;i++) {
-        pContext->input_codecs[i]=NULL;
-        pContext->input_codec_contexts[i]=NULL;
-    }
-    for (int i=0;i<MAX_OUTPUTS;i++) {
-        pContext->output_codec[i]=NULL;
-        pContext->output_codec_contexts[i]=NULL;
-    }
     pContext->inputs=0;
     pContext->outputs=0;
     
@@ -175,13 +131,14 @@ int init_transcoding_context(struct TranscodeContext *pContext,struct InputConte
     for (int i = 0; i < pInputContext->ifmt_ctx->nb_streams; i++) {
         AVStream *pStream = pInputContext->ifmt_ctx->streams[i];
         
-        init_decoder(pContext,pStream);
+        struct TranscoderCodecContext *pDecoderContext=&pContext->decoder[i];
+        init_decoder(pDecoderContext,pStream);
         
-        AVCodecContext *pDecoderContext=pContext->input_codec_contexts[pContext->inputs-1];
         
         struct TranscoderFilter* pFilter=&pContext->filter[pContext->filters++];
         if (pStream->codecpar->codec_type==AVMEDIA_TYPE_VIDEO) {
-            init_filter(pFilter,pStream,pDecoderContext,"scale=100x100:force_original_aspect_ratio=decrease");
+            init_filter(pFilter,pStream,pDecoderContext->ctx,"scale=100x100:force_original_aspect_ratio=decrease");
+            
         }
 
         //open_video_encoder(pContext,codec_ctx,codec_ctx->width,codec_ctx->height,1000*1000);
