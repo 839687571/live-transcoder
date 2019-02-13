@@ -18,7 +18,7 @@ int init_input(struct InputContext *ctx,const char* fileName)
     if (ret < 0) {
         char buff[256];
         av_strerror(ret, buff, 256);
-        logger(AV_LOG_DEBUG,"len: Unable to open input %s %s(%d)",ctx->pSourceFileName,buff,ret);
+        logger(AV_LOG_DEBUG,"Unable to open input %s %s(%x)",ctx->pSourceFileName,buff,ret);
         return ret;
         
     }

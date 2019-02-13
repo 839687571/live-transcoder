@@ -25,12 +25,21 @@ int init_filter(struct TranscoderFilter *pFilter,struct AVStream *pInputStream, 
         goto end;
     }
     
-    snprintf(args, sizeof(args),
-             "video_size=%dx%d:pix_fmt=%d:time_base=%d/%d:pixel_aspect=%d/%d",
-             dec_ctx->width, dec_ctx->height, dec_ctx->pix_fmt,
-             time_base.num, time_base.den,
-             dec_ctx->sample_aspect_ratio.num, dec_ctx->sample_aspect_ratio.den);
-    
+    if (dec_ctx->codec_type==AVMEDIA_TYPE_VIDEO) {
+        snprintf(args, sizeof(args),
+                 "video_size=%dx%d:pix_fmt=%d:time_base=%d/%d:pixel_aspect=%d/%d",
+                 dec_ctx->width, dec_ctx->height, dec_ctx->pix_fmt,
+                 time_base.num, time_base.den,
+                 dec_ctx->sample_aspect_ratio.num, dec_ctx->sample_aspect_ratio.den);
+    }
+    if (dec_ctx->codec_type==AVMEDIA_TYPE_AUDIO) {
+
+        snprintf(args, sizeof args,
+                 "sample_rate=%d:sample_fmt=%d:channel_layout=0x%"PRIx64":channels=%d:"
+                 "time_base=%d/%d",
+                 dec_ctx->sample_rate, dec_ctx->sample_fmt, dec_ctx->channel_layout,
+                 dec_ctx->channels, time_base.num, time_base.den);
+    }
     
     ret = avfilter_graph_create_filter(&pFilter->src_ctx, buffersrc, "in",
                                        args, NULL, pFilter->filter_graph);

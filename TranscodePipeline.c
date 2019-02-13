@@ -51,6 +51,7 @@ int OnInputFrame(struct TranscodeContext *pContext,AVCodecContext* pDecoderConte
                av_ts2str(pFrame->pts), av_ts2timestr(pFrame->pts, &pDecoderContext->time_base),
                pict_type_to_string(pFrame->pict_type),pFrame->width,pFrame->height);
         
+        //return 0;
         //  printf("saving frame %3d\n", pDecoderContext->frame_number);
     } else {
         logger(AV_LOG_ERROR,"decoded audio: pts=%s (%s);channels=%d;sample rate=%d; length=%d; format=%d ",
@@ -163,8 +164,9 @@ int init_transcoding_context(struct TranscodeContext *pContext,struct InputConte
         init_decoder(pDecoderContext,pStream);
         
         
-        struct TranscoderFilter* pFilter=&pContext->filter[pContext->filters++];
         if (pStream->codecpar->codec_type==AVMEDIA_TYPE_VIDEO) {
+            struct TranscoderFilter* pFilter=&pContext->filter[pContext->filters++];
+
             init_filter(pFilter,pStream,pDecoderContext->ctx,"scale=512x384:force_original_aspect_ratio=decrease");
             struct TranscoderCodecContext* pCodec=&pContext->encoder[pContext->encoders++];
 
@@ -175,9 +177,19 @@ int init_transcoding_context(struct TranscodeContext *pContext,struct InputConte
             enum AVPixelFormat format= av_buffersink_get_format(pFilter->sink_ctx);
             init_video_encoder(pCodec, pDecoderContext->ctx->sample_aspect_ratio,format,frameRate,width,height,1000*1000);
         }
+        
+        
+        if (pStream->codecpar->codec_type==AVMEDIA_TYPE_AUDIO) {
+            continue;
 
-        //open_video_encoder(pContext,codec_ctx,codec_ctx->width,codec_ctx->height,1000*1000);
-        //open_video_encoder(pContext,codec_ctx,codec_ctx->width,codec_ctx->height,300*1000);
+            struct TranscoderFilter* pFilter=&pContext->filter[pContext->filters++];
+            
+            init_filter(pFilter,pStream,pDecoderContext->ctx,"aformat=sample_fmts=fltp:channel_layouts=stereo:sample_rates=44100");
+            struct TranscoderCodecContext* pCodec=&pContext->encoder[pContext->encoders++];
+            
+            //init_audio_encoder(pCodec, pDecoderContext->ctx->sample_aspect_ratio,format,frameRate,width,height,1000*1000);
+        }
+        
         
 
     }
