@@ -27,6 +27,9 @@ struct TranscodeOutput
     int width,height,vid_bitrate;
     float fps;
     int samplingRate, channels, audio_bitrate;
+    
+    int filter;
+    int encoder;
 };
 
 int init_Transcode_output(struct TranscodeOutput* pOutput) ;

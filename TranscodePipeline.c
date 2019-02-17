@@ -46,11 +46,14 @@ int encodeFrame(struct TranscodeContext *pContext,int encoder,int output,AVFrame
             return -1;
         }
         
-        logger(AV_LOG_ERROR,"encoded frame: pts=%s (%s) size=%d",
+        logger(AV_LOG_ERROR,"[%d] encoded frame for output %d: pts=%s (%s) size=%d",
+               encoder,
+               output,
                av_ts2str(pOutPacket->pts), av_ts2timestr(pOutPacket->pts, &pEncoder->ctx->time_base),
                pOutPacket->size);
         
         
+        send_output_packet(pContext->output[output],pOutPacket);
         
         av_packet_free(&pOutPacket);
     }
@@ -77,8 +80,8 @@ int OnDecodedFrame(struct TranscodeContext *pContext,AVCodecContext* pDecoderCon
         
     }
     
-    for (int i=0;i<pContext->filters;i++) {
-        struct TranscodeFilter *pFilter=&pContext->filter[i];
+    for (int filterId=0;filterId<pContext->filters;filterId++) {
+        struct TranscodeFilter *pFilter=&pContext->filter[filterId];
         send_filter_frame(pFilter,pFrame);
         
         int ret=0;
@@ -100,8 +103,12 @@ int OnDecodedFrame(struct TranscodeContext *pContext,AVCodecContext* pDecoderCon
                    av_ts2str(pOutFrame->pts), av_ts2timestr(pOutFrame->pts, &pDecoderContext->time_base),
                    pict_type_to_string(pOutFrame->pict_type),pOutFrame->width,pOutFrame->height);
             
-            for (int encoder=0;encoder<pContext->encoders;encoder++) {
-                encodeFrame(pContext,encoder,0,pFrame);
+            for (int outputId=0;outputId<pContext->outputs;outputId++) {
+                struct TranscodeOutput *pOutput=pContext->output[outputId];
+                if (pOutput->filter==filterId){
+                    logger(AV_LOG_ERROR,"sending video from filter %d to encoder %d for output %s",filterId,pOutput->encoder,pOutput->name);
+                    encodeFrame(pContext,pOutput->encoder,outputId,pFrame);
+                }
             }
             av_frame_free(&pOutFrame);
         }
@@ -179,23 +186,25 @@ int add_output(struct TranscodeContext* pContext, struct TranscodeOutput * pOutp
     if (!pOutput->passthrough && pOutput->codec_type==AVMEDIA_TYPE_VIDEO) {
         char config[2048];
         sprintf(config,"scale=%dx%d:force_original_aspect_ratio=decrease",pOutput->width,pOutput->height);
+        
         struct TranscoderFilter* pFilter=NULL;
-        bool found=false;
+        pOutput->filter=-1;
         for (int selectedFilter=0; selectedFilter<pContext->filters;selectedFilter++) {
             pFilter=&pContext->filter[selectedFilter];
             if (strcmp(pFilter->config,config)==0) {
-                logger(AV_LOG_ERROR,"Resuing existing filter");
-                found=true;
+                pOutput->filter=selectedFilter;
+                logger(AV_LOG_ERROR,"Output %s - Resuing existing filter %s",pOutput->name,config);
             }
         }
-        if (!found) {
-            pFilter=&pContext->filter[pContext->filters++];
+        if ( pOutput->filter==-1) {
+            pOutput->filter=pContext->filters++;
+            pFilter=&pContext->filter[pOutput->filter];
             init_filter(pFilter,pStream,pDecoderContext->ctx,config);
-            logger(AV_LOG_ERROR,"Created new  filter %s",config);
-
+            logger(AV_LOG_ERROR,"Output %s - Created new  filter %s",pOutput->name,config);
         }
         
-        struct TranscoderCodecContext* pCodec=&pContext->encoder[pContext->encoders++];
+        pOutput->encoder=pContext->encoders++;
+        struct TranscoderCodecContext* pCodec=&pContext->encoder[pOutput->encoder];
         
         int width=av_buffersink_get_w(pFilter->sink_ctx);
         int height=av_buffersink_get_h(pFilter->sink_ctx);
@@ -203,6 +212,7 @@ int add_output(struct TranscodeContext* pContext, struct TranscodeOutput * pOutp
         
         enum AVPixelFormat format= av_buffersink_get_format(pFilter->sink_ctx);
         init_video_encoder(pCodec, pDecoderContext->ctx->sample_aspect_ratio,format,frameRate,width,height,pOutput->vid_bitrate*1000);
+        logger(AV_LOG_ERROR,"Output %s - Added encoder %d bitrate=%d",pOutput->name,pOutput->encoder,pOutput->vid_bitrate);
 
         
     }
