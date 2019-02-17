@@ -12,11 +12,18 @@
 #include <sys/ioctl.h> // For FIONREAD
 #include <termios.h>
 #include <stdbool.h>
+#include <sys/time.h>
 
-void logger(int level,const char *fmt, ...)
+
+void logger(char* category,int level,const char *fmt, ...)
 {
+    time_t t = time(NULL);
+    struct tm *lt = localtime(&t);
+    
+    char buf[32];
+    buf[strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", lt)] = '\0';
     va_list args;
-    fprintf( stderr, "LOG: " );
+    fprintf( stderr, "%s %s %d ",buf,category, level );
     
     va_start( args, fmt );
     vfprintf( stderr, fmt, args );
@@ -72,4 +79,18 @@ int kbhit(void)
     int nbbytes;
     ioctl(STDIN, FIONREAD, &nbbytes);  // 0 is STDIN
     return nbbytes;
+}
+
+
+uint64_t getTime64()
+{
+    struct timeval tv;
+    
+    gettimeofday(&tv, NULL);
+    
+    unsigned long long millisecondsSinceEpoch =
+    (unsigned long long)(tv.tv_sec) * 1000 +
+    (unsigned long long)(tv.tv_usec) / 1000;
+
+    return millisecondsSinceEpoch;
 }

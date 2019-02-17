@@ -12,12 +12,15 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <libavformat/avformat.h>
+#include <sys/time.h>
+#include "FramesStats.h"
 
 enum TranscodeOutputType
 {
     TranscodeOutputType_Video,
     TranscodeOutputType_Audio
 };
+
 
 struct TranscodeOutput
 {
@@ -30,7 +33,11 @@ struct TranscodeOutput
     
     int filter;
     int encoder;
+    
+    struct FramesStats stats;
+    
 };
+
 
 int init_Transcode_output(struct TranscodeOutput* pOutput) ;
 

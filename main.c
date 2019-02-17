@@ -40,7 +40,7 @@ int main(int argc, char **argv)
     }
     ret = avformat_find_stream_info(ifmt_ctx, NULL);
     if (ret < 0) {
-        logger(AV_LOG_DEBUG,"segmenter: Unable to find any input streams");
+        logger(CATEGORY_DEFAULT,AV_LOG_DEBUG,"segmenter: Unable to find any input streams");
     }
 
     //logger("Version: %s\n", VERSION);
@@ -53,30 +53,42 @@ int main(int argc, char **argv)
     init_transcoding_context(&ctx,ifmt_ctx->streams[0]);
 
 
-    struct TranscodeOutput output1;
-    init_Transcode_output(&output1);
+    struct TranscodeOutput output32;
+    init_Transcode_output(&output32);
     
-    output1.name="Vid1";
-    output1.codec_type=AVMEDIA_TYPE_VIDEO;
-    output1.passthrough=false;
-    output1.width=352;
-    output1.height=240;
-    output1.fps=30;
-    output1.vid_bitrate=500*1000;
+    output32.name="32";
+    output32.codec_type=AVMEDIA_TYPE_VIDEO;
+    output32.passthrough=true;
     
-    add_output(&ctx,&output1);
+    add_output(&ctx,&output32);
     
-    struct TranscodeOutput output2;
-    init_Transcode_output(&output2);
-    output2.name="Vid2";
-    output2.codec_type=AVMEDIA_TYPE_VIDEO;
-    output2.passthrough=false;
-    output2.width=352;
-    output2.height=240;
-    output2.fps=15;
-    output2.vid_bitrate=200*1000;
-    add_output(&ctx,&output2);
     
+    struct TranscodeOutput output33;
+    init_Transcode_output(&output33);
+    
+    output33.name="33";
+    output33.codec_type=AVMEDIA_TYPE_VIDEO;
+    output33.passthrough=false;
+    output33.width=352;
+    output33.height=240;
+    output33.fps=30;
+    output33.vid_bitrate=500;
+    
+    add_output(&ctx,&output33);
+    
+    
+    struct TranscodeOutput output34;
+    init_Transcode_output(&output34);
+    
+    output34.name="34";
+    output34.codec_type=AVMEDIA_TYPE_VIDEO;
+    output34.passthrough=false;
+    output34.width=352;
+    output34.height=240;
+    output34.fps=30;
+    output34.vid_bitrate=200;
+    
+    add_output(&ctx,&output34);
 
 
     AVPacket packet;
@@ -90,7 +102,6 @@ int main(int argc, char **argv)
             continue;
         }
         convert_packet(&ctx,ifmt_ctx->streams[packet.stream_index],&packet);
-        
     }
     return 0;
 }
