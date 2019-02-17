@@ -19,6 +19,8 @@ int init_filter(struct TranscoderFilter *pFilter,struct AVStream *pInputStream, 
     AVFilterInOut *inputs  = avfilter_inout_alloc();
     AVRational time_base = pInputStream->time_base;
     
+    pFilter->config=strdup(filters_descr);
+    
     pFilter->filter_graph = avfilter_graph_alloc();
     if (!outputs || !inputs || !pFilter->filter_graph) {
         ret = AVERROR(ENOMEM);

@@ -15,6 +15,7 @@
 
 struct TranscoderFilter
 {
+    char* config;
     AVFilterGraph* filter_graph;
     AVFilterContext *sink_ctx;
     AVFilterContext *src_ctx;

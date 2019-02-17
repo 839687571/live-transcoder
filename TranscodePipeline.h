@@ -25,6 +25,7 @@
 struct TranscodeContext {
     
     
+    struct AVStream* inputStream;
     
     int inputs;
     struct TranscoderCodecContext decoder[MAX_INPUTS];

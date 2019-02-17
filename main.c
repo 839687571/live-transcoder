@@ -59,20 +59,25 @@ int main(int argc, char **argv)
     output1.name="Vid1";
     output1.codec_type=AVMEDIA_TYPE_VIDEO;
     output1.passthrough=false;
-    output1.width=300;
-    output1.height=200;
+    output1.width=352;
+    output1.height=240;
     output1.fps=30;
     output1.vid_bitrate=500*1000;
     
     add_output(&ctx,&output1);
     
     struct TranscodeOutput output2;
+    init_Transcode_output(&output2);
     output2.name="Vid2";
     output2.codec_type=AVMEDIA_TYPE_VIDEO;
-    init_Transcode_output(&output2);
+    output2.passthrough=false;
+    output2.width=352;
+    output2.height=240;
+    output2.fps=15;
+    output2.vid_bitrate=200*1000;
     add_output(&ctx,&output2);
     
- 
+
 
     AVPacket packet;
     av_init_packet(&packet);

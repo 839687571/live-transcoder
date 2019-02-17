@@ -115,7 +115,7 @@ int send_decoder_packet(struct TranscoderCodecContext *decoder,const AVPacket* p
     
     int stream_index = pkt->stream_index;
     
-    logger(AV_LOG_DEBUG, "Demuxer gave frame of stream_index %u",stream_index);
+    logger(AV_LOG_DEBUG, "Decoder gave frame of stream_index %u",stream_index);
     
     
     ret = avcodec_send_packet(decoder->ctx, pkt);
