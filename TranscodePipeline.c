@@ -37,12 +37,14 @@ int encodeFrame(struct TranscodeContext *pContext,AVFrame *pFrame) {
                av_ts2str(pOutPacket->pts), av_ts2timestr(pOutPacket->pts, &pEncoder->ctx->time_base),
                pOutPacket->size);
         
+        
+        
         av_packet_free(&pOutPacket);
     }
     return 0;
 }
 
-int OnInputFrame(struct TranscodeContext *pContext,AVCodecContext* pDecoderContext,const AVFrame *pFrame)
+int OnDecodedFrame(struct TranscodeContext *pContext,AVCodecContext* pDecoderContext,const AVFrame *pFrame)
 {
     
     if (pDecoderContext->codec_type==AVMEDIA_TYPE_VIDEO) {
@@ -92,7 +94,7 @@ int OnInputFrame(struct TranscodeContext *pContext,AVCodecContext* pDecoderConte
     return 0;
 }
 
-int decodePacket(struct TranscodeContext *transcodingContext,struct InputContext *inputContext,const AVPacket* pkt) {
+int decodePacket(struct TranscodeContext *transcodingContext,const AVPacket* pkt) {
     
     int ret;
     
@@ -101,8 +103,6 @@ int decodePacket(struct TranscodeContext *transcodingContext,struct InputContext
     logger(AV_LOG_DEBUG, "Demuxer gave frame of stream_index %u",stream_index);
     
     struct TranscoderCodecContext* pDecoder=&transcodingContext->decoder[stream_index];
-    
-    
     
 
     ret = send_decoder_packet(pDecoder, pkt);
@@ -124,52 +124,66 @@ int decodePacket(struct TranscodeContext *transcodingContext,struct InputContext
             logger(AV_LOG_ERROR,"Error during decoding");
             return -1;
         }
-        OnInputFrame(transcodingContext,pDecoder->ctx,pFrame);
+        OnDecodedFrame(transcodingContext,pDecoder->ctx,pFrame);
         
         av_frame_free(&pFrame);
     }
     return 0;
 }
 
-int on_packet_cb(struct TranscodeContext *pContext,struct InputContext *ctx,struct AVStream* pStream, struct AVPacket* packet)
+int convert_packet(struct TranscodeContext *pContext,struct AVStream* pStream, struct AVPacket* packet)
 {
+    bool shouldDecode=false;
     for (int i=0;i<pContext->outputs;i++) {
         struct TranscodeOutput *pOutput=pContext->output[i];
-        if ((pStream->codecpar->codec_type==AVMEDIA_TYPE_VIDEO && pOutput->vid_passthrough) ||
-            (pStream->codecpar->codec_type==AVMEDIA_TYPE_AUDIO && pOutput->aud_passthrough) ||
-            pStream->codecpar->codec_type==AVMEDIA_TYPE_DATA) {
-            send_output_packet(pOutput,packet);
+        if (pOutput->codec_type==pStream->codecpar->codec_type)
+        {
+            if (pOutput->passthrough)
+            {
+                send_output_packet(pOutput,packet);
+            }
+            else
+            {
+                shouldDecode=true;
+            }
         }
     }
-    return decodePacket(pContext,ctx,packet);
+    if (shouldDecode) {
+        return decodePacket(pContext,packet);
+    }
+    return 0;
 }
 
 
 
-int init_transcoding_context(struct TranscodeContext *pContext,struct InputContext* pInputContext)
+int init_transcoding_context(struct TranscodeContext *pContext,struct AVStream* pStream)
 {
     pContext->inputs=0;
     pContext->outputs=0;
-    
-    
-    pInputContext->pTranscodingContext=pContext;
-    pContext->pInputContext=pInputContext;
     pContext->filters=0;
     
+        
+    struct TranscoderCodecContext *pDecoderContext=&pContext->decoder[0];
+    init_decoder(pDecoderContext,pStream);
+    
+    return 0;
+}
+
+int add_output(struct TranscodeContext* pContext, struct TranscodeOutput * pOutput)
+{
+    
+    /*
+    struct InputContext*  pInputContext= pContext->pInputContext;
     
     for (int i = 0; i < pInputContext->ifmt_ctx->nb_streams; i++) {
         AVStream *pStream = pInputContext->ifmt_ctx->streams[i];
-        
         struct TranscoderCodecContext *pDecoderContext=&pContext->decoder[i];
-        init_decoder(pDecoderContext,pStream);
-        
-        
         if (pStream->codecpar->codec_type==AVMEDIA_TYPE_VIDEO) {
+            
             struct TranscoderFilter* pFilter=&pContext->filter[pContext->filters++];
-
             init_filter(pFilter,pStream,pDecoderContext->ctx,"scale=512x384:force_original_aspect_ratio=decrease");
             struct TranscoderCodecContext* pCodec=&pContext->encoder[pContext->encoders++];
-
+            
             int width=av_buffersink_get_w(pFilter->sink_ctx);
             int height=av_buffersink_get_h(pFilter->sink_ctx);
             AVRational frameRate=pStream->avg_frame_rate;
@@ -181,7 +195,7 @@ int init_transcoding_context(struct TranscodeContext *pContext,struct InputConte
         
         if (pStream->codecpar->codec_type==AVMEDIA_TYPE_AUDIO) {
             continue;
-
+            
             struct TranscoderFilter* pFilter=&pContext->filter[pContext->filters++];
             
             init_filter(pFilter,pStream,pDecoderContext->ctx,"aformat=sample_fmts=fltp:channel_layouts=stereo:sample_rates=44100");
@@ -191,14 +205,10 @@ int init_transcoding_context(struct TranscodeContext *pContext,struct InputConte
         }
         
         
-
+        
     }
-    pInputContext->pOnPacketCB=on_packet_cb;
-    return 0;
-}
-
-int add_output(struct TranscodeContext* pContext, struct TranscodeOutput * pOutput)
-{
+    */
+    
     pContext->output[pContext->outputs++]=pOutput;
     return 0;
 }

@@ -13,9 +13,17 @@
 #include <stdbool.h>
 #include <libavformat/avformat.h>
 
+enum TranscodeOutputType
+{
+    TranscodeOutputType_Video,
+    TranscodeOutputType_Audio
+};
+
 struct TranscodeOutput
 {
-    bool vid_passthrough,aud_passthrough;
+    char* name;
+    enum AVMediaType codec_type;
+    bool passthrough;
     int width,height,vid_bitrate;
     float fps;
     int samplingRate, channels, audio_bitrate;

@@ -16,7 +16,6 @@
 		085E1F601EA6BA470056B80C /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 085E1F5F1EA6BA470056B80C /* main.c */; };
 		0869F1E721D9F9F4003F3538 /* TranscodePipeline.c in Sources */ = {isa = PBXBuildFile; fileRef = 0869F1E521D9F9F4003F3538 /* TranscodePipeline.c */; };
 		0869F1EA21DA089F003F3538 /* logger.c in Sources */ = {isa = PBXBuildFile; fileRef = 0869F1E921DA089F003F3538 /* logger.c */; };
-		0869F1ED21DA1A3E003F3538 /* input.c in Sources */ = {isa = PBXBuildFile; fileRef = 0869F1EC21DA1A3E003F3538 /* input.c */; };
 		0869F1F121DA216A003F3538 /* output.c in Sources */ = {isa = PBXBuildFile; fileRef = 0869F1F021DA216A003F3538 /* output.c */; };
 		0869F20021DA9D3E003F3538 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0869F1FF21DA9D3E003F3538 /* QuartzCore.framework */; };
 		0869F20221DA9DE2003F3538 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0869F20121DA9DE2003F3538 /* AppKit.framework */; };
@@ -67,8 +66,6 @@
 		0869F1E621D9F9F4003F3538 /* TranscodePipeline.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TranscodePipeline.h; sourceTree = "<group>"; };
 		0869F1E821DA0885003F3538 /* logger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = logger.h; sourceTree = "<group>"; };
 		0869F1E921DA089F003F3538 /* logger.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = logger.c; sourceTree = "<group>"; };
-		0869F1EB21DA1A3E003F3538 /* input.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = input.h; sourceTree = "<group>"; };
-		0869F1EC21DA1A3E003F3538 /* input.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = input.c; sourceTree = "<group>"; };
 		0869F1EF21DA216A003F3538 /* output.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = output.h; sourceTree = "<group>"; };
 		0869F1F021DA216A003F3538 /* output.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = output.c; sourceTree = "<group>"; };
 		0869F1F521DA9BC2003F3538 /* CoreImage.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreImage.framework; path = System/Library/Frameworks/CoreImage.framework; sourceTree = SDKROOT; };
@@ -148,8 +145,6 @@
 				0869F20621DB3B60003F3538 /* filter.c */,
 				0869F1EF21DA216A003F3538 /* output.h */,
 				0869F1F021DA216A003F3538 /* output.c */,
-				0869F1EB21DA1A3E003F3538 /* input.h */,
-				0869F1EC21DA1A3E003F3538 /* input.c */,
 				0869F1E921DA089F003F3538 /* logger.c */,
 				0869F1E821DA0885003F3538 /* logger.h */,
 				0869F1E521D9F9F4003F3538 /* TranscodePipeline.c */,
@@ -269,7 +264,6 @@
 				0869F1E721D9F9F4003F3538 /* TranscodePipeline.c in Sources */,
 				0869F1EA21DA089F003F3538 /* logger.c in Sources */,
 				0869F20721DB3B60003F3538 /* filter.c in Sources */,
-				0869F1ED21DA1A3E003F3538 /* input.c in Sources */,
 				08516DF91FA10B5D0077B9F0 /* Makefile in Sources */,
 				085E1F601EA6BA470056B80C /* main.c in Sources */,
 			);

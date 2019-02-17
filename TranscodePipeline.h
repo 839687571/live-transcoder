@@ -14,7 +14,6 @@
 #include <libavformat/avformat.h>
 #include <libavfilter/buffersink.h>
 #include <libavfilter/buffersrc.h>
-#include "input.h"
 #include "output.h"
 #include "codec.h"
 #include "filter.h"
@@ -25,7 +24,6 @@
 
 struct TranscodeContext {
     
-    struct InputContext* pInputContext;
     
     
     int inputs;
@@ -50,6 +48,7 @@ struct TranscodeContext {
  1
  */
 
-int init_transcoding_context(struct TranscodeContext *ctx,struct InputContext* inputContext);
+int init_transcoding_context(struct TranscodeContext *ctx,struct AVStream*  avstream);
+int convert_packet(struct TranscodeContext *pContext,struct AVStream* pStream, struct AVPacket* packet);
 
 #endif /* TranscodePipeline_hpp */
