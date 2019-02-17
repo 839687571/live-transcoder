@@ -23,7 +23,6 @@ void AddFrameToStats(struct FramesStats* pStats,uint64_t frame_time,int size)
 
 double GetFrameStatsAvg(struct FramesStats* pStats)
 {
-    return 0;
     if (pStats->totalFrames>1) {
         uint64_t total=0;
         uint64_t now = pStats->times[(pStats->totalFrames-1) % HISTORY_SIZE];

@@ -26,11 +26,13 @@ int init_Transcode_output(struct TranscodeOutput* pOutput)  {
 
 int send_output_packet(struct TranscodeOutput *pOutput,struct AVPacket* output)
 {
-    //AddFrameToStats(&pOutput->stats,output->pts,output->size);
-    logger(CATEGORY_OUTPUT, AV_LOG_ERROR,"output (%s) got data: pts=%s , size=%d, flags=%d ",pOutput->name,
+    AddFrameToStats(&pOutput->stats,output->pts,output->size);
+    logger(CATEGORY_OUTPUT, AV_LOG_ERROR,"output (%s) got data: pts=%s , size=%d, flags=%d totalFrames=%ld, bitrate %.lf",pOutput->name,
            av_ts2str(output->pts),
            output->size,
-           output->flags);
+           output->flags,
+           pOutput->stats.totalFrames,
+           GetFrameStatsAvg(&pOutput->stats));
     
     return 0;
 }

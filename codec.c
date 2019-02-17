@@ -76,9 +76,9 @@ int init_video_encoder(struct TranscoderCodecContext * pContext,
     enc_ctx->rc_buffer_size=bitrate;
     enc_ctx->gop_size=60;
     
-    //av_opt_set(enc_ctx->priv_data, "preset", "veryfast", 0);
-    //av_opt_set(enc_ctx->priv_data, "tune", "zerolatency", 0);
-    //av_opt_set(enc_ctx->priv_data, "profile", "baseline", 0);
+    av_opt_set(enc_ctx->priv_data, "preset", "veryfast", 0);
+    av_opt_set(enc_ctx->priv_data, "tune", "zerolatency", 0);
+    av_opt_set(enc_ctx->priv_data, "profile", "baseline", 0);
     
     ret = avcodec_open2(enc_ctx, codec,NULL);
     if (ret<0) {
