@@ -12,5 +12,12 @@
 #include <stdio.h>
 #include "TranscodePipeline.h"
 
+struct FrameHeader
+{
+    char header[4];
+    size_t size;
+    int64_t pts,dts,duration;
+};
+
 void startService(struct TranscodeContext *pContext,int port);
 #endif /* listener_h */

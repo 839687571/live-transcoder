@@ -11,8 +11,27 @@
 
 pthread_t thread_id;
 
+
+int recvEx(int socket,char* buffer,int bytesToRead) {
+    
+    int bytesRead=0;
+    while (bytesToRead>0) {
+        
+        
+        int valread = recv( socket , buffer+bytesRead, bytesToRead, 0);
+        if (valread<0){
+            return valread;
+        }
+        bytesRead+=valread;
+        bytesToRead-=valread;
+    }
+    return bytesRead;
+}
+
+
 void* listenerThread(void *vargp)
 {
+    struct TranscodeContext *pContext = (struct TranscodeContext *)vargp;
     int port=9999;
     
     int server_fd, new_socket;
@@ -27,13 +46,13 @@ void* listenerThread(void *vargp)
         exit(EXIT_FAILURE);
     }
     
-    // Forcefully attaching socket to the port 8080
+    /*
     if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT,
                    &opt, sizeof(opt)))
     {
         perror("setsockopt");
         exit(EXIT_FAILURE);
-    }
+    }*/
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;
     address.sin_port = htons( port );
@@ -57,12 +76,31 @@ void* listenerThread(void *vargp)
         exit(EXIT_FAILURE);
     }
     
-    char buffer[1024] = {0};
+    struct FrameHeader frameHeader;
+    AVPacket packet;
+    
     while (true) {
-        int valread = recv( new_socket , buffer, sizeof(buffer), 0);
+        
+        int valread =recvEx(new_socket,&frameHeader,sizeof(frameHeader));
+        
         if (valread<0){
             break;
         }
+        
+        av_new_packet(&packet,frameHeader.size);
+        packet.pts=frameHeader.pts;
+        packet.dts=frameHeader.dts;
+        packet.duration=frameHeader.duration;
+        
+        valread =recvEx(new_socket,packet.data,frameHeader.size);
+        
+        if (valread<0){
+            break;
+        }
+        logger("RECEIVER",AV_LOG_DEBUG,"received packet pts=%ld size=%d",packet.dts,packet.size);
+
+        convert_packet(pContext,&packet);
+        
     }
     return NULL;
 }
@@ -70,6 +108,6 @@ void* listenerThread(void *vargp)
 
 void startService(struct TranscodeContext *pContext,int port)
 {
-    pthread_create(&thread_id, NULL, listenerThread, NULL);
+    pthread_create(&thread_id, NULL, listenerThread, pContext);
 }
 

@@ -122,7 +122,7 @@ int decodePacket(struct TranscodeContext *transcodingContext,const AVPacket* pkt
     
     int stream_index = pkt->stream_index;
     
-    logger(CATEGORY_DEFAULT,AV_LOG_DEBUG, "Demuxer gave frame of stream_index %u",stream_index);
+    logger(CATEGORY_DEFAULT,AV_LOG_DEBUG, "Send packet from stream_index %u to decoder",stream_index);
     
     struct TranscoderCodecContext* pDecoder=&transcodingContext->decoder[stream_index];
     
@@ -130,7 +130,7 @@ int decodePacket(struct TranscodeContext *transcodingContext,const AVPacket* pkt
     ret = send_decoder_packet(pDecoder, pkt);
     if (ret < 0) {
         logger(CATEGORY_DEFAULT,AV_LOG_ERROR, "Error sending a packet for decoding");
-        exit(1);
+        return ret;
     }
     
     while (ret >= 0) {
@@ -144,7 +144,7 @@ int decodePacket(struct TranscodeContext *transcodingContext,const AVPacket* pkt
         else if (ret < 0)
         {
             logger(CATEGORY_DEFAULT,AV_LOG_ERROR,"Error during decoding");
-            return -1;
+            return ret;
         }
         OnDecodedFrame(transcodingContext,pDecoder->ctx,pFrame);
         
@@ -153,12 +153,12 @@ int decodePacket(struct TranscodeContext *transcodingContext,const AVPacket* pkt
     return 0;
 }
 
-int convert_packet(struct TranscodeContext *pContext,struct AVStream* pStream, struct AVPacket* packet)
+int convert_packet(struct TranscodeContext *pContext ,struct AVPacket* packet)
 {
     bool shouldDecode=false;
     for (int i=0;i<pContext->outputs;i++) {
         struct TranscodeOutput *pOutput=pContext->output[i];
-        if (pOutput->codec_type==pStream->codecpar->codec_type)
+        if (pOutput->codec_type==pContext->inputStream->codecpar->codec_type)
         {
             if (pOutput->passthrough)
             {

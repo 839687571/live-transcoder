@@ -50,6 +50,6 @@ struct TranscodeContext {
  */
 
 int init_transcoding_context(struct TranscodeContext *ctx,struct AVStream*  avstream);
-int convert_packet(struct TranscodeContext *pContext,struct AVStream* pStream, struct AVPacket* packet);
+int convert_packet(struct TranscodeContext *pContext, struct AVPacket* packet);
 
 #endif /* TranscodePipeline_hpp */
