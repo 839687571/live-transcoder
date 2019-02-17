@@ -9,6 +9,8 @@
 #include "codec.h"
 #include "logger.h"
 
+static  AVRational standard_timebase = {1,1000};
+
 int init_decoder(struct TranscoderCodecContext * pContext,AVStream *pInputStream)
 {
     
@@ -30,6 +32,8 @@ int init_decoder(struct TranscoderCodecContext * pContext,AVStream *pInputStream
                "for stream #%u", pInputStream->index);
         return ret;
     }
+    codec_ctx->time_base=standard_timebase;
+
     /* Reencode video & audio and remux subtitles etc. */
     if (codec_ctx->codec_type == AVMEDIA_TYPE_VIDEO || codec_ctx->codec_type == AVMEDIA_TYPE_AUDIO) {
         if (codec_ctx->codec_type == AVMEDIA_TYPE_VIDEO) {
@@ -69,7 +73,7 @@ int init_video_encoder(struct TranscoderCodecContext * pContext,
     enc_ctx->width = width;
     enc_ctx->sample_aspect_ratio = inputAspectRatio;
     enc_ctx->pix_fmt = inputPixelFormat;
-    enc_ctx->time_base = inputTimeBase;
+    enc_ctx->time_base = standard_timebase;
     enc_ctx->bit_rate=bitrate;
     enc_ctx->rc_min_rate=bitrate*0.8;
     enc_ctx->rc_max_rate=bitrate*1.2;

@@ -15,6 +15,8 @@
 #define CATEGORY_OUTPUT "OUTPUT"
 
 void logger(char* category,int level,const char *fmt, ...);
+void logger2(char* category,int level,const char *fmt, va_list args);
+
 const char* pict_type_to_string(int pt);
 
 

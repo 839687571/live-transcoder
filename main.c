@@ -10,7 +10,6 @@
 #include <time.h>
 #include <stdio.h>
 #include <stdbool.h>
-
 #include "logger.h"
 
 #ifndef VERSION
@@ -19,12 +18,21 @@
 static  AVRational standard_timebase = {1,1000};
 
 #include "TranscodePipeline.h"
+#include "listener.h"
 
 
+void ffmpeg_log_callback(void *ptr, int level, const char *fmt, va_list vargs)
+{
+    if (level<AV_LOG_DEBUG)
+        return;
+    logger2("FFMPEG",level,fmt,vargs);
+}
 
 int main(int argc, char **argv)
 {
     av_log_set_level(AV_LOG_DEBUG);
+
+  //  av_log_set_callback(ffmpeg_log_callback);
     
     char* pSourceFileName="/Users/guyjacubovski/Sample_video/קישון - תעלת בלאומילך.avi";
 
@@ -91,6 +99,7 @@ int main(int argc, char **argv)
     add_output(&ctx,&output34);
 
 
+    //startService(&ctx,9999);
     AVPacket packet;
     av_init_packet(&packet);
     
@@ -101,7 +110,14 @@ int main(int argc, char **argv)
         if (0!=packet.stream_index) {
             continue;
         }
-        convert_packet(&ctx,ifmt_ctx->streams[packet.stream_index],&packet);
+        
+        AVStream *in_stream=ifmt_ctx->streams[packet.stream_index];
+        
+        packet.pts = av_rescale_q_rnd(packet.pts, in_stream->time_base, standard_timebase, AV_ROUND_NEAR_INF|AV_ROUND_PASS_MINMAX);
+        packet.dts = av_rescale_q_rnd(packet.dts, in_stream->time_base, standard_timebase, AV_ROUND_NEAR_INF|AV_ROUND_PASS_MINMAX);
+        packet.duration = av_rescale_q(packet.duration, in_stream->time_base, standard_timebase);
+        
+        convert_packet(&ctx,in_stream,&packet);
     }
     return 0;
 }

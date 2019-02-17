@@ -15,21 +15,29 @@
 #include <sys/time.h>
 
 
-void logger(char* category,int level,const char *fmt, ...)
+void logger2(char* category,int level,const char *fmt, va_list args)
 {
     time_t t = time(NULL);
     struct tm *lt = localtime(&t);
     
     char buf[32];
     buf[strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", lt)] = '\0';
-    va_list args;
     fprintf( stderr, "%s %s %d ",buf,category, level );
-    
-    va_start( args, fmt );
+
     vfprintf( stderr, fmt, args );
-    va_end( args );
     fprintf( stderr, "\n" );
 }
+
+
+
+void logger(char* category,int level,const char *fmt, ...)
+{
+    va_list args;
+    va_start( args, fmt );
+    logger2(category,level,fmt,args);
+    va_end( args );
+}
+
 
 const char* pict_type_to_string(int pt) {
     

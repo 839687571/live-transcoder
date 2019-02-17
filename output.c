@@ -12,6 +12,9 @@
 #include <libavutil/timestamp.h>
 #include "logger.h"
 
+static  AVRational standard_timebase = {1,1000};
+
+
 int init_Transcode_output(struct TranscodeOutput* pOutput)  {
     pOutput->width=pOutput->height=pOutput->vid_bitrate=-1;
     pOutput->fps=-1;
@@ -26,9 +29,10 @@ int init_Transcode_output(struct TranscodeOutput* pOutput)  {
 
 int send_output_packet(struct TranscodeOutput *pOutput,struct AVPacket* output)
 {
-    AddFrameToStats(&pOutput->stats,output->pts,output->size);
-    logger(CATEGORY_OUTPUT, AV_LOG_ERROR,"output (%s) got data: pts=%s , size=%d, flags=%d totalFrames=%ld, bitrate %.lf",pOutput->name,
-           av_ts2str(output->pts),
+    AddFrameToStats(&pOutput->stats,output->dts,output->size);
+    logger(CATEGORY_OUTPUT, AV_LOG_ERROR,"output (%s) got data: pts=%s (%s), size=%d, flags=%d totalFrames=%ld, bitrate %.lf",pOutput->name,
+           av_ts2str(output->dts),
+           av_ts2timestr(output->dts, &standard_timebase),
            output->size,
            output->flags,
            pOutput->stats.totalFrames,

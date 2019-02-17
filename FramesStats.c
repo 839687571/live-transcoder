@@ -30,7 +30,9 @@ double GetFrameStatsAvg(struct FramesStats* pStats)
         for (uint64_t runner=pStats->totalFrames-1;runner>=0;runner--) {
             uint64_t timePassed=now-pStats->times[runner % HISTORY_SIZE];
             if (runner==0 || timePassed>5000) {
-                return ((double)(total*8))/timePassed;
+                if (timePassed<5000)
+                    return 0;
+                return ((double)(total*8))/(double)(timePassed/1000.0);
             }
             total+=pStats->frames[runner % HISTORY_SIZE];
         }
