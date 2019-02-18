@@ -13,11 +13,32 @@ int init_filter(struct TranscoderFilter *pFilter,struct AVStream *pInputStream, 
 {
     char args[512];
     int ret = 0;
-    const AVFilter *buffersrc  = avfilter_get_by_name("buffer");
-    const AVFilter *buffersink = avfilter_get_by_name("buffersink");
+    const AVFilter *buffersrc=NULL;
+    const AVFilter *buffersink=NULL;
+    
+    AVRational time_base = pInputStream->time_base;
+    
+    if (dec_ctx->codec_type==AVMEDIA_TYPE_VIDEO) {
+        buffersrc  = avfilter_get_by_name("buffer");
+        buffersink = avfilter_get_by_name("buffersink");
+        snprintf(args, sizeof(args),
+                 "video_size=%dx%d:pix_fmt=%d:time_base=%d/%d:pixel_aspect=%d/%d",
+                 dec_ctx->width, dec_ctx->height, dec_ctx->pix_fmt,
+                 time_base.num, time_base.den,
+                 dec_ctx->sample_aspect_ratio.num, dec_ctx->sample_aspect_ratio.den);
+    }
+    if (dec_ctx->codec_type==AVMEDIA_TYPE_AUDIO) {
+        buffersrc  = avfilter_get_by_name("abuffer");
+        buffersink = avfilter_get_by_name("abuffersink");
+        snprintf(args, sizeof args,
+                 "sample_rate=%d:sample_fmt=%d:channel_layout=0x%"PRIx64":channels=%d:"
+                 "time_base=%d/%d",
+                 dec_ctx->sample_rate, dec_ctx->sample_fmt, dec_ctx->channel_layout,
+                 dec_ctx->channels, time_base.num, time_base.den);
+    }
+    
     AVFilterInOut *outputs = avfilter_inout_alloc();
     AVFilterInOut *inputs  = avfilter_inout_alloc();
-    AVRational time_base = pInputStream->time_base;
     
     pFilter->config=strdup(filters_descr);
     
@@ -27,33 +48,18 @@ int init_filter(struct TranscoderFilter *pFilter,struct AVStream *pInputStream, 
         goto end;
     }
     
-    if (dec_ctx->codec_type==AVMEDIA_TYPE_VIDEO) {
-        snprintf(args, sizeof(args),
-                 "video_size=%dx%d:pix_fmt=%d:time_base=%d/%d:pixel_aspect=%d/%d",
-                 dec_ctx->width, dec_ctx->height, dec_ctx->pix_fmt,
-                 time_base.num, time_base.den,
-                 dec_ctx->sample_aspect_ratio.num, dec_ctx->sample_aspect_ratio.den);
-    }
-    if (dec_ctx->codec_type==AVMEDIA_TYPE_AUDIO) {
-
-        snprintf(args, sizeof args,
-                 "sample_rate=%d:sample_fmt=%d:channel_layout=0x%"PRIx64":channels=%d:"
-                 "time_base=%d/%d",
-                 dec_ctx->sample_rate, dec_ctx->sample_fmt, dec_ctx->channel_layout,
-                 dec_ctx->channels, time_base.num, time_base.den);
-    }
     
     ret = avfilter_graph_create_filter(&pFilter->src_ctx, buffersrc, "in",
                                        args, NULL, pFilter->filter_graph);
     if (ret < 0) {
-        av_log(NULL, AV_LOG_ERROR, "Cannot create buffer source\n");
+        logger("FILTER",AV_LOG_ERROR, "Cannot create buffer source\n");
         goto end;
     }
     
     ret = avfilter_graph_create_filter(&pFilter->sink_ctx, buffersink, "out",
                                        NULL, NULL, pFilter->filter_graph);
     if (ret < 0) {
-        av_log(NULL, AV_LOG_ERROR, "Cannot create buffer sink\n");
+        logger("FILTER", AV_LOG_ERROR, "Cannot create buffer sink\n");
         goto end;
     }
     

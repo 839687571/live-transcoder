@@ -27,12 +27,19 @@ struct TranscodeOutput
     char* name;
     enum AVMediaType codec_type;
     bool passthrough;
-    int width,height,vid_bitrate;
-    float fps;
-    int samplingRate, channels, audio_bitrate;
+    int bitrate;
+    union 
+    {
+        int width,height;
+        float fps;
+    } videoParams;
+    union
+    {
+        int samplingRate, channels;
+    } audioParams;
     
-    int filter;
-    int encoder;
+    int filterId;
+    int encoderId;
     
     struct FramesStats stats;
     

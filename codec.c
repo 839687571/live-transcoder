@@ -8,7 +8,6 @@
 
 #include "codec.h"
 #include "logger.h"
-
 static  AVRational standard_timebase = {1,1000};
 
 int init_decoder(struct TranscoderCodecContext * pContext,AVStream *pInputStream)
@@ -77,7 +76,7 @@ int init_video_encoder(struct TranscoderCodecContext * pContext,
     enc_ctx->bit_rate=bitrate;
     enc_ctx->rc_min_rate=bitrate*0.8;
     enc_ctx->rc_max_rate=bitrate*1.2;
-    enc_ctx->rc_buffer_size=bitrate;
+    enc_ctx->rc_buffer_size=4*bitrate/30;
     enc_ctx->gop_size=60;
     
     av_opt_set(enc_ctx->priv_data, "preset", "veryfast", 0);
@@ -95,8 +94,34 @@ int init_video_encoder(struct TranscoderCodecContext * pContext,
     return 0;
 }
 
-int init_audio_encoder(struct TranscoderCodecContext * pContext)
+int init_audio_encoder(struct TranscoderCodecContext * pContext,struct TranscoderFilter* pFilter)
 {
+    AVCodec *codec      = NULL;
+    AVCodecContext *enc_ctx  = NULL;
+    int ret = 0;
+    
+    
+    codec = avcodec_find_encoder_by_name("aac");
+    if (!codec) {
+        logger(CATEGORY_CODEC,AV_LOG_DEBUG,"Unable to find libx264");
+        return -1;
+    }
+    enc_ctx = avcodec_alloc_context3(codec);
+    
+    enc_ctx->sample_fmt = av_buffersink_get_format(pFilter->sink_ctx);
+    enc_ctx->channel_layout = av_buffersink_get_channel_layout(pFilter->sink_ctx);
+    enc_ctx->channels = av_buffersink_get_channels(pFilter->sink_ctx);
+    enc_ctx->sample_rate = av_buffersink_get_sample_rate(pFilter->sink_ctx);
+    enc_ctx->time_base = standard_timebase;
+    
+    ret = avcodec_open2(enc_ctx, codec,NULL);
+    if (ret<0) {
+        logger(CATEGORY_CODEC,AV_LOG_DEBUG,"error initilizing video encoder %d",ret);
+        return -1;
+    }
+    
+    pContext->codec=codec;
+    pContext->ctx=enc_ctx;
     return 0;
 }
 
@@ -105,7 +130,7 @@ int send_encode_frame(struct TranscoderCodecContext *encoder,const AVFrame* pFra
     int ret = avcodec_send_frame(encoder->ctx, pFrame);
     if (ret < 0) {
         logger(CATEGORY_CODEC,AV_LOG_FATAL, "Error sending a packet for encoding");
-        exit(1);
+        return ret;
     }
     return ret;
 }
@@ -126,9 +151,7 @@ int send_decoder_packet(struct TranscoderCodecContext *decoder,const AVPacket* p
     
     int ret;
     
-    int stream_index = pkt->stream_index;
-    
-    logger(CATEGORY_CODEC, AV_LOG_DEBUG,"Decoder gave frame of stream_index %u",stream_index);
+    logger(CATEGORY_CODEC, AV_LOG_DEBUG,"Sending packget to decoder");
     
     
     ret = avcodec_send_packet(decoder->ctx, pkt);

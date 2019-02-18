@@ -90,46 +90,72 @@ int main(int argc, char **argv)
     
     struct TranscodeContext ctx;
     
+    int activeStream=1;
+    
 
-    init_transcoding_context(&ctx,ifmt_ctx->streams[0]);
+    init_transcoding_context(&ctx,ifmt_ctx->streams[activeStream]);
 
-
+    
     struct TranscodeOutput output32;
     init_Transcode_output(&output32);
-    
-    output32.name="32";
-    output32.codec_type=AVMEDIA_TYPE_VIDEO;
-    output32.passthrough=true;
-    
-    add_output(&ctx,&output32);
-    
-    
     struct TranscodeOutput output33;
     init_Transcode_output(&output33);
-    
-    output33.name="33";
-    output33.codec_type=AVMEDIA_TYPE_VIDEO;
-    output33.passthrough=false;
-    output33.width=352;
-    output33.height=240;
-    output33.fps=30;
-    output33.vid_bitrate=500;
-    
-    add_output(&ctx,&output33);
-    
-    
     struct TranscodeOutput output34;
     init_Transcode_output(&output34);
-    
-    output34.name="34";
-    output34.codec_type=AVMEDIA_TYPE_VIDEO;
-    output34.passthrough=false;
-    output34.width=352;
-    output34.height=240;
-    output34.fps=30;
-    output34.vid_bitrate=200;
-    
-    add_output(&ctx,&output34);
+    if (activeStream==0)
+    {
+
+        output32.name="32";
+        output32.codec_type=AVMEDIA_TYPE_VIDEO;
+        output32.passthrough=true;
+
+        add_output(&ctx,&output32);
+
+        output33.name="33";
+        output33.codec_type=AVMEDIA_TYPE_VIDEO;
+        output33.passthrough=false;
+        output33.videoParams.width=352;
+        output33.videoParams.height=240;
+        output33.videoParams.fps=30;
+        output33.bitrate=500;
+
+        add_output(&ctx,&output33);
+
+        output34.name="34";
+        output34.codec_type=AVMEDIA_TYPE_VIDEO;
+        output34.passthrough=false;
+        output34.videoParams.width=352;
+        output34.videoParams.height=240;
+        output34.videoParams.fps=30;
+        output34.bitrate=200;
+
+        add_output(&ctx,&output34);
+    }
+    if (activeStream==1)
+    {
+        
+        output32.name="32";
+        output32.codec_type=AVMEDIA_TYPE_AUDIO;
+        output32.passthrough=true;
+        
+        add_output(&ctx,&output32);
+        
+        output33.name="33";
+        output33.codec_type=AVMEDIA_TYPE_AUDIO;
+        output33.passthrough=false;
+        output33.audioParams.samplingRate=44100;
+        output33.bitrate=128;
+        
+        add_output(&ctx,&output33);
+        
+        output34.name="34";
+        output33.codec_type=AVMEDIA_TYPE_AUDIO;
+        output33.passthrough=false;
+        output33.audioParams.samplingRate=44100;
+        output33.bitrate=64;
+        
+        add_output(&ctx,&output34);
+    }
 
 
     startService(&ctx,9999);
@@ -141,7 +167,7 @@ int main(int argc, char **argv)
         if ((ret = av_read_frame(ifmt_ctx, &packet)) < 0)
             break;
         
-        if (0!=packet.stream_index) {
+        if (activeStream!=packet.stream_index) {
             continue;
         }
         

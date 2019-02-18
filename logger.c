@@ -15,14 +15,30 @@
 #include <sys/time.h>
 
 
+
+
+
+const   char* getLevel(int level) {
+    switch(level){
+        case AV_LOG_PANIC: return "PANIC";
+        case AV_LOG_FATAL: return "FATAL";
+        case AV_LOG_ERROR: return "ERROR";
+        case AV_LOG_WARNING: return "WARN";
+        case AV_LOG_INFO: return "INFO";
+        case AV_LOG_VERBOSE: return "VERBOSE";
+        case AV_LOG_DEBUG: return "DEBUG";
+    }
+    return "";
+}
 void logger2(char* category,int level,const char *fmt, va_list args)
 {
     time_t t = time(NULL);
     struct tm *lt = localtime(&t);
     
     char buf[32];
-    buf[strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", lt)] = '\0';
-    fprintf( stderr, "%s %s %d ",buf,category, level );
+    buf[strftime(buf, sizeof(buf), "%Y-%m-%dT%H:%M:%S", lt)] = '\0';
+    const char* levelStr=getLevel(level);
+    fprintf( stderr, "%s %s %s ",buf,category, levelStr);
 
     vfprintf( stderr, fmt, args );
     fprintf( stderr, "\n" );

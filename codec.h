@@ -10,8 +10,8 @@
 #define TranscoderEncoder_h
 
 #include <stdio.h>
-
 #include <libavformat/avformat.h>
+#include "filter.h"
 
 struct TranscoderCodecContext
 {
@@ -27,7 +27,7 @@ int init_video_encoder(struct TranscoderCodecContext * pContext,
                        AVRational inputTimeBase,
                        int width,int height,int bitrate);
 
-int init_audio_encoder(struct TranscoderCodecContext * pContext);
+int init_audio_encoder(struct TranscoderCodecContext * pContext,struct TranscoderFilter* pFilter);
 
 
 int send_encode_frame(struct TranscoderCodecContext *encoder,const AVFrame* pFrame);
