@@ -25,7 +25,6 @@
 struct TranscodeContext {
     
     
-    struct AVStream* inputStream;
     
     int inputs;
     struct TranscoderCodecContext decoder[MAX_INPUTS];
@@ -49,7 +48,7 @@ struct TranscodeContext {
  1
  */
 
-int init_transcoding_context(struct TranscodeContext *ctx,struct AVStream*  avstream);
+int init_transcoding_context(struct TranscodeContext *ctx,struct AVCodecParameters* codecParams);
 int convert_packet(struct TranscodeContext *pContext, struct AVPacket* packet);
 
 #endif /* TranscodePipeline_hpp */

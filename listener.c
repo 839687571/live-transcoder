@@ -8,6 +8,7 @@
 
 #include "listener.h"
 #include <netinet/in.h>'
+#include "logger.h"
 
 pthread_t thread_id;
 
@@ -97,7 +98,10 @@ void* listenerThread(void *vargp)
         if (valread<0){
             break;
         }
-        logger("RECEIVER",AV_LOG_DEBUG,"received packet pts=%ld size=%d",packet.dts,packet.size);
+        logger("RECEIVER",AV_LOG_DEBUG,"received packet pts=%s dts=%s size=%d",
+               ts2str(packet.pts,true),
+               ts2str(packet.dts,true),
+               packet.size);
 
         convert_packet(pContext,&packet);
         

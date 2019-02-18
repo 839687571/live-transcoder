@@ -9,16 +9,16 @@
 #include "TranscodePipeline.h"
 #include "logger.h"
 
+static  AVRational standard_timebase = {1,1000};
 
-int init_transcoding_context(struct TranscodeContext *pContext,struct AVStream* pStream)
+int init_transcoding_context(struct TranscodeContext *pContext,struct AVCodecParameters* codecParams)
 {
     pContext->inputs=0;
     pContext->outputs=0;
     pContext->filters=0;
-    pContext->inputStream=pStream;
     
     struct TranscoderCodecContext *pDecoderContext=&pContext->decoder[0];
-    init_decoder(pDecoderContext,pStream);
+    init_decoder(pDecoderContext,codecParams);
     
     return 0;
 }
@@ -28,6 +28,9 @@ int init_transcoding_context(struct TranscodeContext *pContext,struct AVStream* 
 int encodeFrame(struct TranscodeContext *pContext,int encoderId,int outputId,AVFrame *pFrame) {
  
 
+    logger(CATEGORY_DEFAULT,AV_LOG_DEBUG, "Sending packet  to encoder pts=%s",ts2str(pFrame->pts,true));
+    
+    
     int ret=0;
     
     struct TranscoderCodecContext* pEncoder=&pContext->encoder[encoderId];
@@ -47,10 +50,10 @@ int encodeFrame(struct TranscodeContext *pContext,int encoderId,int outputId,AVF
             return -1;
         }
         
-        logger(CATEGORY_DEFAULT,AV_LOG_DEBUG,"[%d] encoded frame for output %d: pts=%s (%s) size=%d",
+        logger(CATEGORY_DEFAULT,AV_LOG_DEBUG,"[%d] encoded frame for output %d: pts=%s  size=%d",
                encoderId,
                outputId,
-               av_ts2str(pOutPacket->pts), av_ts2timestr(pOutPacket->pts, &pEncoder->ctx->time_base),
+               ts2str(pOutPacket->pts,true),
                pOutPacket->size);
         
         
@@ -61,20 +64,20 @@ int encodeFrame(struct TranscodeContext *pContext,int encoderId,int outputId,AVF
     return 0;
 }
 
-int OnDecodedFrame(struct TranscodeContext *pContext,AVCodecContext* pDecoderContext,const AVFrame *pFrame)
+int OnDecodedFrame(struct TranscodeContext *pContext,AVCodecContext* pDecoderContext, AVFrame *pFrame)
 {
-    
+
     if (pDecoderContext->codec_type==AVMEDIA_TYPE_VIDEO) {
         
-        logger(CATEGORY_DEFAULT,AV_LOG_DEBUG,"decoded video: pts=%s (%s), frame type=%s;width=%d;height=%d",
-               av_ts2str(pFrame->pts), av_ts2timestr(pFrame->pts, &pDecoderContext->time_base),
+        logger(CATEGORY_DEFAULT,AV_LOG_DEBUG,"decoded video: pts=%s, frame type=%s;width=%d;height=%d",
+               ts2str(pFrame->pts,true),
                pict_type_to_string(pFrame->pict_type),pFrame->width,pFrame->height);
         
         //return 0;
         //  printf("saving frame %3d\n", pDecoderContext->frame_number);
     } else {
-        logger(CATEGORY_DEFAULT,AV_LOG_DEBUG,"decoded audio: pts=%s (%s);channels=%d;sample rate=%d; length=%d; format=%d ",
-               av_ts2str(pFrame->pts), av_ts2timestr(pFrame->pts, &pDecoderContext->time_base),
+        logger(CATEGORY_DEFAULT,AV_LOG_DEBUG,"decoded audio: pts=%s;channels=%d;sample rate=%d; length=%d; format=%d ",
+               ts2str(pFrame->pts,true),
                pFrame->channels,pFrame->sample_rate,pFrame->nb_samples,pFrame->format);
         
         
@@ -100,14 +103,14 @@ int OnDecodedFrame(struct TranscodeContext *pContext,AVCodecContext* pDecoderCon
             }
             
             if (pDecoderContext->codec_type==AVMEDIA_TYPE_VIDEO) {
-                logger(CATEGORY_DEFAULT,AV_LOG_DEBUG,"filtered video: pts=%s (%s), frame type=%s;width=%d;height=%d",
-                       av_ts2str(pOutFrame->pts), av_ts2timestr(pOutFrame->pts, &pDecoderContext->time_base),
+                logger(CATEGORY_DEFAULT,AV_LOG_DEBUG,"filtered video: pts=%s, frame type=%s;width=%d;height=%d",
+                       ts2str(pOutFrame->pts,true),
                        pict_type_to_string(pOutFrame->pict_type),pOutFrame->width,pOutFrame->height);
             }
             
             if (pDecoderContext->codec_type==AVMEDIA_TYPE_AUDIO) {
-                logger(CATEGORY_DEFAULT,AV_LOG_DEBUG,"filtered audio: pts=%s (%s), size=%d",
-                       av_ts2str(pOutFrame->pts), av_ts2timestr(pOutFrame->pts, &pDecoderContext->time_base),pOutFrame->nb_samples);
+                logger(CATEGORY_DEFAULT,AV_LOG_DEBUG,"filtered audio: pts=%s, size=%d",
+                       ts2str(pOutFrame->pts,true),pOutFrame->nb_samples);
             }
             
             for (int outputId=0;outputId<pContext->outputs;outputId++) {
@@ -129,7 +132,9 @@ int decodePacket(struct TranscodeContext *transcodingContext,const AVPacket* pkt
     
     int stream_index = pkt->stream_index;
     
-    logger(CATEGORY_DEFAULT,AV_LOG_DEBUG, "Send packet from stream_index %u to decoder",stream_index);
+    logger(CATEGORY_DEFAULT,AV_LOG_DEBUG, "Sending packet  to decoder pts=%s dts=%s",
+           ts2str(pkt->pts,true),
+           ts2str(pkt->dts,true));
     
     struct TranscoderCodecContext* pDecoder=&transcodingContext->decoder[stream_index];
     
@@ -165,16 +170,13 @@ int convert_packet(struct TranscodeContext *pContext ,struct AVPacket* packet)
     bool shouldDecode=false;
     for (int i=0;i<pContext->outputs;i++) {
         struct TranscodeOutput *pOutput=pContext->output[i];
-        if (pOutput->codec_type==pContext->inputStream->codecpar->codec_type)
+        if (pOutput->passthrough)
         {
-            if (pOutput->passthrough)
-            {
-                send_output_packet(pOutput,packet);
-            }
-            else
-            {
-                shouldDecode=true;
-            }
+            send_output_packet(pOutput,packet);
+        }
+        else
+        {
+            shouldDecode=true;
         }
     }
     if (shouldDecode) {
@@ -185,8 +187,6 @@ int convert_packet(struct TranscodeContext *pContext ,struct AVPacket* packet)
 
 struct TranscoderFilter* GetFilter(struct TranscodeContext* pContext,struct TranscodeOutput* pOutput,struct TranscoderCodecContext *pDecoderContext,const char* config)
 {
-    struct AVStream*  pStream= pContext->inputStream;
-
     struct TranscoderFilter* pFilter=NULL;
     pOutput->filterId=-1;
     for (int selectedFilter=0; selectedFilter<pContext->filters;selectedFilter++) {
@@ -199,7 +199,7 @@ struct TranscoderFilter* GetFilter(struct TranscodeContext* pContext,struct Tran
     if ( pOutput->filterId==-1) {
         pOutput->filterId=pContext->filters++;
         pFilter=&pContext->filter[pOutput->filterId];
-        int ret=init_filter(pFilter,pStream,pDecoderContext->ctx,config);
+        int ret=init_filter(pFilter,pDecoderContext->ctx,config);
         if (ret<0) {
             logger(CATEGORY_DEFAULT,AV_LOG_ERROR,"Output %s - Cannot create filter %s",pOutput->name,config);
             return NULL;
@@ -212,14 +212,14 @@ struct TranscoderFilter* GetFilter(struct TranscodeContext* pContext,struct Tran
 int add_output(struct TranscodeContext* pContext, struct TranscodeOutput * pOutput)
 {
     struct TranscoderCodecContext *pDecoderContext=&pContext->decoder[0];
-    struct AVStream*  pStream= pContext->inputStream;
-    
+    pContext->output[pContext->outputs++]=pOutput;
+
     if (!pOutput->passthrough) {
         char filterConfig[2048];
         
-        if (pStream->codecpar->codec_type==AVMEDIA_TYPE_VIDEO)
+        if (pOutput->codec_type==AVMEDIA_TYPE_VIDEO)
         {
-            sprintf(filterConfig,"scale=%dx%d:force_original_aspect_ratio=decrease",pOutput->videoParams.width,pOutput->videoParams.height);
+            sprintf(filterConfig,"scale=%dx%d",pOutput->videoParams.width,pOutput->videoParams.height);
             struct TranscoderFilter* pFilter=GetFilter(pContext,pOutput,pDecoderContext,filterConfig);
             
             pOutput->encoderId=pContext->encoders++;
@@ -227,14 +227,19 @@ int add_output(struct TranscodeContext* pContext, struct TranscodeOutput * pOutp
             
             int width=av_buffersink_get_w(pFilter->sink_ctx);
             int height=av_buffersink_get_h(pFilter->sink_ctx);
-            AVRational frameRate=pStream->avg_frame_rate;
+            AVRational frameRate={1,30};
             
             enum AVPixelFormat format= av_buffersink_get_format(pFilter->sink_ctx);
             init_video_encoder(pCodec, pDecoderContext->ctx->sample_aspect_ratio,format,frameRate,width,height,pOutput->bitrate*1000);
             logger(CATEGORY_DEFAULT,AV_LOG_ERROR,"Output %s - Added encoder %d bitrate=%d",pOutput->name,pOutput->encoderId,pOutput->bitrate*1000);
+            
+            struct AVCodecParameters* pCodecParams=avcodec_parameters_alloc();
+            avcodec_parameters_from_context(pCodecParams,pCodec->ctx);
+            set_output_format(pOutput,pCodecParams);
+            
         }
         
-        if (pStream->codecpar->codec_type==AVMEDIA_TYPE_AUDIO)
+        if (pOutput->codec_type==AVMEDIA_TYPE_AUDIO)
         {
             sprintf(filterConfig,"aformat=sample_fmts=fltp:channel_layouts=stereo:sample_rates=%d",pOutput->audioParams.samplingRate);
             struct TranscoderFilter* pFilter=GetFilter(pContext,pOutput,pDecoderContext,filterConfig);
@@ -243,10 +248,16 @@ int add_output(struct TranscodeContext* pContext, struct TranscodeOutput * pOutp
             struct TranscoderCodecContext* pCodec=&pContext->encoder[pOutput->encoderId];
             
             init_audio_encoder(pCodec, pFilter);
+            struct AVCodecParameters* pCodecParams=avcodec_parameters_alloc();
+            avcodec_parameters_from_context(pCodecParams,pCodec->ctx);
+            set_output_format(pOutput,pCodecParams);
         }
+    } else
+    {
+        set_output_format(pOutput,NULL);
+        
     }
     
-    pContext->output[pContext->outputs++]=pOutput;
     return 0;
 }
 

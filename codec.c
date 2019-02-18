@@ -17,28 +17,28 @@
 
 static  AVRational standard_timebase = {1,1000};
 
-int init_decoder(struct TranscoderCodecContext * pContext,AVStream *pInputStream)
+int init_decoder(struct TranscoderCodecContext * pContext,AVCodecParameters *pCodecParams)
 {
     
-    const AVCodecParameters *params=pInputStream->codecpar;
-    AVCodec *dec = pContext->codec=avcodec_find_decoder(params->codec_id);
+    AVCodec *dec = pContext->codec=avcodec_find_decoder(pCodecParams->codec_id);
     AVCodecContext *codec_ctx;
     if (!dec) {
-        logger(CATEGORY_CODEC,AV_LOG_ERROR, "Failed to find decoder for stream #%u",pInputStream->index);
+        logger(CATEGORY_CODEC,AV_LOG_ERROR, "Failed to find decoder for stream");
         return AVERROR_DECODER_NOT_FOUND;
     }
     codec_ctx = avcodec_alloc_context3(dec);
     if (!codec_ctx) {
-        logger(CATEGORY_CODEC,AV_LOG_ERROR, "Failed to allocate the decoder context for stream #%u", pInputStream->index);
+        logger(CATEGORY_CODEC,AV_LOG_ERROR, "Failed to allocate the decoder context for stream");
         return AVERROR(ENOMEM);
     }
-    int ret = avcodec_parameters_to_context(codec_ctx, params);
+    codec_ctx->time_base=standard_timebase;
+
+    
+    int ret = avcodec_parameters_to_context(codec_ctx, pCodecParams);
     if (ret < 0) {
-        logger(CATEGORY_CODEC, "Failed to copy decoder parameters to input decoder context "
-               "for stream #%u", pInputStream->index);
+        logger(CATEGORY_CODEC, AV_LOG_ERROR, "Failed to copy decoder parameters to input decoder context for stream ");
         return ret;
     }
-    codec_ctx->time_base=standard_timebase;
 
     /* Reencode video & audio and remux subtitles etc. */
     if (codec_ctx->codec_type == AVMEDIA_TYPE_VIDEO || codec_ctx->codec_type == AVMEDIA_TYPE_AUDIO) {
@@ -48,7 +48,7 @@ int init_decoder(struct TranscoderCodecContext * pContext,AVStream *pInputStream
         /* Open decoder */
         ret = avcodec_open2(codec_ctx, dec, NULL);
         if (ret < 0) {
-            logger( CATEGORY_CODEC, "Failed to open decoder for stream #%u\n", pInputStream->index);
+            logger( CATEGORY_CODEC, AV_LOG_ERROR, "Failed to open decoder for stream");
             return ret;
         }
     }
@@ -79,7 +79,6 @@ int init_video_encoder(struct TranscoderCodecContext * pContext,
     enc_ctx->width = width;
     enc_ctx->sample_aspect_ratio = inputAspectRatio;
     enc_ctx->pix_fmt = inputPixelFormat;
-    enc_ctx->time_base = standard_timebase;
     enc_ctx->bit_rate=bitrate;
     enc_ctx->rc_min_rate=bitrate*0.8;
     enc_ctx->rc_max_rate=bitrate*1.2;
@@ -87,7 +86,8 @@ int init_video_encoder(struct TranscoderCodecContext * pContext,
     enc_ctx->gop_size=60;
     enc_ctx->qmin = 10;
     enc_ctx->qmax = 51;
-    
+    enc_ctx->time_base=standard_timebase;
+
     av_opt_set(enc_ctx->priv_data, "preset", "veryfast", 0);
     av_opt_set(enc_ctx->priv_data, "tune", "zerolatency", 0);
     av_opt_set(enc_ctx->priv_data, "profile", "baseline", 0);
@@ -182,7 +182,7 @@ int receive_decoder_frame(struct TranscoderCodecContext *decoder,AVFrame *pFrame
     if (ret<0) {
         return ret;
     }
-    pFrame->pts = pFrame->best_effort_timestamp;
+    //pFrame->pts = pFrame->best_effort_timestamp;
         
 
     return 0;

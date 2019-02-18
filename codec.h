@@ -19,7 +19,7 @@ struct TranscoderCodecContext
     AVCodecContext* ctx;
 };
 
-int init_decoder(struct TranscoderCodecContext * pContext,AVStream *pInputStream);
+int init_decoder(struct TranscoderCodecContext * pContext,AVCodecParameters *pCodecParams);
 
 int init_video_encoder(struct TranscoderCodecContext * pContext,
                        AVRational inputAspectRation,

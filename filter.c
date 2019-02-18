@@ -9,14 +9,13 @@
 #include "filter.h"
 #include "logger.h"
 
-int init_filter(struct TranscoderFilter *pFilter,struct AVStream *pInputStream, AVCodecContext *dec_ctx,const char *filters_descr)
+int init_filter(struct TranscoderFilter *pFilter, AVCodecContext *dec_ctx,const char *filters_descr)
 {
     char args[512];
     int ret = 0;
     const AVFilter *buffersrc=NULL;
     const AVFilter *buffersink=NULL;
     
-    AVRational time_base = pInputStream->time_base;
     
     if (dec_ctx->codec_type==AVMEDIA_TYPE_VIDEO) {
         buffersrc  = avfilter_get_by_name("buffer");
@@ -24,7 +23,7 @@ int init_filter(struct TranscoderFilter *pFilter,struct AVStream *pInputStream, 
         snprintf(args, sizeof(args),
                  "video_size=%dx%d:pix_fmt=%d:time_base=%d/%d:pixel_aspect=%d/%d",
                  dec_ctx->width, dec_ctx->height, dec_ctx->pix_fmt,
-                 time_base.num, time_base.den,
+                 dec_ctx->time_base.num, dec_ctx->time_base.den,
                  dec_ctx->sample_aspect_ratio.num, dec_ctx->sample_aspect_ratio.den);
     }
     if (dec_ctx->codec_type==AVMEDIA_TYPE_AUDIO) {
@@ -34,7 +33,7 @@ int init_filter(struct TranscoderFilter *pFilter,struct AVStream *pInputStream, 
                  "sample_rate=%d:sample_fmt=%d:channel_layout=0x%"PRIx64":channels=%d:"
                  "time_base=%d/%d",
                  dec_ctx->sample_rate, dec_ctx->sample_fmt, dec_ctx->channel_layout,
-                 dec_ctx->channels, time_base.num, time_base.den);
+                 dec_ctx->channels, dec_ctx->time_base.num, dec_ctx->time_base.den);
     }
     
     AVFilterInOut *outputs = avfilter_inout_alloc();

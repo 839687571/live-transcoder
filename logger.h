@@ -9,6 +9,8 @@
 #ifndef logger_h
 #define logger_h
 
+#include <stdbool.h>
+
 
 #define CATEGORY_DEFAULT "DEFAULT"
 #define CATEGORY_CODEC "CODEC"
@@ -19,6 +21,15 @@ void logger2(char* category,int level,const char *fmt, va_list args);
 
 const char* pict_type_to_string(int pt);
 
+#define K_TS_MAX_STRING_SIZE 100
+
+char *av_ts_make_time_stringEx(char *buf, int64_t ts,bool shortFormat);
+
+/**
+ * Convenience macro, the return value should be used only directly in
+ * function arguments but never stand-alone.
+ */
+#define ts2str(ts,short) av_ts_make_time_stringEx((char[K_TS_MAX_STRING_SIZE]){0}, ts,short)
 
 uint64_t getTime64();
 #endif /* logger_h */

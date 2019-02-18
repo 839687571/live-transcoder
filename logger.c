@@ -13,7 +13,7 @@
 #include <termios.h>
 #include <stdbool.h>
 #include <sys/time.h>
-
+#include "logger.h"
 
 
 
@@ -117,4 +117,25 @@ uint64_t getTime64()
     (unsigned long long)(tv.tv_usec) / 1000;
 
     return millisecondsSinceEpoch;
+}
+
+char *av_ts_make_time_stringEx(char *buf, int64_t ts,bool shortFormat)
+{
+    
+    if (ts == AV_NOPTS_VALUE) {
+        snprintf(buf, K_TS_MAX_STRING_SIZE, "NOPTS");
+        return buf;
+    }
+
+    time_t epoch=ts/1000;
+    struct tm *gm = localtime(&epoch);
+
+    
+    ssize_t written = (ssize_t)strftime(buf, K_TS_MAX_STRING_SIZE, shortFormat ? "%H:%M:%S" : "%Y-%m-%dT%H:%M:%S", gm);
+    if ((written > 0) && ((size_t)written < K_TS_MAX_STRING_SIZE))
+    {
+        int w = snprintf(buf+written, K_TS_MAX_STRING_SIZE-(size_t)written, ".%03d", ts % 1000);
+
+    }
+    return buf;
 }

@@ -67,7 +67,8 @@ int main(int argc, char **argv)
 
   //  av_log_set_callback(ffmpeg_log_callback);
     
-    char* pSourceFileName="/Users/guyjacubovski/Sample_video/קישון - תעלת בלאומילך.avi";
+    //char* pSourceFileName="/Users/guyjacubovski/Sample_video/קישון - תעלת בלאומילך.avi";
+    char* pSourceFileName="/Users/guyjacubovski/Sample_video/900.mp4";
 
     AVFormatContext *ifmt_ctx;
     int ret = avformat_open_input(&ifmt_ctx, pSourceFileName, NULL, NULL);
@@ -93,7 +94,7 @@ int main(int argc, char **argv)
     int activeStream=0;
     
 
-    init_transcoding_context(&ctx,ifmt_ctx->streams[activeStream]);
+    init_transcoding_context(&ctx,ifmt_ctx->streams[activeStream]->codecpar);
 
     
     struct TranscodeOutput output32;
@@ -108,7 +109,7 @@ int main(int argc, char **argv)
         output32.name="32";
         output32.codec_type=AVMEDIA_TYPE_VIDEO;
         output32.passthrough=true;
-        add_output(&ctx,&output32);
+        //add_output(&ctx,&output32);
 
         output33.name="33";
         output33.codec_type=AVMEDIA_TYPE_VIDEO;
@@ -127,7 +128,7 @@ int main(int argc, char **argv)
         output34.videoParams.fps=30;
         output34.bitrate=200;
 
-        add_output(&ctx,&output34);
+        //add_output(&ctx,&output34);
     }
     if (activeStream==1)
     {
@@ -152,7 +153,7 @@ int main(int argc, char **argv)
         output33.audioParams.samplingRate=44100;
         output33.bitrate=64;
         
-        add_output(&ctx,&output34);
+        //add_output(&ctx,&output34);
     }
 
 
@@ -161,6 +162,8 @@ int main(int argc, char **argv)
     av_init_packet(&packet);
     
     init_socket(9999);
+    
+    uint64_t  basePts=getTime64();
     while (1) {
         if ((ret = av_read_frame(ifmt_ctx, &packet)) < 0)
             break;
@@ -179,8 +182,8 @@ int main(int argc, char **argv)
         
         struct FrameHeader header;
         header.size=packet.size;
-        header.pts=packet.pts;
-        header.dts=packet.dts;
+        header.pts=packet.pts+basePts;
+        header.dts=packet.dts+basePts;
         header.duration=packet.duration;
         header.header[0]=1;
         header.header[1]=2;
@@ -188,7 +191,10 @@ int main(int argc, char **argv)
         header.header[3]=4;
         send(sock , &header , sizeof(header) , 0 );
         send(sock, packet.data,packet.size,0);
-        logger("SENDER",AV_LOG_DEBUG,"sent packet pts=%ld size=%d",packet.dts,packet.size);
+        logger("SENDER",AV_LOG_DEBUG,"sent packet pts=%s dts=%s  size=%d",
+               ts2str(header.pts,true),
+               ts2str(header.dts,true),
+               packet.dts,packet.size);
 
 
     }
