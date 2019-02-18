@@ -8,6 +8,13 @@
 
 #include "codec.h"
 #include "logger.h"
+
+#include <libavformat/avformat.h>
+#include <libavfilter/avfilter.h>
+#include <libavfilter/buffersink.h>
+#include <libavfilter/buffersrc.h>
+#include <libavutil/opt.h>
+
 static  AVRational standard_timebase = {1,1000};
 
 int init_decoder(struct TranscoderCodecContext * pContext,AVStream *pInputStream)
@@ -78,6 +85,8 @@ int init_video_encoder(struct TranscoderCodecContext * pContext,
     enc_ctx->rc_max_rate=bitrate*1.2;
     enc_ctx->rc_buffer_size=4*bitrate/30;
     enc_ctx->gop_size=60;
+    enc_ctx->qmin = 10;
+    enc_ctx->qmax = 51;
     
     av_opt_set(enc_ctx->priv_data, "preset", "veryfast", 0);
     av_opt_set(enc_ctx->priv_data, "tune", "zerolatency", 0);
@@ -112,14 +121,15 @@ int init_audio_encoder(struct TranscoderCodecContext * pContext,struct Transcode
     enc_ctx->channel_layout = av_buffersink_get_channel_layout(pFilter->sink_ctx);
     enc_ctx->channels = av_buffersink_get_channels(pFilter->sink_ctx);
     enc_ctx->sample_rate = av_buffersink_get_sample_rate(pFilter->sink_ctx);
-    enc_ctx->time_base = standard_timebase;
+    enc_ctx->time_base = av_buffersink_get_time_base(pFilter->sink_ctx);
     
     ret = avcodec_open2(enc_ctx, codec,NULL);
     if (ret<0) {
         logger(CATEGORY_CODEC,AV_LOG_DEBUG,"error initilizing video encoder %d",ret);
         return -1;
     }
-    
+    av_buffersink_set_frame_size(pFilter->sink_ctx, enc_ctx->frame_size);
+
     pContext->codec=codec;
     pContext->ctx=enc_ctx;
     return 0;

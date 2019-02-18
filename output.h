@@ -28,12 +28,12 @@ struct TranscodeOutput
     enum AVMediaType codec_type;
     bool passthrough;
     int bitrate;
-    union 
+    struct
     {
         int width,height;
         float fps;
     } videoParams;
-    union
+    struct
     {
         int samplingRate, channels;
     } audioParams;
@@ -42,6 +42,8 @@ struct TranscodeOutput
     int encoderId;
     
     struct FramesStats stats;
+    
+    FILE *pOutputFile;
     
 };
 

@@ -21,6 +21,9 @@ int init_Transcode_output(struct TranscodeOutput* pOutput)  {
     pOutput->passthrough=true;
     pOutput->filterId=-1;
     pOutput->encoderId=-1;
+    pOutput->pOutputFile=NULL;
+    pOutput->videoParams.width=pOutput->videoParams.height=pOutput->videoParams.fps=-1;
+    pOutput->audioParams.samplingRate=pOutput->audioParams.channels=-1;
     
     InitFrameStats(&pOutput->stats);
     return 0;
@@ -28,6 +31,11 @@ int init_Transcode_output(struct TranscodeOutput* pOutput)  {
 
 int send_output_packet(struct TranscodeOutput *pOutput,struct AVPacket* output)
 {
+    if (pOutput->pOutputFile==NULL) {
+        char* tmp[1000];
+        sprintf(tmp,"/Users/guyjacubovski/dev/live-transcoder/output_%s.h264", pOutput->name);
+        pOutput->pOutputFile= fopen(tmp,"wb+");  // r for read, b for binary
+    }
     AddFrameToStats(&pOutput->stats,output->dts,output->size);
     logger(CATEGORY_OUTPUT, AV_LOG_DEBUG,"output (%s) got data: pts=%s (%s), size=%d, flags=%d totalFrames=%ld, bitrate %.lf",pOutput->name,
            av_ts2str(output->dts),
@@ -37,6 +45,9 @@ int send_output_packet(struct TranscodeOutput *pOutput,struct AVPacket* output)
            pOutput->stats.totalFrames,
            GetFrameStatsAvg(&pOutput->stats));
     
+    if (pOutput->pOutputFile!=NULL) {
+        fwrite(output->data,1,output->size,pOutput->pOutputFile);
+    }
     return 0;
 }
 

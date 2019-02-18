@@ -90,7 +90,7 @@ int main(int argc, char **argv)
     
     struct TranscodeContext ctx;
     
-    int activeStream=1;
+    int activeStream=0;
     
 
     init_transcoding_context(&ctx,ifmt_ctx->streams[activeStream]);
@@ -108,7 +108,6 @@ int main(int argc, char **argv)
         output32.name="32";
         output32.codec_type=AVMEDIA_TYPE_VIDEO;
         output32.passthrough=true;
-
         add_output(&ctx,&output32);
 
         output33.name="33";
@@ -118,7 +117,6 @@ int main(int argc, char **argv)
         output33.videoParams.height=240;
         output33.videoParams.fps=30;
         output33.bitrate=500;
-
         add_output(&ctx,&output33);
 
         output34.name="34";
