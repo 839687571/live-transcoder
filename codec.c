@@ -86,6 +86,8 @@ int init_video_encoder(struct TranscoderCodecContext * pContext,
     enc_ctx->qmin = 10;
     enc_ctx->qmax = 51;
     enc_ctx->time_base=standard_timebase;
+    AVRational frameRate = {1,30};
+    enc_ctx->framerate = frameRate;
 
     av_opt_set(enc_ctx->priv_data, "preset", "veryfast", 0);
     av_opt_set(enc_ctx->priv_data, "tune", "zerolatency", 0);

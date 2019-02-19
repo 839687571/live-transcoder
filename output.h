@@ -43,7 +43,8 @@ struct TranscodeOutput
     
     struct FramesStats stats;
     
-    FILE *pOutputFile;
+    
+    AVFormatContext *oc;
     AVBSFContext* bsf;
 };
 
