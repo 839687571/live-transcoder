@@ -11,7 +11,6 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include "logger.h"
-
 #ifndef VERSION
 #define VERSION __TIMESTAMP__
 #endif
@@ -20,6 +19,8 @@ static  AVRational standard_timebase = {1,1000};
 #include "TranscodePipeline.h"
 #include "listener.h"
 #include <netinet/in.h>
+#include <arpa/inet.h>
+#include "output.h"
 
 int sock=0;
 
@@ -33,7 +34,6 @@ void ffmpeg_log_callback(void *ptr, int level, const char *fmt, va_list vargs)
 
 int init_socket(int port)
 {
-    struct sockaddr_in address;
     struct sockaddr_in serv_addr;
     if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     {

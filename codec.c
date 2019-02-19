@@ -171,8 +171,8 @@ int send_decoder_packet(struct TranscoderCodecContext *decoder,const AVPacket* p
     
     ret = avcodec_send_packet(decoder->ctx, pkt);
     if (ret < 0) {
-        LOGGER0(CATEGORY_CODEC,AV_LOG_ERROR, "Error sending a packet for decoding");
-        exit(1);
+        LOGGER(CATEGORY_CODEC,AV_LOG_ERROR, "Error sending a packet to decoder %d (%s)",ret,av_err2str(ret));
+        return ret;
     }
     
     return 0;
@@ -185,6 +185,7 @@ int receive_decoder_frame(struct TranscoderCodecContext *decoder,AVFrame *pFrame
     int ret;
     ret = avcodec_receive_frame(decoder->ctx, pFrame);
     if (ret<0) {
+        LOGGER(CATEGORY_CODEC,AV_LOG_ERROR, "Error recieving packet from decoder %d (%s)",ret,av_err2str(ret));
         return ret;
     }
     //pFrame->pts = pFrame->best_effort_timestamp;

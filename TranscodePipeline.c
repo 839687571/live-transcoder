@@ -15,6 +15,7 @@ int init_transcoding_context(struct TranscodeContext *pContext,struct AVCodecPar
     pContext->inputs=0;
     pContext->outputs=0;
     pContext->filters=0;
+    pContext->inputCodecParams=codecParams;
     
     struct TranscoderCodecContext *pDecoderContext=&pContext->decoder[0];
     init_decoder(pDecoderContext,codecParams);
@@ -269,7 +270,7 @@ int add_output(struct TranscodeContext* pContext, struct TranscodeOutput * pOutp
         }
     } else
     {
-        set_output_format(pOutput,NULL);
+        set_output_format(pOutput,pContext->inputCodecParams);
         
     }
     
