@@ -9,7 +9,6 @@
 #include "TranscodePipeline.h"
 #include "logger.h"
 
-static  AVRational standard_timebase = {1,1000};
 
 int init_transcoding_context(struct TranscodeContext *pContext,struct AVCodecParameters* codecParams)
 {
@@ -123,6 +122,15 @@ int OnDecodedFrame(struct TranscodeContext *pContext,AVCodecContext* pDecoderCon
             av_frame_free(&pOutFrame);
         }
     }
+    
+    for (int outputId=0;outputId<pContext->outputs;outputId++) {
+        struct TranscodeOutput *pOutput=pContext->output[outputId];
+        if (pOutput->filterId==-1 && pOutput->encoderId!=-1){
+            logger(CATEGORY_DEFAULT,AV_LOG_DEBUG,"sending frame directly from decoderto encoderId %d for output %s",pOutput->encoderId,pOutput->name);
+            encodeFrame(pContext,pOutput->encoderId,outputId,pFrame);
+        }
+    }
+    
     return 0;
 }
 
@@ -213,6 +221,7 @@ int add_output(struct TranscodeContext* pContext, struct TranscodeOutput * pOutp
 {
     struct TranscoderCodecContext *pDecoderContext=&pContext->decoder[0];
     pContext->output[pContext->outputs++]=pOutput;
+    int ret=0;
 
     if (!pOutput->passthrough) {
         char filterConfig[2048];
@@ -220,18 +229,25 @@ int add_output(struct TranscodeContext* pContext, struct TranscodeOutput * pOutp
         if (pOutput->codec_type==AVMEDIA_TYPE_VIDEO)
         {
             sprintf(filterConfig,"scale=%dx%d",pOutput->videoParams.width,pOutput->videoParams.height);
-            struct TranscoderFilter* pFilter=GetFilter(pContext,pOutput,pDecoderContext,filterConfig);
+            struct TranscoderFilter* pFilter=NULL;//GetFilter(pContext,pOutput,pDecoderContext,filterConfig);
             
             pOutput->encoderId=pContext->encoders++;
             struct TranscoderCodecContext* pCodec=&pContext->encoder[pOutput->encoderId];
             
-            int width=av_buffersink_get_w(pFilter->sink_ctx);
-            int height=av_buffersink_get_h(pFilter->sink_ctx);
             AVRational frameRate={1,30};
+            if (pFilter) {
+                
+                int width=av_buffersink_get_w(pFilter->sink_ctx);
+                int height=av_buffersink_get_h(pFilter->sink_ctx);
+                enum AVPixelFormat format= av_buffersink_get_format(pFilter->sink_ctx);
+                init_video_encoder(pCodec, pDecoderContext->ctx->sample_aspect_ratio,format,frameRate,width,height,pOutput->bitrate*1000);
+
+            } else {
+                init_video_encoder(pCodec, pDecoderContext->ctx->sample_aspect_ratio,pDecoderContext->ctx->pix_fmt,frameRate,
+                                   pDecoderContext->ctx->width,pDecoderContext->ctx->height,pOutput->bitrate*1000);
+            }
             
-            enum AVPixelFormat format= av_buffersink_get_format(pFilter->sink_ctx);
-            init_video_encoder(pCodec, pDecoderContext->ctx->sample_aspect_ratio,format,frameRate,width,height,pOutput->bitrate*1000);
-            logger(CATEGORY_DEFAULT,AV_LOG_ERROR,"Output %s - Added encoder %d bitrate=%d",pOutput->name,pOutput->encoderId,pOutput->bitrate*1000);
+            logger(CATEGORY_DEFAULT,AV_LOG_INFO,"Output %s - Added encoder %d bitrate=%d",pOutput->name,pOutput->encoderId,pOutput->bitrate*1000);
             
             struct AVCodecParameters* pCodecParams=avcodec_parameters_alloc();
             avcodec_parameters_from_context(pCodecParams,pCodec->ctx);

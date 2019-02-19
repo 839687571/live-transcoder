@@ -19,7 +19,7 @@ static  AVRational standard_timebase = {1,1000};
 
 #include "TranscodePipeline.h"
 #include "listener.h"
-#include <netinet/in.h>'
+#include <netinet/in.h>
 
 int sock=0;
 
@@ -67,8 +67,8 @@ int main(int argc, char **argv)
 
   //  av_log_set_callback(ffmpeg_log_callback);
     
-    //char* pSourceFileName="/Users/guyjacubovski/Sample_video/קישון - תעלת בלאומילך.avi";
-    char* pSourceFileName="/Users/guyjacubovski/Sample_video/900.mp4";
+    char* pSourceFileName="/Users/guyjacubovski/Sample_video/קישון - תעלת בלאומילך.avi";
+    //char* pSourceFileName="/Users/guyjacubovski/Sample_video/900.mp4";
 
     AVFormatContext *ifmt_ctx;
     int ret = avformat_open_input(&ifmt_ctx, pSourceFileName, NULL, NULL);
@@ -109,7 +109,7 @@ int main(int argc, char **argv)
         output32.name="32";
         output32.codec_type=AVMEDIA_TYPE_VIDEO;
         output32.passthrough=true;
-        //add_output(&ctx,&output32);
+        add_output(&ctx,&output32);
 
         output33.name="33";
         output33.codec_type=AVMEDIA_TYPE_VIDEO;
@@ -163,7 +163,7 @@ int main(int argc, char **argv)
     
     init_socket(9999);
     
-    uint64_t  basePts=getTime64();
+    uint64_t  basePts=0;//(60LL*60LL)*(100LL*24LL-2LL)*1000LL;//getTime64();
     while (1) {
         if ((ret = av_read_frame(ifmt_ctx, &packet)) < 0)
             break;
@@ -191,10 +191,11 @@ int main(int argc, char **argv)
         header.header[3]=4;
         send(sock , &header , sizeof(header) , 0 );
         send(sock, packet.data,packet.size,0);
+        /*
         logger("SENDER",AV_LOG_DEBUG,"sent packet pts=%s dts=%s  size=%d",
                ts2str(header.pts,true),
                ts2str(header.dts,true),
-               packet.dts,packet.size);
+               packet.dts,packet.size);*/
 
 
     }
