@@ -149,7 +149,7 @@ int decodePacket(struct TranscodeContext *transcodingContext,const AVPacket* pkt
 
     ret = send_decoder_packet(pDecoder, pkt);
     if (ret < 0) {
-        LOGGER(CATEGORY_DEFAULT,AV_LOG_ERROR, "Error sending a packet for decoding",ret,av_err2str(ret));
+        LOGGER(CATEGORY_DEFAULT,AV_LOG_ERROR, "Error sending a packet for decoding %d (%s)",ret,av_err2str(ret));
         return ret;
     }
     
@@ -229,7 +229,7 @@ int add_output(struct TranscodeContext* pContext, struct TranscodeOutput * pOutp
         if (pOutput->codec_type==AVMEDIA_TYPE_VIDEO)
         {
             sprintf(filterConfig,"scale=%dx%d",pOutput->videoParams.width,pOutput->videoParams.height);
-            struct TranscoderFilter* pFilter=NULL;//GetFilter(pContext,pOutput,pDecoderContext,filterConfig);
+            struct TranscoderFilter* pFilter=GetFilter(pContext,pOutput,pDecoderContext,filterConfig);
             
             pOutput->encoderId=pContext->encoders++;
             struct TranscoderCodecContext* pCodec=&pContext->encoder[pOutput->encoderId];

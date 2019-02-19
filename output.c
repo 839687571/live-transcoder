@@ -31,41 +31,42 @@ int init_Transcode_output(struct TranscodeOutput* pOutput)  {
     return 0;
 }
 
-int send_output_packet(struct TranscodeOutput *pOutput,struct AVPacket* output)
+int send_output_packet(struct TranscodeOutput *pOutput,struct AVPacket* packet)
 {
   
-    AddFrameToStats(&pOutput->stats,output->dts,output->size);
+    AddFrameToStats(&pOutput->stats,packet->dts,packet->size);
     
     LOGGER(CATEGORY_OUTPUT,AV_LOG_DEBUG,"output (%s) got data: pts=%s; dts=%s, size=%d, flags=%d totalFrames=%ld, bitrate %.lf",
            pOutput->name,
-           ts2str(output->pts,true),
-           ts2str(output->dts,true),
-           output->size,
-           output->flags,
+           ts2str(packet->pts,true),
+           ts2str(packet->dts,true),
+           packet->size,
+           packet->flags,
            pOutput->stats.totalFrames,
            GetFrameStatsAvg(&pOutput->stats))
     
     
-    if (pOutput->pOutputFile!=NULL) {
+    if (pOutput->pOutputFile!=NULL && packet->data) {
         
-        if (AV_RB32(output->data) == 0x00000001 ||
-            AV_RB24(output->data) == 0x000001) {
-            fwrite(output->data,1,output->size,pOutput->pOutputFile);
+        if (AV_RB32(packet->data) == 0x00000001 ||
+            AV_RB24(packet->data) == 0x000001) {
+            fwrite(packet->data,1,packet->size,pOutput->pOutputFile);
             return 0;
         }
         
-        av_bsf_send_packet(pOutput->bsf,output);
+        AVPacket in_pkt = { 0 };
+        in_pkt.data = (uint8_t *)packet->data;
+        in_pkt.size = packet->size;
+        av_bsf_send_packet(pOutput->bsf,&in_pkt);
         
-        AVPacket newPkt;
-        av_init_packet(&newPkt);
         int ret=0;
-        while ((ret = av_bsf_receive_packet(pOutput->bsf, &newPkt)) == 0)
+        while ((ret = av_bsf_receive_packet(pOutput->bsf, &in_pkt)) == 0)
         {
         
             if (ret == AVERROR(EAGAIN))
                 continue;
             
-            fwrite(newPkt.data,1,newPkt.size,pOutput->pOutputFile);
+            fwrite(in_pkt.data,1,in_pkt.size,pOutput->pOutputFile);
         }
         
         

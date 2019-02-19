@@ -142,6 +142,10 @@ int init_audio_encoder(struct TranscoderCodecContext * pContext,struct Transcode
 int send_encode_frame(struct TranscoderCodecContext *encoder,const AVFrame* pFrame)
 {
     int ret = avcodec_send_frame(encoder->ctx, pFrame);
+    if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)
+    {
+        return 0;
+    }
     if (ret < 0) {
         LOGGER(CATEGORY_CODEC,AV_LOG_WARNING, "Error sending a packet for encoding %d (%s)",ret,av_err2str(ret));
         return ret;
@@ -174,6 +178,10 @@ int send_decoder_packet(struct TranscoderCodecContext *decoder,const AVPacket* p
     
     
     ret = avcodec_send_packet(decoder->ctx, pkt);
+    if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)
+    {
+        return 0;
+    }
     if (ret < 0) {
         LOGGER(CATEGORY_CODEC,AV_LOG_ERROR, "Error sending a packet to decoder %d (%s)",ret,av_err2str(ret));
         return ret;
