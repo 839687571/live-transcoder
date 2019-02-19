@@ -152,6 +152,10 @@ int receive_encoder_packet(struct TranscoderCodecContext *encoder,AVPacket* pkt)
 {
     int ret;
     ret = avcodec_receive_packet(encoder->ctx, pkt);
+    if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)
+    {
+        return ret;
+    }
     if (ret<0) {
         LOGGER(CATEGORY_CODEC,AV_LOG_WARNING, "Error recveiving a packet for encoding %d (%s)",ret,av_err2str(ret));
         return ret;
@@ -184,6 +188,10 @@ int receive_decoder_frame(struct TranscoderCodecContext *decoder,AVFrame *pFrame
 {
     int ret;
     ret = avcodec_receive_frame(decoder->ctx, pFrame);
+    if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)
+    {
+        return ret;
+    }
     if (ret<0) {
         LOGGER(CATEGORY_CODEC,AV_LOG_ERROR, "Error recieving packet from decoder %d (%s)",ret,av_err2str(ret));
         return ret;

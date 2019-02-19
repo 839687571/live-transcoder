@@ -48,6 +48,11 @@ int send_output_packet(struct TranscodeOutput *pOutput,struct AVPacket* output)
     
     if (pOutput->pOutputFile!=NULL) {
         
+        if (AV_RB32(output->data) == 0x00000001 ||
+            AV_RB24(output->data) == 0x000001) {
+            fwrite(output->data,1,output->size,pOutput->pOutputFile);
+            return 0;
+        }
         
         av_bsf_send_packet(pOutput->bsf,output);
         
@@ -64,11 +69,6 @@ int send_output_packet(struct TranscodeOutput *pOutput,struct AVPacket* output)
         }
         
         
-        /*
-        if (AV_RB32(output->data) != 0x00000001 &&
-            AV_RB24(output->data) != 0x000001) {
-            return 0;
-        }*/
         //LOGGER(CATEGORY_OUTPUT,AV_LOG_FATAL,"(%s) not mp4 bit format",pOutput->name)
     }
     return 0;

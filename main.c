@@ -110,7 +110,7 @@ int main(int argc, char **argv)
         output32.name="32";
         output32.codec_type=AVMEDIA_TYPE_VIDEO;
         output32.passthrough=true;
-        add_output(&ctx,&output32);
+        //add_output(&ctx,&output32);
 
         output33.name="33";
         output33.codec_type=AVMEDIA_TYPE_VIDEO;
@@ -138,7 +138,7 @@ int main(int argc, char **argv)
         output32.codec_type=AVMEDIA_TYPE_AUDIO;
         output32.passthrough=true;
         
-        add_output(&ctx,&output32);
+        //add_output(&ctx,&output32);
         
         output33.name="33";
         output33.codec_type=AVMEDIA_TYPE_AUDIO;
