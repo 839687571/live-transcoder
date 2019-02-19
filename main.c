@@ -164,7 +164,7 @@ int main(int argc, char **argv)
     init_socket(9999);
     
     uint64_t  basePts=0;//(60LL*60LL)*(100LL*24LL-2LL)*1000LL;//getTime64();
-    while (1) {
+    while (!kbhit()) {
         if ((ret = av_read_frame(ifmt_ctx, &packet)) < 0)
             break;
         
@@ -199,6 +199,16 @@ int main(int argc, char **argv)
 
 
     }
+    LOGGER0(CATEGORY_DEFAULT,AV_LOG_FATAL,"stopping!");
+
+    struct FrameHeader header;
+    send(sock , &header , sizeof(header) , 0 );
+    header.header[0]=2;
+    
+    stopService();
+    close_Transcode_output(&output32);
+    close_Transcode_output(&output33);
+
     return 0;
 }
 

@@ -92,7 +92,8 @@ int init_video_encoder(struct TranscoderCodecContext * pContext,
     av_opt_set(enc_ctx->priv_data, "preset", "veryfast", 0);
     av_opt_set(enc_ctx->priv_data, "tune", "zerolatency", 0);
     av_opt_set(enc_ctx->priv_data, "profile", "baseline", 0);
-    
+    enc_ctx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+
     ret = avcodec_open2(enc_ctx, codec,NULL);
     if (ret<0) {
         LOGGER(CATEGORY_CODEC,AV_LOG_ERROR,"error initilizing video encoder %d (%s)",ret,av_err2str(ret));

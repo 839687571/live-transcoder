@@ -30,7 +30,9 @@ int init_Transcode_output(struct TranscodeOutput* pOutput)  {
 
 int send_output_packet(struct TranscodeOutput *pOutput,struct AVPacket* packet)
 {
-  
+    if (packet==NULL){
+        return 0;
+    }
     AddFrameToStats(&pOutput->stats,packet->dts,packet->size);
     
     LOGGER(CATEGORY_OUTPUT,AV_LOG_DEBUG,"output (%s) got data: pts=%s; dts=%s, size=%d, flags=%d totalFrames=%ld, bitrate %.lf",
@@ -142,3 +144,15 @@ int set_output_format(struct TranscodeOutput *pOutput,struct AVCodecParameters* 
 }
 
 
+
+int close_Transcode_output(struct TranscodeOutput* pOutput)
+{
+    if (pOutput->oc==NULL) {
+        int ret = av_write_trailer(pOutput->oc);
+    
+        avio_closep(&pOutput->oc->pb);
+        /* free the stream */
+        avformat_free_context(pOutput->oc);
+    }
+    return 0;
+}

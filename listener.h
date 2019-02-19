@@ -20,4 +20,5 @@ struct FrameHeader
 };
 
 void startService(struct TranscodeContext *pContext,int port);
+void stopService();
 #endif /* listener_h */

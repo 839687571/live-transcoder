@@ -88,6 +88,11 @@ void* listenerThread(void *vargp)
             break;
         }
         
+        if (frameHeader.header[0]==2) {
+            close_transcoding_context(pContext);
+            break;
+        }
+        
         av_new_packet(&packet,frameHeader.size);
         packet.pts=frameHeader.pts;
         packet.dts=frameHeader.dts;
@@ -115,3 +120,7 @@ void startService(struct TranscodeContext *pContext,int port)
     pthread_create(&thread_id, NULL, listenerThread, pContext);
 }
 
+
+void stopService() {
+    pthread_join(&thread_id,NULL);
+}

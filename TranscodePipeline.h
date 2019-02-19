@@ -50,5 +50,6 @@ struct TranscodeContext {
 
 int init_transcoding_context(struct TranscodeContext *ctx,struct AVCodecParameters* codecParams);
 int convert_packet(struct TranscodeContext *pContext, struct AVPacket* packet);
+int close_transcoding_context(struct TranscodeContext *ctx);
 
 #endif /* TranscodePipeline_hpp */

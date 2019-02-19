@@ -67,22 +67,23 @@ int encodeFrame(struct TranscodeContext *pContext,int encoderId,int outputId,AVF
 int OnDecodedFrame(struct TranscodeContext *pContext,AVCodecContext* pDecoderContext, AVFrame *pFrame)
 {
 
-    if (pDecoderContext->codec_type==AVMEDIA_TYPE_VIDEO) {
-        
-        LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG,"decoded video: pts=%s, frame type=%s;width=%d;height=%d",
-               ts2str(pFrame->pts,true),
-               pict_type_to_string(pFrame->pict_type),pFrame->width,pFrame->height);
-        
-        //return 0;
-        //  printf("saving frame %3d\n", pDecoderContext->frame_number);
-    } else {
-        LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG,"decoded audio: pts=%s;channels=%d;sample rate=%d; length=%d; format=%d ",
-               ts2str(pFrame->pts,true),
-               pFrame->channels,pFrame->sample_rate,pFrame->nb_samples,pFrame->format);
-        
-        
+    if (pFrame!=NULL) {
+        if (pDecoderContext->codec_type==AVMEDIA_TYPE_VIDEO) {
+            
+            LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG,"decoded video: pts=%s, frame type=%s;width=%d;height=%d",
+                   ts2str(pFrame->pts,true),
+                   pict_type_to_string(pFrame->pict_type),pFrame->width,pFrame->height);
+            
+            //return 0;
+            //  printf("saving frame %3d\n", pDecoderContext->frame_number);
+        } else {
+            LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG,"decoded audio: pts=%s;channels=%d;sample rate=%d; length=%d; format=%d ",
+                   ts2str(pFrame->pts,true),
+                   pFrame->channels,pFrame->sample_rate,pFrame->nb_samples,pFrame->format);
+            
+            
+        }
     }
-    
     for (int filterId=0;filterId<pContext->filters;filterId++) {
         struct TranscodeFilter *pFilter=&pContext->filter[filterId];
         send_filter_frame(pFilter,pFrame);
@@ -138,13 +139,13 @@ int decodePacket(struct TranscodeContext *transcodingContext,const AVPacket* pkt
     
     int ret;
     
-    int stream_index = pkt->stream_index;
     
-    LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG, "Sending packet  to decoder pts=%s dts=%s",
-           ts2str(pkt->pts,true),
-           ts2str(pkt->dts,true));
-    
-    struct TranscoderCodecContext* pDecoder=&transcodingContext->decoder[stream_index];
+    if (pkt!=NULL) {
+        LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG, "Sending packet  to decoder pts=%s dts=%s",
+               ts2str(pkt->pts,true),
+               ts2str(pkt->dts,true));
+    }
+    struct TranscoderCodecContext* pDecoder=&transcodingContext->decoder[0];
     
 
     ret = send_decoder_packet(pDecoder, pkt);
@@ -169,6 +170,11 @@ int decodePacket(struct TranscodeContext *transcodingContext,const AVPacket* pkt
         OnDecodedFrame(transcodingContext,pDecoder->ctx,pFrame);
         
         av_frame_free(&pFrame);
+    }
+    
+    //drain mode
+    if (pkt==NULL) {
+        OnDecodedFrame(transcodingContext,pDecoder->ctx,NULL);
     }
     return 0;
 }
@@ -277,3 +283,9 @@ int add_output(struct TranscodeContext* pContext, struct TranscodeOutput * pOutp
     return 0;
 }
 
+int close_transcoding_context(struct TranscodeContext *pContext) {
+    
+    convert_packet(pContext,NULL);
+
+    return 0;
+}
