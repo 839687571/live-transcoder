@@ -98,7 +98,7 @@ void* listenerThread(void *vargp)
         if (valread<0){
             break;
         }
-        logger("RECEIVER",AV_LOG_DEBUG,"received packet pts=%s dts=%s size=%d",
+        LOGGER("RECEIVER",AV_LOG_DEBUG,"received packet pts=%s dts=%s size=%d",
                ts2str(packet.pts,true),
                ts2str(packet.dts,true),
                packet.size);

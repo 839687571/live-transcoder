@@ -27,7 +27,7 @@ int init_transcoding_context(struct TranscodeContext *pContext,struct AVCodecPar
 int encodeFrame(struct TranscodeContext *pContext,int encoderId,int outputId,AVFrame *pFrame) {
  
 
-    logger(CATEGORY_DEFAULT,AV_LOG_DEBUG, "Sending packet  to encoder pts=%s",ts2str(pFrame->pts,true));
+    LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG, "Sending packet  to encoder pts=%s",ts2str(pFrame->pts,true))
     
     
     int ret=0;
@@ -45,11 +45,11 @@ int encodeFrame(struct TranscodeContext *pContext,int encoderId,int outputId,AVF
         }
         else if (ret < 0)
         {
-            logger(CATEGORY_DEFAULT, AV_LOG_ERROR,"Error during decoding");
-            return -1;
+            LOGGER(CATEGORY_DEFAULT, AV_LOG_ERROR,"Error during decoding %d (%s)",ret,av_err2str(ret))
+            return ret;
         }
         
-        logger(CATEGORY_DEFAULT,AV_LOG_DEBUG,"[%d] encoded frame for output %d: pts=%s  size=%d",
+        LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG,"[%d] encoded frame for output %d: pts=%s  size=%d",
                encoderId,
                outputId,
                ts2str(pOutPacket->pts,true),
@@ -68,14 +68,14 @@ int OnDecodedFrame(struct TranscodeContext *pContext,AVCodecContext* pDecoderCon
 
     if (pDecoderContext->codec_type==AVMEDIA_TYPE_VIDEO) {
         
-        logger(CATEGORY_DEFAULT,AV_LOG_DEBUG,"decoded video: pts=%s, frame type=%s;width=%d;height=%d",
+        LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG,"decoded video: pts=%s, frame type=%s;width=%d;height=%d",
                ts2str(pFrame->pts,true),
                pict_type_to_string(pFrame->pict_type),pFrame->width,pFrame->height);
         
         //return 0;
         //  printf("saving frame %3d\n", pDecoderContext->frame_number);
     } else {
-        logger(CATEGORY_DEFAULT,AV_LOG_DEBUG,"decoded audio: pts=%s;channels=%d;sample rate=%d; length=%d; format=%d ",
+        LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG,"decoded audio: pts=%s;channels=%d;sample rate=%d; length=%d; format=%d ",
                ts2str(pFrame->pts,true),
                pFrame->channels,pFrame->sample_rate,pFrame->nb_samples,pFrame->format);
         
@@ -97,25 +97,24 @@ int OnDecodedFrame(struct TranscodeContext *pContext,AVCodecContext* pDecoderCon
             }
             else if (ret < 0)
             {
-                logger(CATEGORY_DEFAULT,AV_LOG_ERROR,"Error during decoding");
-                return -1;
+                return ret;
             }
             
             if (pDecoderContext->codec_type==AVMEDIA_TYPE_VIDEO) {
-                logger(CATEGORY_DEFAULT,AV_LOG_DEBUG,"filtered video: pts=%s, frame type=%s;width=%d;height=%d",
+                LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG,"filtered video: pts=%s, frame type=%s;width=%d;height=%d",
                        ts2str(pOutFrame->pts,true),
                        pict_type_to_string(pOutFrame->pict_type),pOutFrame->width,pOutFrame->height);
             }
             
             if (pDecoderContext->codec_type==AVMEDIA_TYPE_AUDIO) {
-                logger(CATEGORY_DEFAULT,AV_LOG_DEBUG,"filtered audio: pts=%s, size=%d",
+                LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG,"filtered audio: pts=%s, size=%d",
                        ts2str(pOutFrame->pts,true),pOutFrame->nb_samples);
             }
             
             for (int outputId=0;outputId<pContext->outputs;outputId++) {
                 struct TranscodeOutput *pOutput=pContext->output[outputId];
                 if (pOutput->filterId==filterId){
-                    logger(CATEGORY_DEFAULT,AV_LOG_DEBUG,"sending frame from filterId %d to encoderId %d for output %s",filterId,pOutput->encoderId,pOutput->name);
+                    LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG,"sending frame from filterId %d to encoderId %d for output %s",filterId,pOutput->encoderId,pOutput->name);
                     encodeFrame(pContext,pOutput->encoderId,outputId,pFrame);
                 }
             }
@@ -126,7 +125,7 @@ int OnDecodedFrame(struct TranscodeContext *pContext,AVCodecContext* pDecoderCon
     for (int outputId=0;outputId<pContext->outputs;outputId++) {
         struct TranscodeOutput *pOutput=pContext->output[outputId];
         if (pOutput->filterId==-1 && pOutput->encoderId!=-1){
-            logger(CATEGORY_DEFAULT,AV_LOG_DEBUG,"sending frame directly from decoderto encoderId %d for output %s",pOutput->encoderId,pOutput->name);
+            LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG,"sending frame directly from decoderto encoderId %d for output %s",pOutput->encoderId,pOutput->name);
             encodeFrame(pContext,pOutput->encoderId,outputId,pFrame);
         }
     }
@@ -140,7 +139,7 @@ int decodePacket(struct TranscodeContext *transcodingContext,const AVPacket* pkt
     
     int stream_index = pkt->stream_index;
     
-    logger(CATEGORY_DEFAULT,AV_LOG_DEBUG, "Sending packet  to decoder pts=%s dts=%s",
+    LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG, "Sending packet  to decoder pts=%s dts=%s",
            ts2str(pkt->pts,true),
            ts2str(pkt->dts,true));
     
@@ -149,7 +148,7 @@ int decodePacket(struct TranscodeContext *transcodingContext,const AVPacket* pkt
 
     ret = send_decoder_packet(pDecoder, pkt);
     if (ret < 0) {
-        logger(CATEGORY_DEFAULT,AV_LOG_ERROR, "Error sending a packet for decoding");
+        LOGGER(CATEGORY_DEFAULT,AV_LOG_ERROR, "Error sending a packet for decoding",ret,av_err2str(ret));
         return ret;
     }
     
@@ -163,7 +162,7 @@ int decodePacket(struct TranscodeContext *transcodingContext,const AVPacket* pkt
         }
         else if (ret < 0)
         {
-            logger(CATEGORY_DEFAULT,AV_LOG_ERROR,"Error during decoding");
+            LOGGER(CATEGORY_DEFAULT,AV_LOG_ERROR,"Error during decoding %d (%s)",ret,av_err2str(ret));
             return ret;
         }
         OnDecodedFrame(transcodingContext,pDecoder->ctx,pFrame);
@@ -201,7 +200,7 @@ struct TranscoderFilter* GetFilter(struct TranscodeContext* pContext,struct Tran
         pFilter=&pContext->filter[selectedFilter];
         if (strcmp(pFilter->config,config)==0) {
             pOutput->filterId=selectedFilter;
-            logger(CATEGORY_DEFAULT,AV_LOG_ERROR,"Output %s - Resuing existing filter %s",pOutput->name,config);
+            LOGGER(CATEGORY_DEFAULT,AV_LOG_ERROR,"Output %s - Resuing existing filter %s",pOutput->name,config);
         }
     }
     if ( pOutput->filterId==-1) {
@@ -209,10 +208,10 @@ struct TranscoderFilter* GetFilter(struct TranscodeContext* pContext,struct Tran
         pFilter=&pContext->filter[pOutput->filterId];
         int ret=init_filter(pFilter,pDecoderContext->ctx,config);
         if (ret<0) {
-            logger(CATEGORY_DEFAULT,AV_LOG_ERROR,"Output %s - Cannot create filter %s",pOutput->name,config);
+            LOGGER(CATEGORY_DEFAULT,AV_LOG_ERROR,"Output %s - Cannot create filter %s",pOutput->name,config);
             return NULL;
         }
-        logger(CATEGORY_DEFAULT,AV_LOG_ERROR,"Output %s - Created new  filter %s",pOutput->name,config);
+        LOGGER(CATEGORY_DEFAULT,AV_LOG_ERROR,"Output %s - Created new  filter %s",pOutput->name,config);
     }
     return pFilter;
 }
@@ -247,7 +246,7 @@ int add_output(struct TranscodeContext* pContext, struct TranscodeOutput * pOutp
                                    pDecoderContext->ctx->width,pDecoderContext->ctx->height,pOutput->bitrate*1000);
             }
             
-            logger(CATEGORY_DEFAULT,AV_LOG_INFO,"Output %s - Added encoder %d bitrate=%d",pOutput->name,pOutput->encoderId,pOutput->bitrate*1000);
+            LOGGER(CATEGORY_DEFAULT,AV_LOG_INFO,"Output %s - Added encoder %d bitrate=%d",pOutput->name,pOutput->encoderId,pOutput->bitrate*1000);
             
             struct AVCodecParameters* pCodecParams=avcodec_parameters_alloc();
             avcodec_parameters_from_context(pCodecParams,pCodec->ctx);

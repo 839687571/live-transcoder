@@ -67,8 +67,8 @@ int main(int argc, char **argv)
 
   //  av_log_set_callback(ffmpeg_log_callback);
     
-    char* pSourceFileName="/Users/guyjacubovski/Sample_video/קישון - תעלת בלאומילך.avi";
-    //char* pSourceFileName="/Users/guyjacubovski/Sample_video/900.mp4";
+    //char* pSourceFileName="/Users/guyjacubovski/Sample_video/קישון - תעלת בלאומילך.avi";
+    char* pSourceFileName="/Users/guyjacubovski/Sample_video/900.mp4";
 
     AVFormatContext *ifmt_ctx;
     int ret = avformat_open_input(&ifmt_ctx, pSourceFileName, NULL, NULL);
@@ -76,16 +76,17 @@ int main(int argc, char **argv)
     if (ret < 0) {
         char buff[256];
         av_strerror(ret, buff, 256);
-        logger(CATEGORY_DEFAULT,AV_LOG_DEBUG,"Unable to open input %s %s(%x)",pSourceFileName,buff,ret);
+        LOGGER(CATEGORY_DEFAULT,AV_LOG_FATAL,"Unable to open input %s %d (%s)",pSourceFileName,ret,av_err2str(ret));
         return ret;
         
     }
     ret = avformat_find_stream_info(ifmt_ctx, NULL);
     if (ret < 0) {
-        logger(CATEGORY_DEFAULT,AV_LOG_DEBUG,"segmenter: Unable to find any input streams");
+        LOGGER(CATEGORY_DEFAULT,AV_LOG_FATAL,"segmenter: Unable to find any input streams  %d (%s)",ret,av_err2str(ret));
+        return ret;
     }
 
-    //logger("Version: %s\n", VERSION);
+    //LOGGER("Version: %s\n", VERSION);
 
     avformat_network_init();
     
@@ -192,7 +193,7 @@ int main(int argc, char **argv)
         send(sock , &header , sizeof(header) , 0 );
         send(sock, packet.data,packet.size,0);
         /*
-        logger("SENDER",AV_LOG_DEBUG,"sent packet pts=%s dts=%s  size=%d",
+        LOGGER("SENDER",AV_LOG_DEBUG,"sent packet pts=%s dts=%s  size=%d",
                ts2str(header.pts,true),
                ts2str(header.dts,true),
                packet.dts,packet.size);*/

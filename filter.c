@@ -51,14 +51,14 @@ int init_filter(struct TranscoderFilter *pFilter, AVCodecContext *dec_ctx,const 
     ret = avfilter_graph_create_filter(&pFilter->src_ctx, buffersrc, "in",
                                        args, NULL, pFilter->filter_graph);
     if (ret < 0) {
-        logger("FILTER",AV_LOG_ERROR, "Cannot create buffer source\n");
+        LOGGER("FILTER",AV_LOG_ERROR, "Cannot create buffer source %d",ret)
         goto end;
     }
     
     ret = avfilter_graph_create_filter(&pFilter->sink_ctx, buffersink, "out",
                                        NULL, NULL, pFilter->filter_graph);
     if (ret < 0) {
-        logger("FILTER", AV_LOG_ERROR, "Cannot create buffer sink\n");
+        LOGGER("FILTER", AV_LOG_ERROR, "Cannot create buffer sink %d",ret)
         goto end;
     }
     

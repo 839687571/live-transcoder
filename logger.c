@@ -1,5 +1,5 @@
 //
-//  logger.c
+//  LOGGER.c
 //  live_transcoder
 //
 //  Created by Guy.Jacubovski on 31/12/2018.
@@ -31,14 +31,9 @@ const   char* getLevel(int level) {
     return "";
 }
 void logger2(char* category,int level,const char *fmt, va_list args)
-{
-    time_t t = time(NULL);
-    struct tm *lt = localtime(&t);
-    
-    char buf[32];
-    buf[strftime(buf, sizeof(buf), "%Y-%m-%dT%H:%M:%S", lt)] = '\0';
+{    
     const char* levelStr=getLevel(level);
-    fprintf( stderr, "%s %s %s ",buf,category, levelStr);
+    fprintf( stderr, "%s %s %s ",ts2str(getTime64(),false),category, levelStr);
 
     vfprintf( stderr, fmt, args );
     fprintf( stderr, "\n" );
@@ -46,7 +41,7 @@ void logger2(char* category,int level,const char *fmt, va_list args)
 
 
 
-void logger(char* category,int level,const char *fmt, ...)
+void logger1(char* category,int level,const char *fmt, ...)
 {
     va_list args;
     va_start( args, fmt );
@@ -76,7 +71,7 @@ static void log_packet(const AVFormatContext *fmt_ctx, const AVPacket *pkt, cons
 {
     AVRational *time_base = &fmt_ctx->streams[pkt->stream_index]->time_base;
     
-    logger(AV_LOG_DEBUG,"%s:  stream_index:%d  pts:%s pts_time:%s dts:%s dts_time:%s duration:%s duration_time:%s flags:%d\n",
+    LOGGER(AV_LOG_DEBUG,"%s:  stream_index:%d  pts:%s pts_time:%s dts:%s dts_time:%s duration:%s duration_time:%s flags:%d\n",
            tag,
            pkt->stream_index,
            av_ts2str(pkt->pts), av_ts2timestr(pkt->pts, time_base),

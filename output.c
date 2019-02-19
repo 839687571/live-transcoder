@@ -33,13 +33,15 @@ int send_output_packet(struct TranscodeOutput *pOutput,struct AVPacket* output)
 {
   
     AddFrameToStats(&pOutput->stats,output->dts,output->size);
-    logger(CATEGORY_OUTPUT, AV_LOG_DEBUG,"output (%s) got data: pts=%s; dts=%s, size=%d, flags=%d totalFrames=%ld, bitrate %.lf",pOutput->name,
+    /*
+    LOGGER(CATEGORY_OUTPUT,AV_LOG_DEBUG,"output (%s) got data: pts=%s; dts=%s, size=%d, flags=%d totalFrames=%ld, bitrate %.lf",
+           pOutput->name,
            ts2str(output->pts,true),
            ts2str(output->dts,true),
            output->size,
            output->flags,
            pOutput->stats.totalFrames,
-           GetFrameStatsAvg(&pOutput->stats));
+           GetFrameStatsAvg(&pOutput->stats))*/
     
     if (pOutput->pOutputFile!=NULL) {
         fwrite(output->data,1,output->size,pOutput->pOutputFile);

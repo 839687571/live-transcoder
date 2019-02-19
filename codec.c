@@ -23,12 +23,12 @@ int init_decoder(struct TranscoderCodecContext * pContext,AVCodecParameters *pCo
     AVCodec *dec = pContext->codec=avcodec_find_decoder(pCodecParams->codec_id);
     AVCodecContext *codec_ctx;
     if (!dec) {
-        logger(CATEGORY_CODEC,AV_LOG_ERROR, "Failed to find decoder for stream");
+        LOGGER0(CATEGORY_CODEC,AV_LOG_ERROR, "Failed to find decoder for stream");
         return AVERROR_DECODER_NOT_FOUND;
     }
     codec_ctx = avcodec_alloc_context3(dec);
     if (!codec_ctx) {
-        logger(CATEGORY_CODEC,AV_LOG_ERROR, "Failed to allocate the decoder context for stream");
+        LOGGER0(CATEGORY_CODEC,AV_LOG_ERROR, "Failed to allocate the decoder context for stream");
         return AVERROR(ENOMEM);
     }
     codec_ctx->time_base=standard_timebase;
@@ -36,7 +36,7 @@ int init_decoder(struct TranscoderCodecContext * pContext,AVCodecParameters *pCo
     
     int ret = avcodec_parameters_to_context(codec_ctx, pCodecParams);
     if (ret < 0) {
-        logger(CATEGORY_CODEC, AV_LOG_ERROR, "Failed to copy decoder parameters to input decoder context for stream ");
+        LOGGER(CATEGORY_CODEC, AV_LOG_ERROR, "Failed to copy decoder parameters to input decoder context for stream  %d (%s)",ret,av_err2str(ret));
         return ret;
     }
 
@@ -48,7 +48,7 @@ int init_decoder(struct TranscoderCodecContext * pContext,AVCodecParameters *pCo
         /* Open decoder */
         ret = avcodec_open2(codec_ctx, dec, NULL);
         if (ret < 0) {
-            logger( CATEGORY_CODEC, AV_LOG_ERROR, "Failed to open decoder for stream");
+            LOGGER( CATEGORY_CODEC, AV_LOG_ERROR, "Failed to open decoder for stream %d (%s)",ret,av_err2str(ret));
             return ret;
         }
     }
@@ -71,8 +71,8 @@ int init_video_encoder(struct TranscoderCodecContext * pContext,
     
     codec = avcodec_find_encoder_by_name("libx264");
     if (!codec) {
-        logger(CATEGORY_CODEC,AV_LOG_DEBUG,"Unable to find libx264");
-        return -1;
+        LOGGER0(CATEGORY_CODEC,AV_LOG_ERROR,"Unable to find libx264");
+        return ret;
     }
     enc_ctx = avcodec_alloc_context3(codec);
     enc_ctx->height = height;
@@ -94,12 +94,14 @@ int init_video_encoder(struct TranscoderCodecContext * pContext,
     
     ret = avcodec_open2(enc_ctx, codec,NULL);
     if (ret<0) {
-        logger(CATEGORY_CODEC,AV_LOG_DEBUG,"error initilizing video encoder %d",ret);
-        return -1;
+        LOGGER(CATEGORY_CODEC,AV_LOG_ERROR,"error initilizing video encoder %d (%s)",ret,av_err2str(ret));
+        return ret;
     }
     
     pContext->codec=codec;
     pContext->ctx=enc_ctx;
+    LOGGER(CATEGORY_CODEC,AV_LOG_INFO,"video encoder  %dx%d %d Kbit/s initilaized",width,height,bitrate);
+
     return 0;
 }
 
@@ -112,7 +114,7 @@ int init_audio_encoder(struct TranscoderCodecContext * pContext,struct Transcode
     
     codec = avcodec_find_encoder_by_name("aac");
     if (!codec) {
-        logger(CATEGORY_CODEC,AV_LOG_DEBUG,"Unable to find libx264");
+        LOGGER0(CATEGORY_CODEC,AV_LOG_ERROR,"Unable to find aac");
         return -1;
     }
     enc_ctx = avcodec_alloc_context3(codec);
@@ -125,13 +127,15 @@ int init_audio_encoder(struct TranscoderCodecContext * pContext,struct Transcode
     
     ret = avcodec_open2(enc_ctx, codec,NULL);
     if (ret<0) {
-        logger(CATEGORY_CODEC,AV_LOG_DEBUG,"error initilizing video encoder %d",ret);
-        return -1;
+        LOGGER(CATEGORY_CODEC,AV_LOG_ERROR,"error initilizing video encoder %d (%s)",ret,av_err2str(ret));
+        return ret;
     }
     av_buffersink_set_frame_size(pFilter->sink_ctx, enc_ctx->frame_size);
 
     pContext->codec=codec;
     pContext->ctx=enc_ctx;
+    LOGGER(CATEGORY_CODEC,AV_LOG_INFO,"audio encoder  %dKhz %d Kbit/s initilaized",enc_ctx->sample_rate ,0);
+
     return 0;
 }
 
@@ -139,7 +143,7 @@ int send_encode_frame(struct TranscoderCodecContext *encoder,const AVFrame* pFra
 {
     int ret = avcodec_send_frame(encoder->ctx, pFrame);
     if (ret < 0) {
-        logger(CATEGORY_CODEC,AV_LOG_FATAL, "Error sending a packet for encoding");
+        LOGGER(CATEGORY_CODEC,AV_LOG_WARNING, "Error sending a packet for encoding %d (%s)",ret,av_err2str(ret));
         return ret;
     }
     return ret;
@@ -149,10 +153,11 @@ int receive_encoder_packet(struct TranscoderCodecContext *encoder,AVPacket* pkt)
     int ret;
     ret = avcodec_receive_packet(encoder->ctx, pkt);
     if (ret<0) {
+        LOGGER(CATEGORY_CODEC,AV_LOG_WARNING, "Error recveiving a packet for encoding %d (%s)",ret,av_err2str(ret));
         return ret;
     }
     
-    return 0;
+    return ret;
     
 }
 
@@ -161,12 +166,12 @@ int send_decoder_packet(struct TranscoderCodecContext *decoder,const AVPacket* p
     
     int ret;
     
-    logger(CATEGORY_CODEC, AV_LOG_DEBUG,"Sending packget to decoder");
+    LOGGER0(CATEGORY_CODEC, AV_LOG_DEBUG,"Sending packget to decoder");
     
     
     ret = avcodec_send_packet(decoder->ctx, pkt);
     if (ret < 0) {
-        logger(CATEGORY_CODEC,AV_LOG_ERROR, "Error sending a packet for decoding");
+        LOGGER0(CATEGORY_CODEC,AV_LOG_ERROR, "Error sending a packet for decoding");
         exit(1);
     }
     
