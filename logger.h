@@ -10,6 +10,7 @@
 #define LOGGER_h
 
 #include <stdbool.h>
+#include <libavformat/avformat.h>
 
 
 #define CATEGORY_DEFAULT "DEFAULT"
@@ -33,6 +34,8 @@ char *av_ts_make_time_stringEx(char *buf, int64_t ts,bool shortFormat);
 
 #define LOGGER(CATEGORY,LEVEL,FMT,...) { logger1(CATEGORY,LEVEL,FMT,__VA_ARGS__); }
 #define LOGGER0(CATEGORY,LEVEL,FMT) { logger1(CATEGORY,LEVEL,FMT); }
+
+static  AVRational standard_timebase = {1,90000};
 
 uint64_t getTime64();
 #endif /* LOGGER_h */

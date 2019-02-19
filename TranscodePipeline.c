@@ -116,7 +116,7 @@ int OnDecodedFrame(struct TranscodeContext *pContext,AVCodecContext* pDecoderCon
                 struct TranscodeOutput *pOutput=pContext->output[outputId];
                 if (pOutput->filterId==filterId){
                     LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG,"sending frame from filterId %d to encoderId %d for output %s",filterId,pOutput->encoderId,pOutput->name);
-                    encodeFrame(pContext,pOutput->encoderId,outputId,pFrame);
+                    encodeFrame(pContext,pOutput->encoderId,outputId,pOutFrame);
                 }
             }
             av_frame_free(&pOutFrame);

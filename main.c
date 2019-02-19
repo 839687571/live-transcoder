@@ -14,7 +14,6 @@
 #ifndef VERSION
 #define VERSION __TIMESTAMP__
 #endif
-static  AVRational standard_timebase = {1,1000};
 
 #include "TranscodePipeline.h"
 #include "listener.h"

@@ -13,9 +13,6 @@
 #include "logger.h"
 #include "libavutil/intreadwrite.h"
 
-static  AVRational standard_timebase = {1,1000};
-
-
 
 int init_Transcode_output(struct TranscodeOutput* pOutput)  {
     pOutput->name="";

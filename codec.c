@@ -15,7 +15,6 @@
 #include <libavfilter/buffersrc.h>
 #include <libavutil/opt.h>
 
-static  AVRational standard_timebase = {1,1000};
 
 int init_decoder(struct TranscoderCodecContext * pContext,AVCodecParameters *pCodecParams)
 {

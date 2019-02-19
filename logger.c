@@ -122,14 +122,14 @@ char *av_ts_make_time_stringEx(char *buf, int64_t ts,bool shortFormat)
         return buf;
     }
 
-    time_t epoch=ts/1000;
+    time_t epoch=ts/standard_timebase.den;
     struct tm *gm = localtime(&epoch);
 
     
     ssize_t written = (ssize_t)strftime(buf, K_TS_MAX_STRING_SIZE, shortFormat ? "%H:%M:%S" : "%Y-%m-%dT%H:%M:%S", gm);
     if ((written > 0) && ((size_t)written < K_TS_MAX_STRING_SIZE))
     {
-        int w = snprintf(buf+written, K_TS_MAX_STRING_SIZE-(size_t)written, ".%03d", ts % 1000);
+        int w = snprintf(buf+written, K_TS_MAX_STRING_SIZE-(size_t)written, ".%03d", ((1000*ts) / standard_timebase.den) % 1000);
 
     }
     return buf;
