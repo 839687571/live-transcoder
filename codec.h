@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <libavformat/avformat.h>
 #include "filter.h"
+#include "output.h"
 
 struct TranscoderCodecContext
 {
@@ -22,10 +23,11 @@ struct TranscoderCodecContext
 int init_decoder(struct TranscoderCodecContext * pContext,AVCodecParameters *pCodecParams);
 
 int init_video_encoder(struct TranscoderCodecContext * pContext,
-                       AVRational inputAspectRation,
+                       AVRational inputAspectRatio,
                        enum AVPixelFormat inputPixelFormat,
                        AVRational inputTimeBase,
-                       int width,int height,int bitrate);
+                       const struct TranscodeOutput* pOutput,
+                       int width,int height);
 
 int init_audio_encoder(struct TranscoderCodecContext * pContext,struct TranscoderFilter* pFilter);
 

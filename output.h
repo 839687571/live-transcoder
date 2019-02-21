@@ -28,7 +28,7 @@ struct TranscodeOutput
     enum AVMediaType codec_type;
     bool passthrough;
     int bitrate;
-    struct
+    struct VideoParams
     {
         int width,height;
         int frameRate;
@@ -36,6 +36,7 @@ struct TranscodeOutput
         char* level;
         float fps;
     } videoParams;
+    
     struct
     {
         int samplingRate, channels;

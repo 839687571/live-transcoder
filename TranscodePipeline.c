@@ -263,17 +263,25 @@ int add_output(struct TranscodeContext* pContext, struct TranscodeOutput * pOutp
             struct TranscoderCodecContext* pCodec=&pContext->encoder[pOutput->encoderId];
             
             AVRational frameRate={1,30};
+            int width=pDecoderContext->ctx->width;
+            int height=pDecoderContext->ctx->height;
+            enum AVPixelFormat picFormat=pDecoderContext->ctx->pix_fmt;
+            
             if (pFilter) {
                 
-                int width=av_buffersink_get_w(pFilter->sink_ctx);
-                int height=av_buffersink_get_h(pFilter->sink_ctx);
-                enum AVPixelFormat format= av_buffersink_get_format(pFilter->sink_ctx);
-                init_video_encoder(pCodec, pDecoderContext->ctx->sample_aspect_ratio,format,frameRate,width,height,pOutput->bitrate*1000);
-
-            } else {
-                init_video_encoder(pCodec, pDecoderContext->ctx->sample_aspect_ratio,pDecoderContext->ctx->pix_fmt,frameRate,
-                                   pDecoderContext->ctx->width,pDecoderContext->ctx->height,pOutput->bitrate*1000);
+                width=av_buffersink_get_w(pFilter->sink_ctx);
+                height=av_buffersink_get_h(pFilter->sink_ctx);
+                picFormat= av_buffersink_get_format(pFilter->sink_ctx);
             }
+            
+            init_video_encoder(pCodec,
+                               pDecoderContext->ctx->sample_aspect_ratio,
+                               picFormat,
+                               frameRate,
+                               pOutput,
+                               width,
+                               height);
+
             
             LOGGER(CATEGORY_DEFAULT,AV_LOG_INFO,"Output %s - Added encoder %d bitrate=%d",pOutput->name,pOutput->encoderId,pOutput->bitrate*1000);
             

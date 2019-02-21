@@ -129,7 +129,7 @@ int main(int argc, char **argv)
         output34.name="34";
         output34.codec_type=AVMEDIA_TYPE_VIDEO;
         output34.passthrough=false;
-        output33.videoParams.profile="main";
+        output34.videoParams.profile="main";
         output34.videoParams.width=-2;
         output34.videoParams.height=360;
         output34.bitrate=600;
