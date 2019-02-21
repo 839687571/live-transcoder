@@ -33,8 +33,17 @@ const   char* getLevel(int level) {
 void logger2(char* category,int level,const char *fmt, va_list args)
 {    
     const char* levelStr=getLevel(level);
-    fprintf( stderr, "%s %s %s ",ts2str(getTime64(),false),category, levelStr);
-
+    
+    int64_t now=getTime64();
+    time_t epoch=now/1000;
+    struct tm *gm = localtime(&epoch);
+    
+    
+    char buf[K_TS_MAX_STRING_SIZE];
+    strftime(buf, K_TS_MAX_STRING_SIZE, "%Y-%m-%dT%H:%M:%S",gm);
+    
+    
+    fprintf( stderr, "%s.%03d %s %s ",buf,(int)(now % 1000),category, levelStr);
     vfprintf( stderr, fmt, args );
     fprintf( stderr, "\n" );
 }
