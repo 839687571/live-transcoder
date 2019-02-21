@@ -207,7 +207,7 @@ struct TranscoderFilter* GetFilter(struct TranscodeContext* pContext,struct Tran
         pFilter=&pContext->filter[selectedFilter];
         if (strcmp(pFilter->config,config)==0) {
             pOutput->filterId=selectedFilter;
-            LOGGER(CATEGORY_DEFAULT,AV_LOG_ERROR,"Output %s - Resuing existing filter %s",pOutput->name,config);
+            LOGGER(CATEGORY_DEFAULT,AV_LOG_INFO,"Output %s - Resuing existing filter %s",pOutput->name,config);
         }
     }
     if ( pOutput->filterId==-1) {
@@ -218,7 +218,7 @@ struct TranscoderFilter* GetFilter(struct TranscodeContext* pContext,struct Tran
             LOGGER(CATEGORY_DEFAULT,AV_LOG_ERROR,"Output %s - Cannot create filter %s",pOutput->name,config);
             return NULL;
         }
-        LOGGER(CATEGORY_DEFAULT,AV_LOG_ERROR,"Output %s - Created new  filter %s",pOutput->name,config);
+        LOGGER(CATEGORY_DEFAULT,AV_LOG_INFO,"Output %s - Created new  filter %s",pOutput->name,config);
     }
     return pFilter;
 }
@@ -234,7 +234,7 @@ int add_output(struct TranscodeContext* pContext, struct TranscodeOutput * pOutp
         
         if (pOutput->codec_type==AVMEDIA_TYPE_VIDEO)
         {
-            sprintf(filterConfig,"scale=%dx%d",pOutput->videoParams.width,pOutput->videoParams.height);
+            sprintf(filterConfig,"scale=w=%d:h=%d",pOutput->videoParams.width,pOutput->videoParams.height);
             struct TranscoderFilter* pFilter=GetFilter(pContext,pOutput,pDecoderContext,filterConfig);
             
             pOutput->encoderId=pContext->encoders++;

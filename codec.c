@@ -78,13 +78,13 @@ int init_video_encoder(struct TranscoderCodecContext * pContext,
     enc_ctx->width = width;
     enc_ctx->sample_aspect_ratio = inputAspectRatio;
     enc_ctx->pix_fmt = inputPixelFormat;
-    enc_ctx->bit_rate=bitrate*1000;
+    enc_ctx->bit_rate=bitrate;
     //enc_ctx->rc_min_rate=bitrate*0.8;
     //enc_ctx->rc_max_rate=bitrate*1.2;
     enc_ctx->rc_buffer_size=4*bitrate/30;
     enc_ctx->gop_size=60;
-    enc_ctx->qmin = 10;
-    enc_ctx->qmax = 51;
+    enc_ctx->qmin = 1;
+    enc_ctx->qmax = 100000;
     enc_ctx->time_base=standard_timebase;
     AVRational frameRate = {1,30};
     enc_ctx->framerate = frameRate;

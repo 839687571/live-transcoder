@@ -31,6 +31,9 @@ struct TranscodeOutput
     struct
     {
         int width,height;
+        int frameRate;
+        char* profile;
+        char* level;
         float fps;
     } videoParams;
     struct

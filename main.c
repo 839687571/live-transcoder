@@ -67,7 +67,9 @@ int main(int argc, char **argv)
   //  av_log_set_callback(ffmpeg_log_callback);
     
     //char* pSourceFileName="/Users/guyjacubovski/Sample_video/קישון - תעלת בלאומילך.avi";
-    char* pSourceFileName="/Users/guyjacubovski/Sample_video/900.mp4";
+    //char* pSourceFileName="/Users/guyjacubovski/Sample_video/900.mp4";
+    char* pSourceFileName="/Users/guyjacubovski/Downloads/bbb_sunflower_1080p_30fps_normal.mp4";
+
 
     AVFormatContext *ifmt_ctx;
     int ret = avformat_open_input(&ifmt_ctx, pSourceFileName, NULL, NULL);
@@ -103,32 +105,68 @@ int main(int argc, char **argv)
     init_Transcode_output(&output33);
     struct TranscodeOutput output34;
     init_Transcode_output(&output34);
+    struct TranscodeOutput output35;
+    init_Transcode_output(&output35);
+    struct TranscodeOutput output42;
+    init_Transcode_output(&output42);
+    struct TranscodeOutput output43;
+    init_Transcode_output(&output43);
     if (activeStream==0)
     {
 
         output32.name="32";
         output32.codec_type=AVMEDIA_TYPE_VIDEO;
         output32.passthrough=true;
-        add_output(&ctx,&output32);
 
         output33.name="33";
         output33.codec_type=AVMEDIA_TYPE_VIDEO;
         output33.passthrough=false;
-        output33.videoParams.width=352;
-        output33.videoParams.height=240;
-        output33.videoParams.fps=30;
-        output33.bitrate=500;
-        add_output(&ctx,&output33);
+        output33.videoParams.profile="main";
+        output33.videoParams.width=-2;
+        output33.videoParams.height=480;
+        output33.bitrate=900;
 
         output34.name="34";
         output34.codec_type=AVMEDIA_TYPE_VIDEO;
         output34.passthrough=false;
-        output34.videoParams.width=352;
-        output34.videoParams.height=240;
-        output34.videoParams.fps=30;
-        output34.bitrate=200;
+        output33.videoParams.profile="main";
+        output34.videoParams.width=-2;
+        output34.videoParams.height=360;
+        output34.bitrate=600;
 
-        //add_output(&ctx,&output34);
+        
+        output35.name="35";
+        output35.codec_type=AVMEDIA_TYPE_VIDEO;
+        output35.passthrough=false;
+        output35.videoParams.profile="baseline";
+        output35.videoParams.width=-2;
+        output35.videoParams.height=360;
+        output35.videoParams.fps=15;
+        output35.bitrate=400;
+        
+        output42.name="42";
+        output42.codec_type=AVMEDIA_TYPE_VIDEO;
+        output42.passthrough=false;
+        output42.videoParams.profile="main";
+        output42.videoParams.width=-2;
+        output42.videoParams.height=720;
+        output42.bitrate=1500;
+        
+        
+        output43.name="43";
+        output43.codec_type=AVMEDIA_TYPE_VIDEO;
+        output43.passthrough=false;
+        output43.videoParams.profile="main";
+        output43.videoParams.width=-2;
+        output43.videoParams.height=720;
+        output43.bitrate=2500;
+        
+       // add_output(&ctx,&output32);
+       // add_output(&ctx,&output33);
+       // add_output(&ctx,&output34);
+       // add_output(&ctx,&output35);
+      // add_output(&ctx,&output42);
+        add_output(&ctx,&output43);
     }
     if (activeStream==1)
     {
