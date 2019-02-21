@@ -161,11 +161,11 @@ int main(int argc, char **argv)
         output43.videoParams.height=720;
         output43.bitrate=2500;
         
-       // add_output(&ctx,&output32);
-       // add_output(&ctx,&output33);
-       // add_output(&ctx,&output34);
-       // add_output(&ctx,&output35);
-      // add_output(&ctx,&output42);
+        add_output(&ctx,&output32);
+        add_output(&ctx,&output33);
+        add_output(&ctx,&output34);
+        add_output(&ctx,&output35);
+       add_output(&ctx,&output42);
         add_output(&ctx,&output43);
     }
     if (activeStream==1)

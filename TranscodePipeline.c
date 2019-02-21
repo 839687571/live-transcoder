@@ -64,6 +64,62 @@ int encodeFrame(struct TranscodeContext *pContext,int encoderId,int outputId,AVF
     return 0;
 }
 
+int sendFrameToFilter(struct TranscodeContext *pContext,int filterId, AVCodecContext* pDecoderContext, AVFrame *pFrame)
+{
+    struct TranscodeFilter *pFilter=&pContext->filter[filterId];
+    LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG,"sending frame to filter (%d): pts=%s",
+           filterId,
+           ts2str(pFrame->pts,true));
+    
+    int ret=send_filter_frame(pFilter,pFrame);
+    if (ret<0) {
+        
+        LOGGER(CATEGORY_DEFAULT,AV_LOG_ERROR,"failed sending frame to filter (%d): pts=%s %d (%s)",
+               filterId,
+               ts2str(pFrame->pts,true),
+               ret,
+               av_err2str(ret));
+    }
+    
+    while (ret >= 0) {
+        AVFrame *pOutFrame = av_frame_alloc();
+        
+        
+        ret = receive_filter_frame(pFilter,pOutFrame);
+        if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
+            av_frame_free(&pOutFrame);
+            return 0;
+        }
+        else if (ret < 0)
+        {
+            return ret;
+        }
+        
+        if (pDecoderContext->codec_type==AVMEDIA_TYPE_VIDEO) {
+            LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG,"filtered video(%d): pts=%s, frame type=%s;width=%d;height=%d",
+                   filterId,
+                   ts2str(pOutFrame->pts,true),
+                   pict_type_to_string(pOutFrame->pict_type),pOutFrame->width,pOutFrame->height);
+        }
+        
+        if (pDecoderContext->codec_type==AVMEDIA_TYPE_AUDIO) {
+            LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG,"filtered audio(%d): pts=%s, size=%d",
+                   filterId,
+                   ts2str(pOutFrame->pts,true),pOutFrame->nb_samples);
+        }
+        
+        for (int outputId=0;outputId<pContext->outputs;outputId++) {
+            struct TranscodeOutput *pOutput=pContext->output[outputId];
+            if (pOutput->filterId==filterId){
+                LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG,"sending frame from filterId %d to encoderId %d for output %s",filterId,pOutput->encoderId,pOutput->name);
+                encodeFrame(pContext,pOutput->encoderId,outputId,pOutFrame);
+            }
+        }
+        av_frame_free(&pOutFrame);
+    }
+    return 0;
+}
+
 int OnDecodedFrame(struct TranscodeContext *pContext,AVCodecContext* pDecoderContext, AVFrame *pFrame)
 {
 
@@ -85,43 +141,9 @@ int OnDecodedFrame(struct TranscodeContext *pContext,AVCodecContext* pDecoderCon
         }
     }
     for (int filterId=0;filterId<pContext->filters;filterId++) {
-        struct TranscodeFilter *pFilter=&pContext->filter[filterId];
-        send_filter_frame(pFilter,pFrame);
         
-        int ret=0;
-        while (ret >= 0) {
-            AVFrame *pOutFrame = av_frame_alloc();
-            
-            ret = receive_filter_frame(pFilter,pOutFrame);
-            if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
-                av_frame_free(&pOutFrame);
-                return 0;
-            }
-            else if (ret < 0)
-            {
-                return ret;
-            }
-            
-            if (pDecoderContext->codec_type==AVMEDIA_TYPE_VIDEO) {
-                LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG,"filtered video: pts=%s, frame type=%s;width=%d;height=%d",
-                       ts2str(pOutFrame->pts,true),
-                       pict_type_to_string(pOutFrame->pict_type),pOutFrame->width,pOutFrame->height);
-            }
-            
-            if (pDecoderContext->codec_type==AVMEDIA_TYPE_AUDIO) {
-                LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG,"filtered audio: pts=%s, size=%d",
-                       ts2str(pOutFrame->pts,true),pOutFrame->nb_samples);
-            }
-            
-            for (int outputId=0;outputId<pContext->outputs;outputId++) {
-                struct TranscodeOutput *pOutput=pContext->output[outputId];
-                if (pOutput->filterId==filterId){
-                    LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG,"sending frame from filterId %d to encoderId %d for output %s",filterId,pOutput->encoderId,pOutput->name);
-                    encodeFrame(pContext,pOutput->encoderId,outputId,pOutFrame);
-                }
-            }
-            av_frame_free(&pOutFrame);
-        }
+        sendFrameToFilter(pContext,filterId,pDecoderContext,pFrame);
+       
     }
     
     for (int outputId=0;outputId<pContext->outputs;outputId++) {
