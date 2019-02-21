@@ -25,7 +25,7 @@ int init_decoder(struct TranscoderCodecContext * pContext,AVCodecParameters *pCo
 int init_video_encoder(struct TranscoderCodecContext * pContext,
                        AVRational inputAspectRatio,
                        enum AVPixelFormat inputPixelFormat,
-                       AVRational inputTimeBase,
+                       AVRational inputFrameRate,
                        const struct TranscodeOutput* pOutput,
                        int width,int height);
 

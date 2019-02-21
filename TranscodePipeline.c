@@ -28,7 +28,7 @@ int init_transcoding_context(struct TranscodeContext *pContext,struct AVCodecPar
 int encodeFrame(struct TranscodeContext *pContext,int encoderId,int outputId,AVFrame *pFrame) {
  
 
-    LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG, "Sending packet  to encoder pts=%s",ts2str(pFrame->pts,true))
+    LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG, "Sending packet to encoderId %d, pts=%s",encoderId,ts2str(pFrame->pts,true))
     
     
     int ret=0;
@@ -96,14 +96,14 @@ int sendFrameToFilter(struct TranscodeContext *pContext,int filterId, AVCodecCon
         }
         
         if (pDecoderContext->codec_type==AVMEDIA_TYPE_VIDEO) {
-            LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG,"filtered video(%d): pts=%s, frame type=%s;width=%d;height=%d",
+            LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG,"recieved video from filterId (%d): pts=%s, frame type=%s;width=%d;height=%d",
                    filterId,
                    ts2str(pOutFrame->pts,true),
                    pict_type_to_string(pOutFrame->pict_type),pOutFrame->width,pOutFrame->height);
         }
         
         if (pDecoderContext->codec_type==AVMEDIA_TYPE_AUDIO) {
-            LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG,"filtered audio(%d): pts=%s, size=%d",
+            LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG,"recieved audio from filterId(%d): pts=%s, size=%d",
                    filterId,
                    ts2str(pOutFrame->pts,true),pOutFrame->nb_samples);
         }
