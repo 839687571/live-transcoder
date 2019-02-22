@@ -36,6 +36,7 @@ struct TranscodeOutput
         int frameRate;
         char* profile;
         char* level;
+        char* preset;
         float fps;
     } videoParams;
     

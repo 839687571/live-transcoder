@@ -9,12 +9,10 @@
 #include <stdio.h>
 #include <libavformat/avformat.h>
 
-#include <sys/ioctl.h> // For FIONREAD
-#include <termios.h>
 #include <stdbool.h>
 #include <sys/time.h>
 #include "logger.h"
-
+#include "utils.h"
 
 
 
@@ -39,8 +37,8 @@ void logger2(char* category,int level,const char *fmt, va_list args)
     struct tm *gm = localtime(&epoch);
     
     
-    char buf[K_TS_MAX_STRING_SIZE];
-    strftime(buf, K_TS_MAX_STRING_SIZE, "%Y-%m-%dT%H:%M:%S",gm);
+    char buf[25];
+    strftime(buf, 25, "%Y-%m-%dT%H:%M:%S",gm);
     
     
     fprintf( stderr, "%s.%03d %s %s ",buf,(int)(now % 1000),category, levelStr);
@@ -88,58 +86,3 @@ static void log_packet(const AVFormatContext *fmt_ctx, const AVPacket *pkt, cons
            av_ts2str(pkt->duration), av_ts2timestr(pkt->duration, time_base),
            pkt->flags);
 }*/
-
-int kbhit(void)
-{
-    static bool initflag = false;
-    static const int STDIN = 0;
-    
-    if (!initflag) {
-        // Use termios to turn off line buffering
-        struct termios term;
-        tcgetattr(STDIN, &term);
-        term.c_lflag &= ~ICANON;
-        tcsetattr(STDIN, TCSANOW, &term);
-        setbuf(stdin, NULL);
-        initflag = true;
-    }
-    
-    int nbbytes;
-    ioctl(STDIN, FIONREAD, &nbbytes);  // 0 is STDIN
-    return nbbytes;
-}
-
-
-uint64_t getTime64()
-{
-    struct timeval tv;
-    
-    gettimeofday(&tv, NULL);
-    
-    unsigned long long millisecondsSinceEpoch =
-    (unsigned long long)(tv.tv_sec) * 1000 +
-    (unsigned long long)(tv.tv_usec) / 1000;
-
-    return millisecondsSinceEpoch;
-}
-
-char *av_ts_make_time_stringEx(char *buf, int64_t ts,bool shortFormat)
-{
-    
-    if (ts == AV_NOPTS_VALUE) {
-        snprintf(buf, K_TS_MAX_STRING_SIZE, "NOPTS");
-        return buf;
-    }
-
-    time_t epoch=ts/standard_timebase.den;
-    struct tm *gm = localtime(&epoch);
-
-    
-    ssize_t written = (ssize_t)strftime(buf, K_TS_MAX_STRING_SIZE, shortFormat ? "%H:%M:%S" : "%Y-%m-%dT%H:%M:%S", gm);
-    if ((written > 0) && ((size_t)written < K_TS_MAX_STRING_SIZE))
-    {
-        int w = snprintf(buf+written, K_TS_MAX_STRING_SIZE-(size_t)written, ".%03d", ((1000*ts) / standard_timebase.den) % 1000);
-
-    }
-    return buf;
-}

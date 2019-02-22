@@ -7,11 +7,11 @@
 //
 
 #include "output.h"
-
 #include <libavformat/avformat.h>
 #include <libavutil/timestamp.h>
-#include "logger.h"
 #include "libavutil/intreadwrite.h"
+#include "utils.h"
+#include "logger.h"
 
 
 int init_Transcode_output(struct TranscodeOutput* pOutput)  {
@@ -33,14 +33,15 @@ int init_Transcode_output(struct TranscodeOutput* pOutput)  {
 }
 
 int print_output(struct TranscodeOutput* pOutput) {
-    LOGGER(CATEGORY_OUTPUT,AV_LOG_INFO,"(%s) output configuration: mode: %s bitrate: %d Kbit/s  resolution: %dx%d  fps: %.2f profile: %s",
+    LOGGER(CATEGORY_OUTPUT,AV_LOG_INFO,"(%s) output configuration: mode: %s bitrate: %d Kbit/s  resolution: %dx%d  fps: %.2f profile: %s preset: %s",
            pOutput->name,
            pOutput->passthrough ? "passthrough" : "transcode",
            pOutput->bitrate,
            pOutput->videoParams.width,
            pOutput->videoParams.height,
            pOutput->videoParams.fps,
-           pOutput->videoParams.profile
+           pOutput->videoParams.profile,
+           pOutput->videoParams.preset
            )
     return 0;
 }
@@ -61,6 +62,7 @@ int init_Transcode_output_from_json(struct TranscodeOutput* pOutput,const json_v
         pOutput->videoParams.width=-2;
         json_get_int(pVideoParams,"height",-1,&pOutput->videoParams.height);
         json_get_string(pVideoParams,"profile","",&pOutput->videoParams.profile);
+        json_get_string(pVideoParams,"preset","veryfast",&pOutput->videoParams.preset);
     }
 
     print_output(pOutput);
@@ -192,6 +194,7 @@ int close_Transcode_output(struct TranscodeOutput* pOutput)
         avio_closep(&pOutput->oc->pb);
         /* free the stream */
         avformat_free_context(pOutput->oc);
+        return ret;
     }
     return 0;
 }

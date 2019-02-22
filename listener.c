@@ -7,19 +7,21 @@
 //
 
 #include "listener.h"
-#include <netinet/in.h>'
+#include <netinet/in.h>
+#include "utils.h"
 #include "logger.h"
+#include <pthread.h>
 
 pthread_t thread_id;
 
 
-int recvEx(int socket,char* buffer,int bytesToRead) {
+size_t recvEx(int socket,char* buffer,int bytesToRead) {
     
-    int bytesRead=0;
+    size_t bytesRead=0;
     while (bytesToRead>0) {
         
         
-        int valread = recv( socket , buffer+bytesRead, bytesToRead, 0);
+        size_t valread = recv(socket,buffer+bytesRead, bytesToRead, 0);
         if (valread<0){
             return valread;
         }
@@ -37,7 +39,6 @@ void* listenerThread(void *vargp)
     
     int server_fd, new_socket;
     struct sockaddr_in address;
-    int opt = 1;
     int addrlen = sizeof(address);
     
     // Creating socket file descriptor
@@ -82,7 +83,7 @@ void* listenerThread(void *vargp)
     
     while (true) {
         
-        int valread =recvEx(new_socket,&frameHeader,sizeof(frameHeader));
+        size_t valread =recvEx(new_socket,(char*)&frameHeader,sizeof(frameHeader));
         
         if (valread<0){
             break;
@@ -93,12 +94,12 @@ void* listenerThread(void *vargp)
             break;
         }
         
-        av_new_packet(&packet,frameHeader.size);
+        av_new_packet(&packet,(int)frameHeader.size);
         packet.pts=frameHeader.pts;
         packet.dts=frameHeader.dts;
         packet.duration=frameHeader.duration;
         
-        valread =recvEx(new_socket,packet.data,frameHeader.size);
+        valread =recvEx(new_socket,(char*)packet.data,(int)frameHeader.size);
         
         if (valread<0){
             break;

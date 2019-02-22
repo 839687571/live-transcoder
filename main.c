@@ -21,6 +21,7 @@
 #include <arpa/inet.h>
 #include "output.h"
 #include "json_parser.h"
+#include "utils.h"
 
 int sock=0;
 

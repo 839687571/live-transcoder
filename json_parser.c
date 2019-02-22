@@ -844,7 +844,7 @@ json_decode_string(str_t* dest, str_t* src)
     return JSON_OK;
 }
 
-json_status_t json_get(json_value_t* obj,char* path,json_value_t** result)
+json_status_t json_get(const json_value_t* obj,char* path,const json_value_t** result)
 {
     if (path==NULL || *path==0) {
         *result=obj;
@@ -882,14 +882,14 @@ json_status_t json_get(json_value_t* obj,char* path,json_value_t** result)
     } 
     return JSON_OK;
 }
-size_t json_get_array_count(json_value_t* obj) {
+size_t json_get_array_count(const json_value_t* obj) {
     if (obj->type!=JSON_ARRAY)
         return 0;
     
     return (size_t)obj->v.arr.items.nelts;
 }
 
-json_status_t json_get_array_index(json_value_t* obj,int index,json_value_t* result)
+json_status_t json_get_array_index(const json_value_t* obj,int index,json_value_t* result)
 {
     if (obj->type!=JSON_ARRAY)
         return JSON_BAD_DATA;
@@ -907,7 +907,7 @@ json_status_t json_get_array_index(json_value_t* obj,int index,json_value_t* res
     return JSON_OK;
 
 }
-json_status_t json_get_string(json_value_t* obj,char* path,char* defaultValue,char** result)
+json_status_t json_get_string(const json_value_t* obj,char* path,char* defaultValue,char** result)
 {
     json_value_t* jresult;
     json_status_t ret=json_get(obj,path,&jresult);
@@ -926,7 +926,7 @@ json_status_t json_get_string(json_value_t* obj,char* path,char* defaultValue,ch
     return JSON_OK;
 }
 
-json_status_t json_get_int(json_value_t* obj,char* path,int defaultValue,int* result)
+json_status_t json_get_int(const json_value_t* obj,char* path,int defaultValue,int* result)
 {
     json_value_t* jresult;
     json_status_t ret=json_get(obj,path,&jresult);
@@ -942,7 +942,7 @@ json_status_t json_get_int(json_value_t* obj,char* path,int defaultValue,int* re
     return JSON_OK;
 }
 
-json_status_t json_get_bool(json_value_t* obj,char* path,bool defaultValue,bool* result)
+json_status_t json_get_bool(const json_value_t* obj,char* path,bool defaultValue,bool* result)
 {
     json_value_t* jresult;
     json_status_t ret=json_get(obj,path,&jresult);

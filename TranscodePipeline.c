@@ -7,8 +7,8 @@
 //
 
 #include "TranscodePipeline.h"
+#include "utils.h"
 #include "logger.h"
-
 
 int init_transcoding_context(struct TranscodeContext *pContext,struct AVCodecParameters* codecParams)
 {

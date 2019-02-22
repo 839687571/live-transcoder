@@ -82,12 +82,12 @@ json_status_t json_parse(
 json_status_t json_decode_string(str_t* dest, str_t* src);
 
 
-json_status_t json_get(json_value_t* obj,char* path,json_value_t** result);
-json_status_t json_get_string(json_value_t* obj,char* path,char* defaultValue,char** result);
-json_status_t json_get_int(json_value_t* obj,char* path,int defaultValue,int* result);
-json_status_t json_get_bool(json_value_t* obj,char* path,bool defaultValue,bool* result);
+json_status_t json_get(const json_value_t* obj,char* path,const json_value_t** result);
+json_status_t json_get_string(const json_value_t* obj,char* path,char* defaultValue,char** result);
+json_status_t json_get_int(const json_value_t* obj,char* path,int defaultValue,int* result);
+json_status_t json_get_bool(const json_value_t* obj,char* path,bool defaultValue,bool* result);
 
-size_t json_get_array_count(json_value_t* obj);
-json_status_t json_get_array_index(json_value_t* obj,int index,json_value_t* result);
+size_t json_get_array_count(const json_value_t* obj);
+json_status_t json_get_array_index(const json_value_t* obj,int index,json_value_t* result);
 
 #endif // __JSON_PARSER_H__

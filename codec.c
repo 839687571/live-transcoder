@@ -7,6 +7,7 @@
 //
 
 #include "codec.h"
+#include "utils.h"
 #include "logger.h"
 
 #include <libavformat/avformat.h>
@@ -14,7 +15,6 @@
 #include <libavfilter/buffersink.h>
 #include <libavfilter/buffersrc.h>
 #include <libavutil/opt.h>
-
 
 int init_decoder(struct TranscoderCodecContext * pContext,AVCodecParameters *pCodecParams)
 {
@@ -90,7 +90,7 @@ int init_video_encoder(struct TranscoderCodecContext * pContext,
     enc_ctx->time_base = standard_timebase;
     enc_ctx->framerate = inputFrameRate;
 
-    av_opt_set(enc_ctx->priv_data, "preset", "veryfast", 0);
+    av_opt_set(enc_ctx->priv_data, "preset",   pOutput->videoParams.preset, 0);
   //  av_opt_set(enc_ctx->priv_data, "tune", "zerolatency", 0);
     av_opt_set(enc_ctx->priv_data, "profile", pOutput->videoParams.profile, 0);
     enc_ctx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
