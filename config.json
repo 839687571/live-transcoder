@@ -1,0 +1,54 @@
+{
+    "input": "abc",
+    "outputs": [
+        {
+            "name": "32",
+            "passthrough": true
+        },
+        {
+            "name": "33",
+            "passthrough": false,
+            "bitrate": 900,
+            "videoParams": {
+                "profile": "main",
+                "height": 480
+            }
+        },
+        {
+            "name": "34",
+            "passthrough": false,
+            "bitrate": 600,
+            "videoParams": {
+                "profile": "baseline",
+                "height": 360
+            }
+        },
+        {
+            "name": "35",
+            "passthrough": false,
+            "bitrate": 400,
+            "videoParams": {
+                "profile": "baseline",
+                "height": 360
+            }
+        },
+        {
+            "name": "42",
+            "passthrough": false,
+            "bitrate": 1500,
+            "videoParams": {
+                "profile": "high",
+                "height": 720
+            }
+        },
+        {
+            "name": "43",
+            "passthrough": false,
+            "bitrate": 2500,
+            "videoParams": {
+                "profile": "high",
+                "height": 720
+            }
+        }
+    ]
+}

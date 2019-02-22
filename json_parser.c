@@ -865,6 +865,9 @@ json_status_t json_get(json_value_t* obj,char* path,json_value_t** result)
                     char* k=elobj->key.data;
                     size_t count=elobj->key.len;
                     if (strncmp(k,key,count)==0) {
+                        if (strcmp(key,"videoparams")==0) {
+                            printf("a");
+                        }
                         return json_get(&elobj->value,path,result);
                     }
                     elobj+=1;
@@ -939,7 +942,7 @@ json_status_t json_get_int(json_value_t* obj,char* path,int defaultValue,int* re
     return JSON_OK;
 }
 
-json_status_t json_get_bool(json_value_t* obj,char* path,bool_t defaultValue,bool_t* result)
+json_status_t json_get_bool(json_value_t* obj,char* path,bool defaultValue,bool* result)
 {
     json_value_t* jresult;
     json_status_t ret=json_get(obj,path,&jresult);

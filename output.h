@@ -55,11 +55,11 @@ struct TranscodeOutput
 
 
 int init_Transcode_output(struct TranscodeOutput* pOutput) ;
+int init_Transcode_output_from_json(struct TranscodeOutput* ,const json_value_t* json);
 int close_Transcode_output(struct TranscodeOutput* pOutput) ;
 
 int set_output_format(struct TranscodeOutput *pOutput,struct AVCodecParameters* output) ;
 int send_output_packet(struct TranscodeOutput *pOutput,struct AVPacket* output) ;
-int init_Transcode_output_from_json(struct TranscodeOutput* pOutput,const json_value_t* json);
 
 #endif /* output_h */
 

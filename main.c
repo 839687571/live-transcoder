@@ -24,6 +24,9 @@
 
 int sock=0;
 
+struct TranscodeOutput outputs[100];
+int totalOutputs=0;
+
 void ffmpeg_log_callback(void *ptr, int level, const char *fmt, va_list vargs)
 {
     if (level<AV_LOG_DEBUG)
@@ -61,32 +64,41 @@ int init_socket(int port)
     return 0;
 }
 
+
+int init_outputs(struct TranscodeContext* pContext,json_value_t* json)
+{
+    json_value_t* outputsJson;
+    json_get(json,"outputs",&outputsJson);
+    
+    for (int i=0;i<json_get_array_count(outputsJson);i++)
+    {
+        json_value_t outputJson;
+        json_get_array_index(outputsJson,i,&outputJson);
+        
+        struct TranscodeOutput *pOutput=&outputs[totalOutputs];
+        init_Transcode_output_from_json(pOutput,&outputJson);
+        
+        add_output(pContext,pOutput);
+        totalOutputs++;
+    }
+    return 0;
+}
 int main(int argc, char **argv)
 {
-    
     
     pool_t *pool;
     
     char error[128];
+    char* inputConfig;
+    load_file_to_memory("/Users/guyjacubovski/dev/live-transcoder/config.json", &inputConfig);
+
     json_value_t result;
-    const char* ddd= "{\"input\":\"abc\",\"outputs\":[{\"name\":\"32\",\"codec_type\":0,\"passthrough\":false, \"bitrate\":55},{\"name\":\"33\",\"codec_type\":0}]}";
-    char* inputConfig=strdup(ddd);
     json_status_t status = json_parse(pool, inputConfig, &result, error, sizeof(error));
     
-    json_value_t* result1;
-    json_get(&result,"input",&result1);
-    json_value_t* result2;
-    json_get(&result,"outputs",&result2);
+    char* input;
+    json_get_string(&result,"input","",&input);
     //json_get(result2,"[0]",&result3);
 
-    for (int i=0;i<json_get_array_count(result2);i++)
-    {
-        json_value_t result3;
-        json_get_array_index(result2,i,&result3);
-        struct TranscodeOutput output;
-        init_Transcode_output_from_json(&output,&result3);
-        
-    }
     av_log_set_level(AV_LOG_DEBUG);
   //  av_log_set_callback(ffmpeg_log_callback);
     
@@ -122,102 +134,7 @@ int main(int argc, char **argv)
 
     init_transcoding_context(&ctx,ifmt_ctx->streams[activeStream]->codecpar);
 
-    
-    struct TranscodeOutput output32;
-    init_Transcode_output(&output32);
-    struct TranscodeOutput output33;
-    init_Transcode_output(&output33);
-    struct TranscodeOutput output34;
-    init_Transcode_output(&output34);
-    struct TranscodeOutput output35;
-    init_Transcode_output(&output35);
-    struct TranscodeOutput output42;
-    init_Transcode_output(&output42);
-    struct TranscodeOutput output43;
-    init_Transcode_output(&output43);
-    if (activeStream==0)
-    {
-
-        output32.name="32";
-        output32.codec_type=AVMEDIA_TYPE_VIDEO;
-        output32.passthrough=true;
-
-        output33.name="33";
-        output33.codec_type=AVMEDIA_TYPE_VIDEO;
-        output33.passthrough=false;
-        output33.videoParams.profile="main";
-        output33.videoParams.width=-2;
-        output33.videoParams.height=480;
-        output33.bitrate=900;
-
-        output34.name="34";
-        output34.codec_type=AVMEDIA_TYPE_VIDEO;
-        output34.passthrough=false;
-        output34.videoParams.profile="main";
-        output34.videoParams.width=-2;
-        output34.videoParams.height=360;
-        output34.bitrate=600;
-
-        
-        output35.name="35";
-        output35.codec_type=AVMEDIA_TYPE_VIDEO;
-        output35.passthrough=false;
-        output35.videoParams.profile="baseline";
-        output35.videoParams.width=-2;
-        output35.videoParams.height=360;
-        output35.videoParams.fps=15;
-        output35.bitrate=400;
-        
-        output42.name="42";
-        output42.codec_type=AVMEDIA_TYPE_VIDEO;
-        output42.passthrough=false;
-        output42.videoParams.profile="main";
-        output42.videoParams.width=-2;
-        output42.videoParams.height=720;
-        output42.bitrate=1500;
-        
-        
-        output43.name="43";
-        output43.codec_type=AVMEDIA_TYPE_VIDEO;
-        output43.passthrough=false;
-        output43.videoParams.profile="main";
-        output43.videoParams.width=-2;
-        output43.videoParams.height=720;
-        output43.bitrate=2500;
-        
-        add_output(&ctx,&output32);
-        add_output(&ctx,&output33);
-        add_output(&ctx,&output34);
-        add_output(&ctx,&output35);
-       add_output(&ctx,&output42);
-        add_output(&ctx,&output43);
-    }
-    if (activeStream==1)
-    {
-        
-        output32.name="32";
-        output32.codec_type=AVMEDIA_TYPE_AUDIO;
-        output32.passthrough=true;
-        
-        //add_output(&ctx,&output32);
-        
-        output33.name="33";
-        output33.codec_type=AVMEDIA_TYPE_AUDIO;
-        output33.passthrough=false;
-        output33.audioParams.samplingRate=44100;
-        output33.bitrate=128;
-        
-        add_output(&ctx,&output33);
-        
-        output34.name="34";
-        output33.codec_type=AVMEDIA_TYPE_AUDIO;
-        output33.passthrough=false;
-        output33.audioParams.samplingRate=44100;
-        output33.bitrate=64;
-        
-        //add_output(&ctx,&output34);
-    }
-
+    init_outputs(&ctx,&result);
 
     startService(&ctx,9999);
     AVPacket packet;
@@ -268,8 +185,11 @@ int main(int argc, char **argv)
     header.header[0]=2;
     
     stopService();
-    close_Transcode_output(&output32);
-    close_Transcode_output(&output33);
+    
+    for (int i=0;i<totalOutputs;i++){
+        close_Transcode_output(&outputs[i]);
+
+    }
 
     return 0;
 }

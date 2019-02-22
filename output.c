@@ -17,32 +17,52 @@
 int init_Transcode_output(struct TranscodeOutput* pOutput)  {
     pOutput->name="";
     pOutput->bitrate=-1;
+    pOutput->codec_type=AVMEDIA_TYPE_UNKNOWN;
     pOutput->passthrough=true;
     pOutput->filterId=-1;
     pOutput->encoderId=-1;
     pOutput->oc=NULL;
     pOutput->videoParams.width=pOutput->videoParams.height=pOutput->videoParams.fps=-1;
+    pOutput->videoParams.frameRate=-1;
+    pOutput->videoParams.level="";
+    pOutput->videoParams.profile="";
     pOutput->audioParams.samplingRate=pOutput->audioParams.channels=-1;
     
     InitFrameStats(&pOutput->stats);
     return 0;
 }
 
-int init_Transcode_output_from_json(struct TranscodeOutput* pOutput,const json_value_t* json)  {
-    
+int print_output(struct TranscodeOutput* pOutput) {
+    LOGGER(CATEGORY_OUTPUT,AV_LOG_INFO,"(%s) output configuration: mode: %s bitrate: %d Kbit/s  resolution: %dx%d  fps: %.2f profile: %s",
+           pOutput->name,
+           pOutput->passthrough ? "passthrough" : "transcode",
+           pOutput->bitrate,
+           pOutput->videoParams.width,
+           pOutput->videoParams.height,
+           pOutput->videoParams.fps,
+           pOutput->videoParams.profile
+           )
+    return 0;
+}
+
+int init_Transcode_output_from_json(struct TranscodeOutput* pOutput,const json_value_t* json)
+{
     init_Transcode_output(pOutput);
 
     
-    json_get_string(json,"name","",&pOutput->name);
-    json_get_int(json,"codec_type",AVMEDIA_TYPE_UNKNOWN,&pOutput->codec_type);
-    json_get_int(json,"bitrate",-1,&pOutput->bitrate);
-    json_get_bool(json,"passthrough",true,&pOutput->passthrough);
-    if (pOutput->codec_type==AVMEDIA_TYPE_VIDEO)
-    {
-        
+    json_get_string(json,"name","",&(pOutput->name));
+    json_get_int(json,"bitrate",-1,&(pOutput->bitrate));
+    json_get_bool(json,"passthrough",true,&(pOutput->passthrough));
+    json_value_t* pVideoParams;
+    if (JSON_OK==json_get(json,"videoparams",&pVideoParams)) {
+        pOutput->codec_type=AVMEDIA_TYPE_VIDEO;
+        pOutput->videoParams.width=-2;
+        json_get_int(pVideoParams,"height",-1,&pOutput->videoParams.height);
+        json_get_string(pVideoParams,"profile","",&pOutput->videoParams.profile);
+
     }
-    
-    printf ("x");
+
+    print_output(pOutput);
     return 0;
 }
 
