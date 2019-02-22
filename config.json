@@ -1,5 +1,8 @@
 {
-    "input": "abc",
+    "input": "/Users/guyjacubovski/Downloads/bbb_sunflower_1080p_30fps_normal.mp4",
+    "debug": {
+        "saveFile": true
+    },
     "outputs": [
         {
             "name": "32",
@@ -9,6 +12,7 @@
             "name": "33",
             "passthrough": false,
             "bitrate": 900,
+            "codec": "libx264",
             "videoParams": {
                 "profile": "main",
                 "height": 480
@@ -18,6 +22,7 @@
             "name": "34",
             "passthrough": false,
             "bitrate": 600,
+            "codec": "libx264",
             "videoParams": {
                 "profile": "baseline",
                 "height": 360
@@ -27,6 +32,7 @@
             "name": "35",
             "passthrough": false,
             "bitrate": 400,
+            "codec": "libx264",
             "videoParams": {
                 "profile": "baseline",
                 "height": 360
@@ -36,6 +42,7 @@
             "name": "42",
             "passthrough": false,
             "bitrate": 1500,
+            "codec": "libx264",
             "videoParams": {
                 "profile": "high",
                 "height": 720
@@ -45,6 +52,7 @@
             "name": "43",
             "passthrough": false,
             "bitrate": 2500,
+            "codec": "libx264",
             "videoParams": {
                 "profile": "high",
                 "height": 720

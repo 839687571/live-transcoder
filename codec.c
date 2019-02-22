@@ -69,7 +69,7 @@ int init_video_encoder(struct TranscoderCodecContext * pContext,
     int ret = 0;
     
     
-    codec = avcodec_find_encoder_by_name("libx264");
+    codec = avcodec_find_encoder_by_name(pOutput->codec);
     if (!codec) {
         LOGGER0(CATEGORY_CODEC,AV_LOG_ERROR,"Unable to find libx264");
         return ret;

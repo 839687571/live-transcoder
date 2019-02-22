@@ -26,6 +26,7 @@ enum TranscodeOutputType
 struct TranscodeOutput
 {
     char* name;
+    char* codec;
     enum AVMediaType codec_type;
     bool passthrough;
     int bitrate;

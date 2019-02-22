@@ -53,13 +53,14 @@ int init_Transcode_output_from_json(struct TranscodeOutput* pOutput,const json_v
     json_get_string(json,"name","",&(pOutput->name));
     json_get_int(json,"bitrate",-1,&(pOutput->bitrate));
     json_get_bool(json,"passthrough",true,&(pOutput->passthrough));
+    json_get_string(json,"name","",&(pOutput->name));
+    json_get_string(json,"codec","",&pOutput->codec);
     json_value_t* pVideoParams;
     if (JSON_OK==json_get(json,"videoparams",&pVideoParams)) {
         pOutput->codec_type=AVMEDIA_TYPE_VIDEO;
         pOutput->videoParams.width=-2;
         json_get_int(pVideoParams,"height",-1,&pOutput->videoParams.height);
         json_get_string(pVideoParams,"profile","",&pOutput->videoParams.profile);
-
     }
 
     print_output(pOutput);

@@ -88,31 +88,29 @@ int main(int argc, char **argv)
     
     pool_t *pool;
     
-    char error[128];
     char* inputConfig;
     load_file_to_memory("/Users/guyjacubovski/dev/live-transcoder/config.json", &inputConfig);
 
+    char error[128];
     json_value_t result;
     json_status_t status = json_parse(pool, inputConfig, &result, error, sizeof(error));
-    
-    char* input;
-    json_get_string(&result,"input","",&input);
-    //json_get(result2,"[0]",&result3);
+    if (status!=JSON_OK) {
+        LOGGER(CATEGORY_DEFAULT,AV_LOG_FATAL,"Failed parsing configurtion! %s (%s)",inputConfig,error);
+        return -1;
+    }
+    LOGGER(CATEGORY_DEFAULT,AV_LOG_INFO,"Parsed configuration successfully: %s",inputConfig);
+
+    char* pSourceFileName;
+    json_get_string(&result,"input","",&pSourceFileName);
 
     av_log_set_level(AV_LOG_DEBUG);
   //  av_log_set_callback(ffmpeg_log_callback);
-    
-    //char* pSourceFileName="/Users/guyjacubovski/Sample_video/קישון - תעלת בלאומילך.avi";
-    //char* pSourceFileName="/Users/guyjacubovski/Sample_video/900.mp4";
-    char* pSourceFileName="/Users/guyjacubovski/Downloads/bbb_sunflower_1080p_30fps_normal.mp4";
 
 
     AVFormatContext *ifmt_ctx;
     int ret = avformat_open_input(&ifmt_ctx, pSourceFileName, NULL, NULL);
     
     if (ret < 0) {
-        char buff[256];
-        av_strerror(ret, buff, 256);
         LOGGER(CATEGORY_DEFAULT,AV_LOG_FATAL,"Unable to open input %s %d (%s)",pSourceFileName,ret,av_err2str(ret));
         return ret;
         
