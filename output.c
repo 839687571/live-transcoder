@@ -28,6 +28,24 @@ int init_Transcode_output(struct TranscodeOutput* pOutput)  {
     return 0;
 }
 
+int init_Transcode_output_from_json(struct TranscodeOutput* pOutput,const json_value_t* json)  {
+    
+    init_Transcode_output(pOutput);
+
+    
+    json_get_string(json,"name","",&pOutput->name);
+    json_get_int(json,"codec_type",AVMEDIA_TYPE_UNKNOWN,&pOutput->codec_type);
+    json_get_int(json,"bitrate",-1,&pOutput->bitrate);
+    json_get_bool(json,"passthrough",true,&pOutput->passthrough);
+    if (pOutput->codec_type==AVMEDIA_TYPE_VIDEO)
+    {
+        
+    }
+    
+    printf ("x");
+    return 0;
+}
+
 int send_output_packet(struct TranscodeOutput *pOutput,struct AVPacket* packet)
 {
     if (packet==NULL){

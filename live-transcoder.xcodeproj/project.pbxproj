@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0822C6AB221ED3310095F76B /* json_parser.c in Sources */ = {isa = PBXBuildFile; fileRef = 0822C6A9221ED3310095F76B /* json_parser.c */; };
 		084335D621D8C1A80031BF3B /* VideoToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 084335D321D8C1A70031BF3B /* VideoToolbox.framework */; };
 		084335D721D8C1A80031BF3B /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 084335D421D8C1A80031BF3B /* AudioToolbox.framework */; };
 		084335D821D8C1A80031BF3B /* MediaToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 084335D521D8C1A80031BF3B /* MediaToolbox.framework */; };
@@ -56,6 +57,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		0822C6A9221ED3310095F76B /* json_parser.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = json_parser.c; sourceTree = "<group>"; };
+		0822C6AA221ED3310095F76B /* json_parser.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = json_parser.h; sourceTree = "<group>"; };
 		084335A021D89A7C0031BF3B /* install_ffmpeg.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = install_ffmpeg.sh; sourceTree = "<group>"; };
 		084335D321D8C1A70031BF3B /* VideoToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = VideoToolbox.framework; path = System/Library/Frameworks/VideoToolbox.framework; sourceTree = SDKROOT; };
 		084335D421D8C1A80031BF3B /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
@@ -145,6 +148,8 @@
 		086E7AC41E044C7400206F21 = {
 			isa = PBXGroup;
 			children = (
+				0822C6A9221ED3310095F76B /* json_parser.c */,
+				0822C6AA221ED3310095F76B /* json_parser.h */,
 				08C4211B2219EAB7003AA42F /* listener.h */,
 				08C4211C2219EAB7003AA42F /* listener.c */,
 				08C421182219D78F003AA42F /* FramesStats.h */,
@@ -271,6 +276,7 @@
 			files = (
 				0869F1F121DA216A003F3538 /* output.c in Sources */,
 				08F2959E21DDF7FF0028EEE5 /* codec.c in Sources */,
+				0822C6AB221ED3310095F76B /* json_parser.c in Sources */,
 				0869F1E721D9F9F4003F3538 /* TranscodePipeline.c in Sources */,
 				0869F1EA21DA089F003F3538 /* logger.c in Sources */,
 				0869F20721DB3B60003F3538 /* filter.c in Sources */,

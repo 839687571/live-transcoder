@@ -20,6 +20,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include "output.h"
+#include "json_parser.h"
 
 int sock=0;
 
@@ -62,8 +63,31 @@ int init_socket(int port)
 
 int main(int argc, char **argv)
 {
-    av_log_set_level(AV_LOG_DEBUG);
+    
+    
+    pool_t *pool;
+    
+    char error[128];
+    json_value_t result;
+    const char* ddd= "{\"input\":\"abc\",\"outputs\":[{\"name\":\"32\",\"codec_type\":0,\"passthrough\":false, \"bitrate\":55},{\"name\":\"33\",\"codec_type\":0}]}";
+    char* inputConfig=strdup(ddd);
+    json_status_t status = json_parse(pool, inputConfig, &result, error, sizeof(error));
+    
+    json_value_t* result1;
+    json_get(&result,"input",&result1);
+    json_value_t* result2;
+    json_get(&result,"outputs",&result2);
+    //json_get(result2,"[0]",&result3);
 
+    for (int i=0;i<json_get_array_count(result2);i++)
+    {
+        json_value_t result3;
+        json_get_array_index(result2,i,&result3);
+        struct TranscodeOutput output;
+        init_Transcode_output_from_json(&output,&result3);
+        
+    }
+    av_log_set_level(AV_LOG_DEBUG);
   //  av_log_set_callback(ffmpeg_log_callback);
     
     //char* pSourceFileName="/Users/guyjacubovski/Sample_video/קישון - תעלת בלאומילך.avi";
