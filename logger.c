@@ -7,7 +7,6 @@
 //
 
 #include <stdio.h>
-#include <libavformat/avformat.h>
 
 #include <stdbool.h>
 #include <sys/time.h>
@@ -32,8 +31,8 @@ void logger2(char* category,int level,const char *fmt, va_list args)
 {    
     const char* levelStr=getLevel(level);
     
-    int64_t now=getTime64();
-    time_t epoch=now/1000;
+    int64_t now=getClock64();
+    time_t epoch=now/1000000;
     struct tm *gm = localtime(&epoch);
     
     
@@ -41,7 +40,7 @@ void logger2(char* category,int level,const char *fmt, va_list args)
     strftime(buf, 25, "%Y-%m-%dT%H:%M:%S",gm);
     
     
-    fprintf( stderr, "%s.%03d %s %s ",buf,(int)(now % 1000),category, levelStr);
+    fprintf( stderr, "%s.%03d %s %s ",buf,(int)( (now % 1000000)/1000 ),category, levelStr);
     vfprintf( stderr, fmt, args );
     fprintf( stderr, "\n" );
 }

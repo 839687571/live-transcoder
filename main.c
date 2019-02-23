@@ -22,6 +22,7 @@
 #include "output.h"
 #include "json_parser.h"
 #include "utils.h"
+#include "config.h"
 
 int sock=0;
 
@@ -30,7 +31,8 @@ int totalOutputs=0;
 
 void ffmpeg_log_callback(void *ptr, int level, const char *fmt, va_list vargs)
 {
-    if (level<AV_LOG_DEBUG)
+    return;
+    if (level<AV_LOG_INFO)
         return;
     logger2("FFMPEG",level,fmt,vargs);
 }
@@ -87,29 +89,20 @@ int init_outputs(struct TranscodeContext* pContext,json_value_t* json)
 int main(int argc, char **argv)
 {
     
-    pool_t *pool;
-    
-    char* inputConfig;
-    load_file_to_memory("/Users/guyjacubovski/dev/live-transcoder/config.json", &inputConfig);
-
-    char error[128];
-    json_value_t result;
-    json_status_t status = json_parse(pool, inputConfig, &result, error, sizeof(error));
-    if (status!=JSON_OK) {
-        LOGGER(CATEGORY_DEFAULT,AV_LOG_FATAL,"Failed parsing configurtion! %s (%s)",inputConfig,error);
-        return -1;
+    int ret=LoadConfig();
+    if (ret < 0) {
+        return ret;
     }
-    LOGGER(CATEGORY_DEFAULT,AV_LOG_INFO,"Parsed configuration successfully: %s",inputConfig);
 
     char* pSourceFileName;
-    json_get_string(&result,"input","",&pSourceFileName);
+    json_get_string(GetConfig(),"input","",&pSourceFileName);
 
     av_log_set_level(AV_LOG_DEBUG);
-  //  av_log_set_callback(ffmpeg_log_callback);
+    av_log_set_callback(ffmpeg_log_callback);
 
 
     AVFormatContext *ifmt_ctx;
-    int ret = avformat_open_input(&ifmt_ctx, pSourceFileName, NULL, NULL);
+    ret = avformat_open_input(&ifmt_ctx, pSourceFileName, NULL, NULL);
     
     if (ret < 0) {
         LOGGER(CATEGORY_DEFAULT,AV_LOG_FATAL,"Unable to open input %s %d (%s)",pSourceFileName,ret,av_err2str(ret));
@@ -133,7 +126,7 @@ int main(int argc, char **argv)
 
     init_transcoding_context(&ctx,ifmt_ctx->streams[activeStream]->codecpar);
 
-    init_outputs(&ctx,&result);
+    init_outputs(&ctx,GetConfig());
 
     startService(&ctx,9999);
     AVPacket packet;

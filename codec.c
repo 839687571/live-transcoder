@@ -15,11 +15,34 @@
 #include <libavfilter/buffersink.h>
 #include <libavfilter/buffersrc.h>
 #include <libavutil/opt.h>
+#include "config.h"
 
 int init_decoder(struct TranscoderCodecContext * pContext,AVCodecParameters *pCodecParams)
 {
+    bool result;
+    json_get_bool(GetConfig(),"engine.usenvidiadecoder",false,&result);
+
+    AVCodec *dec = NULL;
+    if (result) {
+        if (pCodecParams->codec_id==AV_CODEC_ID_H264) {
+            dec = avcodec_find_decoder_by_name("h264_cuvid");
+        }
+        if (pCodecParams->codec_id==AV_CODEC_ID_HEVC) {
+            dec = avcodec_find_decoder_by_name("h265_cuvid");
+        }
+        if (pCodecParams->codec_id==AV_CODEC_ID_VP8) {
+            dec = avcodec_find_decoder_by_name("vp8_cuvid");
+        }
+        if (pCodecParams->codec_id==AV_CODEC_ID_VP9) {
+            dec = avcodec_find_decoder_by_name("vp9_cuvid");
+        }
+    }
+    if (dec==NULL) {
+        dec = avcodec_find_decoder(pCodecParams->codec_id);
+    }
+
+    pContext->codec=dec;
     
-    AVCodec *dec = pContext->codec=avcodec_find_decoder(pCodecParams->codec_id);
     AVCodecContext *codec_ctx;
     if (!dec) {
         LOGGER0(CATEGORY_CODEC,AV_LOG_ERROR, "Failed to find decoder for stream");
@@ -32,27 +55,20 @@ int init_decoder(struct TranscoderCodecContext * pContext,AVCodecParameters *pCo
     }
     codec_ctx->time_base=standard_timebase;
 
-    
     int ret = avcodec_parameters_to_context(codec_ctx, pCodecParams);
     if (ret < 0) {
         LOGGER(CATEGORY_CODEC, AV_LOG_ERROR, "Failed to copy decoder parameters to input decoder context for stream  %d (%s)",ret,av_err2str(ret));
         return ret;
     }
 
-    /* Reencode video & audio and remux subtitles etc. */
-    if (codec_ctx->codec_type == AVMEDIA_TYPE_VIDEO || codec_ctx->codec_type == AVMEDIA_TYPE_AUDIO) {
-        if (codec_ctx->codec_type == AVMEDIA_TYPE_VIDEO) {
-            //codec_ctx->framerate = av_guess_frame_rate(pInputStream->->ifmt_ctx, pInputStream, NULL);
-        }
-        /* Open decoder */
-        ret = avcodec_open2(codec_ctx, dec, NULL);
-        if (ret < 0) {
-            LOGGER( CATEGORY_CODEC, AV_LOG_ERROR, "Failed to open decoder for stream %d (%s)",ret,av_err2str(ret));
-            return ret;
-        }
+    ret = avcodec_open2(codec_ctx, dec, NULL);
+    if (ret < 0) {
+        LOGGER( CATEGORY_CODEC, AV_LOG_ERROR, "Failed to open decoder for stream %d (%s)",ret,av_err2str(ret));
+        return ret;
     }
     pContext->ctx = codec_ctx;
-    
+    LOGGER(CATEGORY_CODEC,AV_LOG_INFO, "Initialized decoder \"%s\"",dec->long_name);
+
     return 0;
 }
 

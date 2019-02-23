@@ -8,34 +8,70 @@
 
 #include "FramesStats.h"
 #include "logger.h"
+#include "utils.h"
+
 
 
 void InitFrameStats(struct FramesStats* pStats)
 {
     pStats->totalFrames=0;
+    pStats->head=-1;
+    pStats->tail=-1;
+    pStats->totalBitrateInWindow=0;
 }
-void AddFrameToStats(struct FramesStats* pStats,uint64_t frame_time,int size)
+
+void drain(struct FramesStats* pStats,uint64_t clock)
 {
-    pStats->frames[pStats->totalFrames % HISTORY_SIZE] = size;
-    pStats->times[pStats->totalFrames % HISTORY_SIZE] = frame_time;
+    while (pStats->tail<pStats->head) {
+        struct FramesStatsHistory  *pTail=( struct FramesStatsHistory  *)&pStats->history[ pStats->tail  % HISTORY_SIZE];
+        uint64_t timePassed=clock - pTail->pts;
+        if (timePassed<HISTORY_DURATION*90000) {
+            break;
+        }
+        pStats->totalBitrateInWindow-=pTail->frameSize;
+        pStats->tail++;
+    }
+}
+
+struct FramesStatsHistory*   getIndex(struct FramesStats* pStats,int64_t index) {
+    return ( struct FramesStatsHistory  *)&(pStats->history[index % HISTORY_SIZE]);
+}
+void AddFrameToStats(struct FramesStats* pStats,uint64_t pts,int frameSize)
+{
+    pStats->head++;
+    if (pStats->head==0){
+        pStats->tail=0;
+    }
+    struct FramesStatsHistory  *pHead=getIndex(pStats,pStats->head);
+    pHead->frameSize=frameSize;
+    pHead->pts=pts;
+    pHead->clock=getTime64();
+    
     pStats->totalFrames++;
+    pStats->totalBitrateInWindow+=frameSize*8;
+    
+    drain(pStats,pHead->pts);
 }
 
-double GetFrameStatsAvg(struct FramesStats* pStats)
+void GetFrameStatsAvg(struct FramesStats* pStats,int* bitRate,double *fps,double *rate)
 {
-    if (pStats->totalFrames>1) {
-        uint64_t total=0;
-        uint64_t now = pStats->times[(pStats->totalFrames-1) % HISTORY_SIZE];
+    *bitRate=0;
+    *fps=0;
+    *rate=0;
+    if (pStats->head!=-1 && pStats->head!=pStats->tail) {
+        struct FramesStatsHistory  *pHead=getIndex(pStats,pStats->head);
+        struct FramesStatsHistory  *pTail=getIndex(pStats,pStats->tail);
 
-        for (uint64_t runner=pStats->totalFrames-1;runner>=0;runner--) {
-            uint64_t timePassed=now-pStats->times[runner % HISTORY_SIZE];
-            if (runner==0 || timePassed>5000) {
-                if (timePassed<5000)
-                    return 0;
-                return ((double)(total*8))/(double)(timePassed/1000.0);
-            }
-            total+=pStats->frames[runner % HISTORY_SIZE];
+        double timePassedInSec= (pHead->clock - pTail->clock )  / 1000000.0;
+        double ptsPassedInSec= (pHead->pts - pTail->pts )  / 90000.0;
+
+        int64_t frames=(pStats->head - pStats->tail + 1);
+
+        if (ptsPassedInSec>0) {
+            double dbitRate= (double)(pStats->totalBitrateInWindow)/ptsPassedInSec;
+            *bitRate=(int)dbitRate;
+            *fps=frames/timePassedInSec;
+            *rate=1;//(currentPts-pHist->pts)
         }
     }
-    return 0;
 }

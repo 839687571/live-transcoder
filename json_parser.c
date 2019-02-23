@@ -864,10 +864,9 @@ json_status_t json_get(const json_value_t* obj,char* path,const json_value_t** r
                 {
                     char* k=elobj->key.data;
                     size_t count=elobj->key.len;
-                    if (strncmp(k,key,count)==0) {
-                        if (strcmp(key,"videoparams")==0) {
-                            printf("a");
-                        }
+                    if (strncasecmp(k,key,count)==0) {
+                        if (*path=='.')
+                            path++;
                         return json_get(&elobj->value,path,result);
                     }
                     elobj+=1;

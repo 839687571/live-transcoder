@@ -8,6 +8,7 @@
 
 #ifndef LOGGER_h
 #define LOGGER_h
+#include <libavformat/avformat.h>
 
 
 

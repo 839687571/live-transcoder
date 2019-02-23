@@ -1,7 +1,11 @@
 {
     "input": "/Users/guyjacubovski/Downloads/bbb_sunflower_1080p_30fps_normal.mp4",
     "debug": {
-        "saveFile": true
+        "saveFile": true,
+        "outputFileNamePattern": "/Users/guyjacubovski/dev/live-transcoder/output_%s.mp4"
+    },
+    "engine": {
+        "useNvidiaDecoder": true
     },
     "outputs": [
         {

@@ -10,6 +10,7 @@
 		0822C6AB221ED3310095F76B /* json_parser.c in Sources */ = {isa = PBXBuildFile; fileRef = 0822C6A9221ED3310095F76B /* json_parser.c */; };
 		0822C6AD221FEF300095F76B /* config.json in Sources */ = {isa = PBXBuildFile; fileRef = 0822C6AC221FEF300095F76B /* config.json */; };
 		0822C6B0221FEF690095F76B /* utils.c in Sources */ = {isa = PBXBuildFile; fileRef = 0822C6AF221FEF690095F76B /* utils.c */; };
+		0822C6B32221C7880095F76B /* config.c in Sources */ = {isa = PBXBuildFile; fileRef = 0822C6B22221C7880095F76B /* config.c */; };
 		084335D621D8C1A80031BF3B /* VideoToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 084335D321D8C1A70031BF3B /* VideoToolbox.framework */; };
 		084335D721D8C1A80031BF3B /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 084335D421D8C1A80031BF3B /* AudioToolbox.framework */; };
 		084335D821D8C1A80031BF3B /* MediaToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 084335D521D8C1A80031BF3B /* MediaToolbox.framework */; };
@@ -64,6 +65,8 @@
 		0822C6AC221FEF300095F76B /* config.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = config.json; sourceTree = "<group>"; };
 		0822C6AE221FEF690095F76B /* utils.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = utils.h; sourceTree = "<group>"; };
 		0822C6AF221FEF690095F76B /* utils.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = utils.c; sourceTree = "<group>"; };
+		0822C6B12221C7880095F76B /* config.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = config.h; sourceTree = "<group>"; };
+		0822C6B22221C7880095F76B /* config.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = config.c; sourceTree = "<group>"; };
 		084335A021D89A7C0031BF3B /* install_ffmpeg.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = install_ffmpeg.sh; sourceTree = "<group>"; };
 		084335D321D8C1A70031BF3B /* VideoToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = VideoToolbox.framework; path = System/Library/Frameworks/VideoToolbox.framework; sourceTree = SDKROOT; };
 		084335D421D8C1A80031BF3B /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
@@ -153,6 +156,8 @@
 		086E7AC41E044C7400206F21 = {
 			isa = PBXGroup;
 			children = (
+				0822C6B12221C7880095F76B /* config.h */,
+				0822C6B22221C7880095F76B /* config.c */,
 				0822C6AE221FEF690095F76B /* utils.h */,
 				0822C6AF221FEF690095F76B /* utils.c */,
 				0822C6AC221FEF300095F76B /* config.json */,
@@ -293,6 +298,7 @@
 				08C4211A2219D78F003AA42F /* FramesStats.c in Sources */,
 				0822C6B0221FEF690095F76B /* utils.c in Sources */,
 				08C4211D2219EAB7003AA42F /* listener.c in Sources */,
+				0822C6B32221C7880095F76B /* config.c in Sources */,
 				0822C6AD221FEF300095F76B /* config.json in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

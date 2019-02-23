@@ -12,6 +12,7 @@
 #include "libavutil/intreadwrite.h"
 #include "utils.h"
 #include "logger.h"
+#include "config.h"
 
 
 int init_Transcode_output(struct TranscodeOutput* pOutput)  {
@@ -75,15 +76,18 @@ int send_output_packet(struct TranscodeOutput *pOutput,struct AVPacket* packet)
         return 0;
     }
     AddFrameToStats(&pOutput->stats,packet->dts,packet->size);
-    
-    LOGGER(CATEGORY_OUTPUT,AV_LOG_DEBUG,"output (%s) got data: pts=%s; dts=%s, size=%d, flags=%d totalFrames=%ld, bitrate %.lf",
+    int avgBitrate;
+    double fps,rate;
+    GetFrameStatsAvg(&pOutput->stats,&avgBitrate,&fps,&rate);
+    LOGGER(CATEGORY_OUTPUT,AV_LOG_DEBUG,"output (%s) got data: pts=%s; dts=%s, size=%d, flags=%d bitrate %lf fps=%lf rate=%lf",
            pOutput->name,
            ts2str(packet->pts,true),
            ts2str(packet->dts,true),
            packet->size,
            packet->flags,
-           pOutput->stats.totalFrames,
-           GetFrameStatsAvg(&pOutput->stats))
+           avgBitrate,
+           fps,
+           rate)
     
     if (pOutput->oc) {
         int ret=av_write_frame(pOutput->oc, packet);
@@ -126,9 +130,15 @@ int send_output_packet(struct TranscodeOutput *pOutput,struct AVPacket* packet)
 
 int set_output_format(struct TranscodeOutput *pOutput,struct AVCodecParameters* codecParams)
 {
-    if (pOutput->oc==NULL) {
+    
+    bool saveFile;
+    json_get_bool(GetConfig(),"debug.saveFile",false,&saveFile);
+    
+    if (saveFile && pOutput->oc==NULL) {
+        char* fileNamePattern;
         char filename[1000];
-        sprintf(filename,"/Users/guyjacubovski/dev/live-transcoder/output_%s.mp4", pOutput->name);
+        json_get_string(GetConfig(),"debug.outputFileNamePattern","output_%s.mp4",&fileNamePattern);
+        sprintf(filename,fileNamePattern, pOutput->name);
         //pOutput->pOutputFile= fopen(filename,"wb+");  // r for read, b for binary
         
         const AVBitStreamFilter *bsf = av_bsf_get_by_name("h264_mp4toannexb");

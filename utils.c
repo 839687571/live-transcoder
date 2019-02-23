@@ -58,15 +58,28 @@ int kbhit(void)
 
 uint64_t getTime64()
 {
-    struct timeval tv;
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
     
-    gettimeofday(&tv, NULL);
     
-    unsigned long long millisecondsSinceEpoch =
-    (unsigned long long)(tv.tv_sec) * 1000 +
-    (unsigned long long)(tv.tv_usec) / 1000;
+    uint64_t usecondsSinceEpoch =
+    (uint64_t)(ts.tv_sec) * 1000000 +
+    (uint64_t)(ts.tv_nsec) / 1000;
     
-    return millisecondsSinceEpoch;
+    return usecondsSinceEpoch;
+}
+
+uint64_t getClock64()
+{
+    struct timespec ts;
+    clock_gettime(CLOCK_REALTIME, &ts);
+    
+    
+    uint64_t usecondsSinceEpoch =
+    (uint64_t)(ts.tv_sec) * 1000000 +
+    (uint64_t)(ts.tv_nsec) / 1000;
+    
+    return usecondsSinceEpoch;
 }
 
 char *av_ts_make_time_stringEx(char *buf, int64_t ts,bool shortFormat)
@@ -78,6 +91,7 @@ char *av_ts_make_time_stringEx(char *buf, int64_t ts,bool shortFormat)
     }
     
     time_t epoch=ts/standard_timebase.den;
+    
     struct tm *gm = localtime(&epoch);
     
     
