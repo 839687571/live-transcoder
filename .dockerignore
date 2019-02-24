@@ -1,2 +1,7 @@
 ThirdParty
 *.mp4
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+transcoder
+CMakeFiles

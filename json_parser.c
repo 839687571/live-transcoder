@@ -1,9 +1,6 @@
-#include <stdlib.h>
-#include <string.h>
-#include <limits.h>
-#include <stdio.h>
-#include <ctype.h>
+
 #include "json_parser.h"
+#include "core.h"
 
 // constants
 #ifndef TRUE

@@ -11,11 +11,10 @@ project (transcoder)
 file(GLOB SOURCES
     *.c
 )
-find_package(ZLIB REQUIRED)
 
 
 #set(CMAKE_CXX_FLAGS "-g -std=c++0x ${CMAKE_CXX_FLAGS}")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -std=c99")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall ")
 
 
 link_directories( 

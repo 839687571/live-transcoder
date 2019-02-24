@@ -11,5 +11,15 @@
 #include <libavutil/opt.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <sys/types.h>
+#include <stdlib.h>
+#include <string.h>
+#include <limits.h>
+#include <stdio.h>
+#include <ctype.h>
+
+#ifndef u_char
+#define u_char  unsigned char
+#endif
 
 #endif
