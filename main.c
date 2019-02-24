@@ -1,10 +1,7 @@
 #define __STDC_CONSTANT_MACROS
 
-
+#include "core.h"
 #include <libavutil/timestamp.h>
-#include <libavformat/avformat.h>
-#include <libavfilter/buffersink.h>
-#include <libavfilter/buffersrc.h>
         
 #include <sys/stat.h>
 #include <time.h>

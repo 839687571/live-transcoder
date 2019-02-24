@@ -5,22 +5,16 @@
 //  Created by Guy.Jacubovski on 03/01/2019.
 //  Copyright © 2019 Kaltura. All rights reserved.
 //
-
+#include "core.h"
 #include "codec.h"
 #include "utils.h"
 #include "logger.h"
-
-#include <libavformat/avformat.h>
-#include <libavfilter/avfilter.h>
-#include <libavfilter/buffersink.h>
-#include <libavfilter/buffersrc.h>
-#include <libavutil/opt.h>
 #include "config.h"
 
 int init_decoder(struct TranscoderCodecContext * pContext,AVCodecParameters *pCodecParams)
 {
     bool result;
-    json_get_bool(GetConfig(),"engine.usenvidiadecoder",false,&result);
+    json_get_bool(GetConfig(),"engine.useNvidiaDecoder",false,&result);
 
     AVCodec *dec = NULL;
     if (result) {

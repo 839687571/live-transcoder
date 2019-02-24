@@ -9,14 +9,14 @@
 #ifndef Stats_h
 #define Stats_h
 
-#include <stdio.h>
+#include "core.h"
 
 #define HISTORY_DURATION 10LL //10 seconds
 #define HISTORY_SIZE 700LL
 
 struct FramesStatsHistory
 {
-    u_int frameSize;
+    uint32_t frameSize;
     uint64_t pts;
     uint64_t clock;
 };

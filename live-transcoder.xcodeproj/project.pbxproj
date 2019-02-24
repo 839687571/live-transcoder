@@ -60,6 +60,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		08141DBA2222B23700EA1219 /* core.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = core.h; sourceTree = "<group>"; };
 		0822C6A9221ED3310095F76B /* json_parser.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = json_parser.c; sourceTree = "<group>"; };
 		0822C6AA221ED3310095F76B /* json_parser.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = json_parser.h; sourceTree = "<group>"; };
 		0822C6AC221FEF300095F76B /* config.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = config.json; sourceTree = "<group>"; };
@@ -156,6 +157,7 @@
 		086E7AC41E044C7400206F21 = {
 			isa = PBXGroup;
 			children = (
+				08141DBA2222B23700EA1219 /* core.h */,
 				0822C6B12221C7880095F76B /* config.h */,
 				0822C6B22221C7880095F76B /* config.c */,
 				0822C6AE221FEF690095F76B /* utils.h */,

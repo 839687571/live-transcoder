@@ -88,6 +88,6 @@ json_status_t json_get_int(const json_value_t* obj,char* path,int defaultValue,i
 json_status_t json_get_bool(const json_value_t* obj,char* path,bool defaultValue,bool* result);
 
 size_t json_get_array_count(const json_value_t* obj);
-json_status_t json_get_array_index(const json_value_t* obj,int index,json_value_t* result);
+json_status_t json_get_array_index(const json_value_t* obj,int index, json_value_t* result);
 
 #endif // __JSON_PARSER_H__

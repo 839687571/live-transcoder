@@ -9,10 +9,7 @@
 #ifndef output_h
 #define output_h
 
-#include <stdio.h>
-#include <stdbool.h>
-#include <libavformat/avformat.h>
-#include <sys/time.h>
+#include "core.h"
 #include "FramesStats.h"
 #include "json_parser.h"
 

@@ -888,7 +888,7 @@ size_t json_get_array_count(const json_value_t* obj) {
     return (size_t)obj->v.arr.items.nelts;
 }
 
-json_status_t json_get_array_index(const json_value_t* obj,int index,json_value_t* result)
+json_status_t json_get_array_index(const json_value_t* obj,int index, json_value_t* result)
 {
     if (obj->type!=JSON_ARRAY)
         return JSON_BAD_DATA;
@@ -908,7 +908,7 @@ json_status_t json_get_array_index(const json_value_t* obj,int index,json_value_
 }
 json_status_t json_get_string(const json_value_t* obj,char* path,char* defaultValue,char** result)
 {
-    json_value_t* jresult;
+    const json_value_t* jresult;
     json_status_t ret=json_get(obj,path,&jresult);
     if (ret!=JSON_OK){
         *result=strdup(defaultValue);

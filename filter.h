@@ -9,9 +9,7 @@
 #ifndef filter_h
 #define filter_h
 
-#include <stdio.h>
-#include <libavformat/avformat.h>
-#include <libavfilter/avfilter.h>
+#include "core.h"
 
 struct TranscoderFilter
 {

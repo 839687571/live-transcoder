@@ -86,14 +86,14 @@ RUN  \
         curl -sLO https://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.tar.bz2 && \
         tar -jx --strip-components=1 -f ffmpeg-${FFMPEG_VERSION}.tar.bz2
 
-
 RUN \
         DIR=/build/ffmpeg && mkdir -p ${DIR} && cd ${DIR} && \
         ./configure \
         --disable-debug \
         --disable-doc \
         --disable-ffplay \
-        --enable-shared \
+        --enable-shared \ 
+        --enable-static\
         --enable-gpl \
         --enable-libmp3lame \
         --enable-libvpx \
@@ -113,3 +113,10 @@ RUN \
         --prefix="${PREFIX}" && \
         make && \
         make install
+
+
+ENV  FFMPEG_LIB_DIR  "/build/ffmpeg"
+
+WORKDIR /build
+
+COPY . .
