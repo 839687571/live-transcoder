@@ -90,13 +90,16 @@ int send_output_packet(struct TranscodeOutput *pOutput,struct AVPacket* packet)
            rate)
     
     if (pOutput->oc) {
-        int ret=av_write_frame(pOutput->oc, packet);
+        AVPacket *cpPacket=av_packet_clone(packet);
+        int ret=av_write_frame(pOutput->oc, cpPacket);
     
         if (ret<0) {
             
             LOGGER(CATEGORY_OUTPUT,AV_LOG_FATAL,"(%s) cannot save frame  %d (%s)",pOutput->name,ret,av_err2str(ret))
         }
         av_write_frame(pOutput->oc, NULL);
+        
+        av_packet_unref(cpPacket);
     }
     /*
     if (pOutput->pOutputFile!=NULL && packet->data) {

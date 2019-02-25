@@ -85,7 +85,7 @@ int init_outputs(struct TranscodeContext* pContext,json_value_t* json)
 }
 int main(int argc, char **argv)
 {
-    
+
     int ret=LoadConfig();
     if (ret < 0) {
         return ret;
@@ -96,11 +96,11 @@ int main(int argc, char **argv)
 
     av_log_set_level(AV_LOG_DEBUG);
     av_log_set_callback(ffmpeg_log_callback);
+    
 
 
     AVFormatContext *ifmt_ctx;
     ret = avformat_open_input(&ifmt_ctx, pSourceFileName, NULL, NULL);
-    
     if (ret < 0) {
         LOGGER(CATEGORY_DEFAULT,AV_LOG_FATAL,"Unable to open input %s %d (%s)",pSourceFileName,ret,av_err2str(ret));
         return ret;
@@ -130,8 +130,7 @@ int main(int argc, char **argv)
     av_init_packet(&packet);
     
     init_socket(9999);
-    
-    uint64_t  basePts=0;//(60LL*60LL)*(100LL*24LL-2LL)*1000LL;//getTime64();
+    uint64_t  basePts=av_rescale_q( getClock64(), clockScale, standard_timebase);
     while (!kbhit()) {
         if ((ret = av_read_frame(ifmt_ctx, &packet)) < 0)
             break;
@@ -142,22 +141,20 @@ int main(int argc, char **argv)
         
         AVStream *in_stream=ifmt_ctx->streams[packet.stream_index];
         
-        packet.pts = av_rescale_q_rnd(packet.pts, in_stream->time_base, standard_timebase, AV_ROUND_NEAR_INF|AV_ROUND_PASS_MINMAX);
-        packet.dts = av_rescale_q_rnd(packet.dts, in_stream->time_base, standard_timebase, AV_ROUND_NEAR_INF|AV_ROUND_PASS_MINMAX);
-        packet.duration = av_rescale_q(packet.duration, in_stream->time_base, standard_timebase);
+        av_packet_rescale_ts(&packet,in_stream->time_base, standard_timebase);
         
        // convert_packet(&ctx,&packet);
         
-        struct FrameHeader header;
-        header.size=packet.size;
-        header.pts=packet.pts+basePts;
-        header.dts=packet.dts+basePts;
-        header.duration=packet.duration;
-        header.header[0]=1;
-        header.header[1]=2;
-        header.header[2]=3;
-        header.header[3]=4;
-        send(sock , &header , sizeof(header) , 0 );
+        kaltura_network_frame_t frame;
+        frame.size=packet.size;
+        if (AV_NOPTS_VALUE!=packet.pts) {
+            frame.pts_delay=packet.pts-packet.dts;
+        } else {
+            frame.pts_delay=-999999;
+        }
+        frame.dts=packet.dts+basePts;
+        frame.flags=0;
+        send(sock , &frame , sizeof(frame) , 0 );
         send(sock, packet.data,packet.size,0);
         /*
         LOGGER("SENDER",AV_LOG_DEBUG,"sent packet pts=%s dts=%s  size=%d",
@@ -165,13 +162,14 @@ int main(int argc, char **argv)
                ts2str(header.dts,true),
                packet.dts,packet.size);*/
 
+        av_packet_unref(&packet);
 
     }
     LOGGER0(CATEGORY_DEFAULT,AV_LOG_FATAL,"stopping!");
 
-    struct FrameHeader header;
-    send(sock , &header , sizeof(header) , 0 );
-    header.header[0]=2;
+    kaltura_network_frame_t frame;
+    frame.flags=999;
+    send(sock , &frame , sizeof(frame) , 0 );
     
     stopService();
     
@@ -180,6 +178,8 @@ int main(int argc, char **argv)
 
     }
 
+    avformat_close_input(&ifmt_ctx);
+    
     return 0;
 }
 

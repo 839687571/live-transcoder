@@ -1,10 +1,11 @@
 
-ARG CUDA_VERSION="10.0"
-ARG        PKG_CONFIG_PATH=/opt/ffmpeg/lib/pkgconfig
-ARG        LD_LIBRARY_PATH=/opt/ffmpeg/lib
-ARG        PREFIX=/opt/ffmpeg
-ARG        MAKEFLAGS="-j2"
-
+ARG     CUDA_VERSION="10.0"
+ARG     PKG_CONFIG_PATH=/opt/ffmpeg/lib/pkgconfig
+ARG     LD_LIBRARY_PATH=/opt/ffmpeg/lib
+ARG     PREFIX=/opt/ffmpeg
+ARG     MAKEFLAGS="-j2"
+#ARG     CUDA="--enable-cuda-sdk  --enable-cuvid --enable-libnpp" 
+ARG     CUDA="" 
 
 FROM nvidia/cuda:${CUDA_VERSION}-devel 
 
@@ -20,7 +21,7 @@ ENV         FFMPEG_VERSION=4.1     \
             X265_VERSION=3.0          \
             SRC=/usr/local
 
-RUN apt-get -yqq update && apt-get install curl -yq  cmake --no-install-recommends ca-certificates expat  libgomp1 wget nano git build-essential nasm yasm pkg-config autoconf gettext-base  gettext && \
+RUN apt-get -yqq update && apt-get install curl -yq wget vim cmake --no-install-recommends ca-certificates expat  libgomp1 wget nano git build-essential nasm yasm pkg-config autoconf gettext-base  gettext && \
         rm -rf /var/lib/apt/lists/*
 
 
@@ -93,18 +94,14 @@ RUN \
         --disable-doc \
         --disable-ffplay \
         --enable-shared \ 
-        --enable-static\
         --enable-gpl \
         --enable-libmp3lame \
         --enable-libvpx \
         --enable-libx264 \
         --enable-nonfree \
         --enable-postproc \
-        --enable-small \
         --enable-version3 \
-        --enable-cuda-sdk \
-        --enable-cuvid \
-        --enable-libnpp \
+        ${CUDA} \
         --extra-cflags="-I${PREFIX}/include" \
         --extra-ldflags="-L${PREFIX}/lib" \
         --extra-cflags="-I/usr/local/cuda/include/" \
@@ -113,7 +110,6 @@ RUN \
         --prefix="${PREFIX}" && \
         make && \
         make install
-
 
 ENV  FFMPEG_LIB_DIR  "/build/ffmpeg"
 

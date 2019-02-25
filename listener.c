@@ -78,28 +78,32 @@ void* listenerThread(void *vargp)
         exit(EXIT_FAILURE);
     }
     
-    struct FrameHeader frameHeader;
+    kaltura_network_frame_t networkFrame;
     AVPacket packet;
     
     while (true) {
         
-        size_t valread =recvEx(new_socket,(char*)&frameHeader,sizeof(frameHeader));
+        size_t valread =recvEx(new_socket,(char*)&networkFrame,sizeof(networkFrame));
         
         if (valread<0){
             break;
         }
         
-        if (frameHeader.header[0]==2) {
+        if (networkFrame.flags==99) {
             close_transcoding_context(pContext);
             break;
         }
         
-        av_new_packet(&packet,(int)frameHeader.size);
-        packet.pts=frameHeader.pts;
-        packet.dts=frameHeader.dts;
-        packet.duration=frameHeader.duration;
+        av_new_packet(&packet,(int)networkFrame.size);
+        packet.dts=networkFrame.dts;
+        if (networkFrame.pts_delay!=-999999) {
+            packet.pts=networkFrame.dts+networkFrame.pts_delay;
+        } else {
+            packet.pts=AV_NOPTS_VALUE;
+        }
+        packet.duration=0;
         
-        valread =recvEx(new_socket,(char*)packet.data,(int)frameHeader.size);
+        valread =recvEx(new_socket,(char*)packet.data,(int)networkFrame.size);
         
         if (valread<0){
             break;

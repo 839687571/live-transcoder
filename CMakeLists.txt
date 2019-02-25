@@ -50,9 +50,14 @@ if(APPLE)
     "-framework CoreFoundation"
     "-framework Security"
     "-framework SecurityFoundation"
-    "-framework SecurityInterface")
+    "-framework SecurityInterface"
+    z  
+    iconv 
+    bz2 )
 endif(APPLE)
 
+if(LINUX)
+target_link_libraries(${PROJECT_NAME}  cuda )
+endif(LINUX)
 
-
-target_link_libraries(${PROJECT_NAME}  x264 swscale avdevice avformat avfilter avcodec avutil swresample postproc  pthread  m z  iconv bz2   )
+target_link_libraries(${PROJECT_NAME}  x264 swscale avdevice avformat avfilter avcodec avutil swresample postproc  pthread  m    )

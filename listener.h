@@ -12,12 +12,13 @@
 #include <stdio.h>
 #include "TranscodePipeline.h"
 
-struct FrameHeader
-{
-    char header[4];
-    size_t size;
-    int64_t pts,dts,duration;
-};
+typedef struct   {
+    uint64_t dts;
+    uint32_t pts_delay;
+    uint32_t size;
+    uint32_t flags;
+} kaltura_network_frame_t;
+
 
 void startService(struct TranscodeContext *pContext,int port);
 void stopService();
