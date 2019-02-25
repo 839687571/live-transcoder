@@ -15,6 +15,7 @@ int init_transcoding_context(struct TranscodeContext *pContext,struct AVCodecPar
     pContext->inputs=0;
     pContext->outputs=0;
     pContext->filters=0;
+    pContext->encoders=0;
     pContext->inputCodecParams=codecParams;
     
     struct TranscoderCodecContext *pDecoderContext=&pContext->decoder[0];
@@ -34,6 +35,7 @@ int encodeFrame(struct TranscodeContext *pContext,int encoderId,int outputId,AVF
     int ret=0;
     
     struct TranscoderCodecContext* pEncoder=&pContext->encoder[encoderId];
+    
     ret=send_encode_frame(pEncoder,pFrame);
     
     while (ret >= 0) {
@@ -92,6 +94,7 @@ int sendFrameToFilter(struct TranscodeContext *pContext,int filterId, AVCodecCon
         }
         else if (ret < 0)
         {
+            av_frame_free(&pOutFrame);
             return ret;
         }
         

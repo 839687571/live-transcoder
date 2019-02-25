@@ -15,6 +15,9 @@
 
 pthread_t thread_id;
 
+pthread_cond_t cond1 = PTHREAD_COND_INITIALIZER;
+pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+
 
 size_t recvEx(int socket,char* buffer,int bytesToRead) {
     
@@ -76,6 +79,9 @@ void* listenerThread(void *vargp)
         perror("listen");
         exit(EXIT_FAILURE);
     }
+    pthread_cond_signal(&cond1);
+
+    
     if ((new_socket = accept(server_fd, (struct sockaddr *)&address,
                              (socklen_t*)&addrlen))<0)
     {
@@ -156,6 +162,8 @@ void* listenerThread(void *vargp)
 void startService(struct TranscodeContext *pContext,int port)
 {
     pthread_create(&thread_id, NULL, listenerThread, pContext);
+    pthread_cond_wait(&cond1, &lock);
+
 }
 
 
