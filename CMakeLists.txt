@@ -56,10 +56,6 @@ if(APPLE)
     bz2 )
 endif(APPLE)
 
-if(LINUX)
-target_link_libraries(${PROJECT_NAME} LINK_PUBLIC dl cuda  bz2 z mp3lame x265 )
-endif(LINUX)
+#target_link_libraries(${PROJECT_NAME}  x264 swscale avdevice avformat avfilter avcodec avutil swresample postproc  pthread  m    )
 
-
-
-target_link_libraries(${PROJECT_NAME}  x264 swscale avdevice avformat avfilter avcodec avutil swresample postproc  pthread  m    )
+target_link_libraries(${PROJECT_NAME} pthread dl z rt m gnutls pthread x264 x265 rtmp  avdevice avfilter postproc avformat avcodec mp3lame  swresample swscale avutil pthread z bz2 )
