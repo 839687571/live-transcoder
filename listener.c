@@ -11,6 +11,7 @@
 #include "utils.h"
 #include "logger.h"
 #include <pthread.h>
+#include "config.h"
 
 pthread_t thread_id;
 
@@ -34,7 +35,11 @@ size_t recvEx(int socket,char* buffer,int bytesToRead) {
 
 void* listenerThread(void *vargp)
 {
+    
     struct TranscodeContext *pContext = (struct TranscodeContext *)vargp;
+    
+    struct json_value_t* config=GetConfig();
+    
     int port=9999;
     
     int server_fd, new_socket;
@@ -77,6 +82,23 @@ void* listenerThread(void *vargp)
         perror("accept");
         exit(EXIT_FAILURE);
     }
+    
+    
+    media_info_t mediaInfo;
+
+    size_t valread =recvEx(new_socket,(char*)&mediaInfo,sizeof(mediaInfo));
+    
+    AVCodecParameters params;
+    params.bit_rate=mediaInfo.bitrate;
+    params.width=mediaInfo.u.video.width;
+    params.height=mediaInfo.u.video.height;
+    params.codec_id=mediaInfo.format;
+    params.extradata_size=mediaInfo.extraDataLength;
+    params.extradata=malloc(mediaInfo.extraDataLength);
+    memcpy(params.extradata,mediaInfo.extraData,mediaInfo.extraDataLength);
+    init_transcoding_context(pContext,&params);
+    init_outputs(pContext,config);
+    
     
     kaltura_network_frame_t networkFrame;
     AVPacket packet;

@@ -11,14 +11,7 @@
 
 #include <stdio.h>
 #include "TranscodePipeline.h"
-
-typedef struct   {
-    uint64_t dts;
-    uint32_t pts_delay;
-    uint32_t size;
-    uint32_t flags;
-} kaltura_network_frame_t;
-
+#include "kalturaMediaProtocol.h"
 
 void startService(struct TranscodeContext *pContext,int port);
 void stopService();

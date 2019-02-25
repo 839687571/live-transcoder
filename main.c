@@ -121,9 +121,6 @@ int main(int argc, char **argv)
     int activeStream=0;
     
 
-    init_transcoding_context(&ctx,ifmt_ctx->streams[activeStream]->codecpar);
-
-    init_outputs(&ctx,GetConfig());
 
     startService(&ctx,9999);
     AVPacket packet;
@@ -131,6 +128,19 @@ int main(int argc, char **argv)
     
     init_socket(9999);
     uint64_t  basePts=av_rescale_q( getClock64(), clockScale, standard_timebase);
+    
+    AVStream *in_stream=ifmt_ctx->streams[activeStream];
+    media_info_t mediaInfo;
+    mediaInfo.bitrate=in_stream->codecpar->bit_rate;
+    mediaInfo.format=in_stream->codecpar->codec_id;
+    mediaInfo.media_type=0;
+    mediaInfo.timescale=0;
+    mediaInfo.u.video.width=in_stream->codecpar->width;
+    mediaInfo.u.video.height=in_stream->codecpar->height;
+    mediaInfo.extraDataLength=in_stream->codecpar->extradata_size;
+    memcpy(mediaInfo.extraData,in_stream->codecpar->extradata,in_stream->codecpar->extradata_size);
+    
+    send(sock , &mediaInfo , sizeof(mediaInfo) , 0 );
     while (!kbhit()) {
         if ((ret = av_read_frame(ifmt_ctx, &packet)) < 0)
             break;

@@ -76,6 +76,7 @@
 		084335DB21D8C1FF0031BF3B /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
 		08516DF81FA10B5D0077B9F0 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		085E1F5F1EA6BA470056B80C /* main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
+		0865E41122240FFA00B8F793 /* kalturaMediaProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = kalturaMediaProtocol.h; sourceTree = "<group>"; };
 		0869F1E521D9F9F4003F3538 /* TranscodePipeline.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = TranscodePipeline.c; sourceTree = "<group>"; };
 		0869F1E621D9F9F4003F3538 /* TranscodePipeline.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TranscodePipeline.h; sourceTree = "<group>"; };
 		0869F1E821DA0885003F3538 /* logger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = logger.h; sourceTree = "<group>"; };
@@ -157,6 +158,7 @@
 		086E7AC41E044C7400206F21 = {
 			isa = PBXGroup;
 			children = (
+				0865E41122240FFA00B8F793 /* kalturaMediaProtocol.h */,
 				08141DBA2222B23700EA1219 /* core.h */,
 				0822C6B12221C7880095F76B /* config.h */,
 				0822C6B22221C7880095F76B /* config.c */,

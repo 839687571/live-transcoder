@@ -18,8 +18,8 @@ static struct option long_options[] =
     {NULL, 0, NULL, 0}
 };
 
-pool_t *pool;
-json_value_t config;
+static pool_t *pool;
+static json_value_t config;
 
 char* configFile=NULL,*configString=NULL;
 

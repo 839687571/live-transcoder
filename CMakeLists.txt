@@ -26,7 +26,8 @@ link_directories(
     ${FFMPEG_LIB_DIR}/libavutil 
     ${FFMPEG_LIB_DIR}/libswscale  
     ${FFMPEG_LIB_DIR}/libswresample   
-    ${FFMPEG_LIB_DIR}/libpostproc
+    ${FFMPEG_LIB_DIR}/libpostproc    
+     /usr/lib/x86_64-linux-gnu
      /usr/local/lib
      /usr/lib )
 
@@ -57,7 +58,9 @@ if(APPLE)
 endif(APPLE)
 
 if(LINUX)
-target_link_libraries(${PROJECT_NAME}  cuda )
+target_link_libraries(${PROJECT_NAME} LINK_PUBLIC dl cuda  bz2 z mp3lame x265 )
 endif(LINUX)
+
+
 
 target_link_libraries(${PROJECT_NAME}  x264 swscale avdevice avformat avfilter avcodec avutil swresample postproc  pthread  m    )
