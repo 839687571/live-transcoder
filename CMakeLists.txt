@@ -14,7 +14,7 @@ file(GLOB SOURCES
 
 
 #set(CMAKE_CXX_FLAGS "-g -std=c++0x ${CMAKE_CXX_FLAGS}")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall ")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -static")
 
 
 link_directories( 
@@ -27,7 +27,6 @@ link_directories(
     ${FFMPEG_LIB_DIR}/libswscale  
     ${FFMPEG_LIB_DIR}/libswresample   
     ${FFMPEG_LIB_DIR}/libpostproc    
-     /usr/lib/x86_64-linux-gnu
      /usr/local/lib
      /usr/lib )
 

@@ -83,29 +83,40 @@ void* listenerThread(void *vargp)
         exit(EXIT_FAILURE);
     }
     
-    
+    packet_header_t header;
     media_info_t mediaInfo;
 
-    size_t valread =recvEx(new_socket,(char*)&mediaInfo,sizeof(mediaInfo));
+    size_t valread =recvEx(new_socket,(char*)&header,sizeof(header));
+    
+    if (header.packet_type!=PACKET_TYPE_HEADER) {
+        
+        exit(EXIT_FAILURE);
+    }
+    valread =recvEx(new_socket,(char*)&mediaInfo,sizeof(mediaInfo));
     
     AVCodecParameters params;
     params.bit_rate=mediaInfo.bitrate;
     params.width=mediaInfo.u.video.width;
     params.height=mediaInfo.u.video.height;
     params.codec_id=mediaInfo.format;
-    params.extradata_size=mediaInfo.extraDataLength;
-    params.extradata=malloc(mediaInfo.extraDataLength);
-    memcpy(params.extradata,mediaInfo.extraData,mediaInfo.extraDataLength);
+    params.extradata_size=header.data_size;
+    params.extradata=NULL;
+    if (params.extradata_size>0) {
+         params.extradata=av_mallocz(params.extradata_size + AV_INPUT_BUFFER_PADDING_SIZE);
+        valread =recvEx(new_socket,(char*)params.extradata,header.data_size);
+    }
     init_transcoding_context(pContext,&params);
     init_outputs(pContext,config);
     
     
-    kaltura_network_frame_t networkFrame;
+    output_frame_t networkFrame;
     AVPacket packet;
     
     while (true) {
         
-        size_t valread =recvEx(new_socket,(char*)&networkFrame,sizeof(networkFrame));
+        packet_header_t header;
+        valread =recvEx(new_socket,(char*)&header,sizeof(header));
+        valread =recvEx(new_socket,(char*)&networkFrame,header.header_size);
         
         if (valread<0){
             break;
@@ -116,7 +127,7 @@ void* listenerThread(void *vargp)
             break;
         }
         
-        av_new_packet(&packet,(int)networkFrame.size);
+        av_new_packet(&packet,(int)header.data_size);
         packet.dts=networkFrame.dts;
         if (networkFrame.pts_delay!=-999999) {
             packet.pts=networkFrame.dts+networkFrame.pts_delay;
@@ -125,7 +136,7 @@ void* listenerThread(void *vargp)
         }
         packet.duration=0;
         
-        valread =recvEx(new_socket,(char*)packet.data,(int)networkFrame.size);
+        valread =recvEx(new_socket,(char*)packet.data,(int)header.data_size);
         
         if (valread<0){
             break;

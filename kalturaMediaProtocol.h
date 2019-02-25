@@ -8,6 +8,20 @@
 
 #ifndef kalturaMediaProtocol_h
 #define kalturaMediaProtocol_h
+#define PACKET_TYPE_HEADER (1)
+#define PACKET_TYPE_FRAME (2)
+
+typedef struct {
+    uint32_t packet_type;
+    uint32_t header_size;
+    uint32_t data_size;
+} packet_header_t;
+
+enum {
+    MEDIA_TYPE_VIDEO,
+    MEDIA_TYPE_AUDIO,
+    MEDIA_TYPE_COUNT,
+};
 
 typedef struct {
     uint16_t channels;
@@ -18,30 +32,27 @@ typedef struct {
 typedef struct {
     uint16_t width;
     uint16_t height;
-    double frame_rate;    // currently rounded by nginx-rtmp, will need a patch to avoid it
+    double frame_rate;        // currently rounded by nginx-rtmp, will need a patch to avoid it
 } video_media_info_t;
 
-
-//KMP
 typedef struct media_info_s {
+    packet_header_t header;
     uint32_t media_type;    // 0 = video, 1 = audio
-    uint32_t format;    // 4cc code?
-    uint32_t timescale;    // currently hardcoded to 90k, maybe for audio we should use the sample rate
-    uint32_t bitrate;    // bps    (rtmp module returns in kbps, will multiply by 1000)
+    uint32_t format;        // currently rtmp enum
+    uint32_t timescale;        // currently hardcoded to 90k, maybe for audio we should use the sample rate
+    uint32_t bitrate;        // bps    (rtmp module returns in kbps, will multiply by 1000)
     union {
         video_media_info_t video;
         audio_media_info_t audio;
     } u;
-    uint32_t extraDataLength;
-    char extraData[10000];
 } media_info_t;
 
-typedef struct   {
-    uint64_t dts;
-    uint32_t pts_delay;
-    uint32_t size;
+typedef struct {
+    packet_header_t header;
     uint32_t flags;
-} kaltura_network_frame_t;
+    uint32_t pts_delay;
+    uint64_t dts;
+} output_frame_t;
 
 
 #endif /* kalturaMediaProtocol_h */

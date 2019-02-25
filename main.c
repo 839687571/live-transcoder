@@ -131,16 +131,22 @@ int main(int argc, char **argv)
     
     AVStream *in_stream=ifmt_ctx->streams[activeStream];
     media_info_t mediaInfo;
+    packet_header_t packetHeader;
+    packetHeader.packet_type=PACKET_TYPE_HEADER;
+    packetHeader.header_size=sizeof(mediaInfo);
+    packetHeader.data_size=in_stream->codecpar->extradata_size;
     mediaInfo.bitrate=in_stream->codecpar->bit_rate;
     mediaInfo.format=in_stream->codecpar->codec_id;
     mediaInfo.media_type=0;
     mediaInfo.timescale=0;
     mediaInfo.u.video.width=in_stream->codecpar->width;
     mediaInfo.u.video.height=in_stream->codecpar->height;
-    mediaInfo.extraDataLength=in_stream->codecpar->extradata_size;
-    memcpy(mediaInfo.extraData,in_stream->codecpar->extradata,in_stream->codecpar->extradata_size);
     
+    send(sock , &packetHeader , sizeof(packetHeader) , 0 );
     send(sock , &mediaInfo , sizeof(mediaInfo) , 0 );
+    if (in_stream->codecpar->extradata_size>0) {
+        send(sock , in_stream->codecpar->extradata , in_stream->codecpar->extradata_size , 0 );
+    }
     while (!kbhit()) {
         if ((ret = av_read_frame(ifmt_ctx, &packet)) < 0)
             break;
@@ -155,8 +161,10 @@ int main(int argc, char **argv)
         
        // convert_packet(&ctx,&packet);
         
-        kaltura_network_frame_t frame;
-        frame.size=packet.size;
+        packetHeader.packet_type=PACKET_TYPE_HEADER;
+        packetHeader.header_size=sizeof(output_frame_t);
+        packetHeader.data_size=packet.size;
+        output_frame_t frame;
         if (AV_NOPTS_VALUE!=packet.pts) {
             frame.pts_delay=packet.pts-packet.dts;
         } else {
@@ -164,6 +172,7 @@ int main(int argc, char **argv)
         }
         frame.dts=packet.dts+basePts;
         frame.flags=0;
+        send(sock , &packetHeader , sizeof(packetHeader) , 0 );
         send(sock , &frame , sizeof(frame) , 0 );
         send(sock, packet.data,packet.size,0);
         /*
@@ -177,9 +186,6 @@ int main(int argc, char **argv)
     }
     LOGGER0(CATEGORY_DEFAULT,AV_LOG_FATAL,"stopping!");
 
-    kaltura_network_frame_t frame;
-    frame.flags=999;
-    send(sock , &frame , sizeof(frame) , 0 );
     
     stopService();
     
