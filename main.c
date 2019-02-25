@@ -86,7 +86,7 @@ int init_outputs(struct TranscodeContext* pContext,json_value_t* json)
 int main(int argc, char **argv)
 {
 
-    int ret=LoadConfig();
+    int ret=LoadConfig(argc,argv);
     if (ret < 0) {
         return ret;
     }

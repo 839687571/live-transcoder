@@ -12,7 +12,7 @@
 #include <stdio.h>
 #include "json_parser.h"
 
-int LoadConfig();
+int LoadConfig(int argc, char **argv);
 json_value_t* GetConfig();
 
 #endif /* config_h */

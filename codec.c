@@ -113,7 +113,7 @@ int init_video_encoder(struct TranscoderCodecContext * pContext,
     
     pContext->codec=codec;
     pContext->ctx=enc_ctx;
-    LOGGER(CATEGORY_CODEC,AV_LOG_INFO,"video encoder  %dx%d %d Kbit/s initilaized",enc_ctx->width,enc_ctx->height,enc_ctx->bit_rate);
+    LOGGER(CATEGORY_CODEC,AV_LOG_INFO,"video encoder  \"%s\"  %dx%d %d Kbit/s initilaized",codec->long_name,enc_ctx->width,enc_ctx->height,enc_ctx->bit_rate);
 
     return 0;
 }
