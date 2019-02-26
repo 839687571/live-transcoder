@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 
 set(FFMPEG_LIB_DIR "./ThirdParty/ffmpeg")
 set(X264_LIB_DIR "./ThirdParty/x264")
@@ -14,7 +14,7 @@ file(GLOB SOURCES
 
 
 #set(CMAKE_CXX_FLAGS "-g -std=c++0x ${CMAKE_CXX_FLAGS}")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -static")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall  -static")
 
 
 link_directories( 
@@ -56,6 +56,14 @@ if(APPLE)
     bz2 )
 endif(APPLE)
 
+set(CUDA_LINK_LIBRARIES_KEYWORD PUBLIC)
+
+find_package(CUDA 9.0 REQUIRED)
+message(STATUS "Found CUDA ${CUDA_VERSION_STRING} at ${CUDA_TOOLKIT_ROOT_DIR} ${CUDA_STATIC_LIBRARIES}  ")
+
+
 #target_link_libraries(${PROJECT_NAME}  x264 swscale avdevice avformat avfilter avcodec avutil swresample postproc  pthread  m    )
 
-target_link_libraries(${PROJECT_NAME} pthread dl z rt m gnutls pthread x264 x265 rtmp  avdevice avfilter postproc avformat avcodec mp3lame  swresample swscale avutil pthread z bz2 )
+#librt.a nppc  nppial nppicc  nppicom  nppidei nppif    nppig  nppim nppist nppisu nppitc npps
+#
+target_link_libraries(${PROJECT_NAME}   pthread dl z rt m gnutls pthread x264 x265 rtmp  avdevice avfilter postproc avformat avcodec mp3lame  swresample swscale avutil pthread z bz2   )

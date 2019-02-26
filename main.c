@@ -67,12 +67,12 @@ int init_socket(int port)
 
 int init_outputs(struct TranscodeContext* pContext,json_value_t* json)
 {
-    json_value_t* outputsJson;
+    const json_value_t* outputsJson;
     json_get(json,"outputs",&outputsJson);
     
     for (int i=0;i<json_get_array_count(outputsJson);i++)
     {
-        json_value_t outputJson;
+        const json_value_t outputJson;
         json_get_array_index(outputsJson,i,&outputJson);
         
         struct TranscodeOutput *pOutput=&outputs[totalOutputs];

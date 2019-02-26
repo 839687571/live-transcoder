@@ -152,6 +152,7 @@ void* listenerThread(void *vargp)
                ts2str(packet.dts,true),
                packet.size);
 
+        packet.pos=getClock64();
         convert_packet(pContext,&packet);
         
     }

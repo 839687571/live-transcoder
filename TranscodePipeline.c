@@ -29,7 +29,8 @@ int init_transcoding_context(struct TranscodeContext *pContext,struct AVCodecPar
 int encodeFrame(struct TranscodeContext *pContext,int encoderId,int outputId,AVFrame *pFrame) {
  
 
-    LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG, "Sending packet to encoderId %d, pts=%s",encoderId,ts2str(pFrame->pts,true))
+    LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG, "Sending packet to encoderId %d, pts=%s key=%s",
+           encoderId,ts2str(pFrame->pts,true),(pFrame->flags & AV_PKT_FLAG_KEY)==AV_PKT_FLAG_KEY ? "I" : "P");
     
     
     int ret=0;
@@ -52,11 +53,12 @@ int encodeFrame(struct TranscodeContext *pContext,int encoderId,int outputId,AVF
             return ret;
         }
         
-        LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG,"[%d] encoded frame for output %d: pts=%s  size=%d",
+        LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG,"[%d] encoded frame for output %d: pts=%s  size=%d key=%s",
                encoderId,
                outputId,
                ts2str(pOutPacket->pts,true),
-               pOutPacket->size);
+               pOutPacket->size,
+               (pOutPacket->flags & AV_PKT_FLAG_KEY)==AV_PKT_FLAG_KEY ? "I" : "P");
         
         
         send_output_packet(pContext->output[outputId],pOutPacket);

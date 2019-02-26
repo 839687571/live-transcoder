@@ -885,7 +885,7 @@ size_t json_get_array_count(const json_value_t* obj) {
     return (size_t)obj->v.arr.items.nelts;
 }
 
-json_status_t json_get_array_index(const json_value_t* obj,int index, json_value_t* result)
+json_status_t json_get_array_index(const json_value_t* obj,int index,  json_value_t* result)
 {
     if (obj->type!=JSON_ARRAY)
         return JSON_BAD_DATA;
