@@ -23,12 +23,14 @@ RUN git clone https://github.com/ffmpeg/ffmpeg.git && \
 #        make install
 
 
-RUN  cd ffmpeg && ./configure --enable-nonfree --disable-shared  --extra-cflags=-Ilocal/include --enable-gpl --enable-version3 --disable-debug --disable-ffplay --disable-indev=sndio --disable-outdev=sndio     --enable-libx264    --extra-cflags=-I/usr/local/cuda/include --extra-ldflags=-L/usr/local/cuda/lib64 && \
+RUN  cd ffmpeg && ./configure --enable-nonfree --disable-shared --enable-nvenc --enable-cuda --enable-cuvid --enable-libnpp --extra-cflags=-Ilocal/include --enable-gpl --enable-version3 --disable-debug --disable-ffplay --disable-indev=sndio --disable-outdev=sndio     --enable-libx264    --extra-cflags=-I/usr/local/cuda/include --extra-ldflags=-L/usr/local/cuda/lib64 && \
         make -j 8 && \
         make install
 
 COPY . . 
 
+ENV NVIDIA_VISIBLE_DEVICES all
+ENV NVIDIA_DRIVER_CAPABILITIES video,compute,utility
 
 #RUN cmake -DSTATICCOMPILE=ON   -DSTATIC=true . && make
 RUN make clean && make && make install
