@@ -16,6 +16,9 @@ int init_decoder(struct TranscoderCodecContext * pContext,AVCodecParameters *pCo
     bool result;
     json_get_bool(GetConfig(),"engine.useNvidiaDecoder",false,&result);
 
+    
+    pContext->nvidiaAccelerated=false;
+    
     AVCodec *dec = NULL;
     if (result) {
         if (pCodecParams->codec_id==AV_CODEC_ID_H264) {
@@ -29,6 +32,9 @@ int init_decoder(struct TranscoderCodecContext * pContext,AVCodecParameters *pCo
         }
         if (pCodecParams->codec_id==AV_CODEC_ID_VP9) {
             dec = avcodec_find_decoder_by_name("vp9_cuvid");
+        }
+        if (dec) {
+            pContext->nvidiaAccelerated=true;
         }
     }
     if (dec==NULL) {
@@ -81,8 +87,8 @@ int init_video_encoder(struct TranscoderCodecContext * pContext,
     
     codec = avcodec_find_encoder_by_name(pOutput->codec);
     if (!codec) {
-        LOGGER0(CATEGORY_CODEC,AV_LOG_ERROR,"Unable to find libx264");
-        return ret;
+        LOGGER(CATEGORY_CODEC,AV_LOG_ERROR,"Unable to find %s",pOutput->codec);
+        return -1;
     }
     enc_ctx = avcodec_alloc_context3(codec);
     enc_ctx->height = height;

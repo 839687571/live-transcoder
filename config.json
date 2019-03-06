@@ -5,7 +5,7 @@
         "outputFileNamePattern": "/Users/guyjacubovski/dev/live-transcoder/output_%s.mp4"
     },
     "engine": {
-        "useNvidiaDecoder": true
+        "useNvidiaDecoder": false
     },
     "outputs": [
         {

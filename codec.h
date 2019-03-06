@@ -18,6 +18,7 @@ struct TranscoderCodecContext
 {
     AVCodec* codec;
     AVCodecContext* ctx;
+    bool nvidiaAccelerated;
 };
 
 int init_decoder(struct TranscoderCodecContext * pContext,AVCodecParameters *pCodecParams);

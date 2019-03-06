@@ -9,6 +9,7 @@
 #include "TranscodePipeline.h"
 #include "utils.h"
 #include "logger.h"
+#include "config.h"
 
 int init_transcoding_context(struct TranscodeContext *pContext,struct AVCodecParameters* codecParams)
 {
@@ -261,11 +262,19 @@ int add_output(struct TranscodeContext* pContext, struct TranscodeOutput * pOutp
         
         if (pOutput->codec_type==AVMEDIA_TYPE_VIDEO)
         {
-            sprintf(filterConfig,"scale=w=%d:h=%d",pOutput->videoParams.width,pOutput->videoParams.height);
-            struct TranscoderFilter* pFilter=GetFilter(pContext,pOutput,pDecoderContext,filterConfig);
-            
             pOutput->encoderId=pContext->encoders++;
             struct TranscoderCodecContext* pCodec=&pContext->encoder[pOutput->encoderId];
+            
+            sprintf(filterConfig,"%s=w=%d:h=%d",
+                    pCodec->nvidiaAccelerated ? "scale_npp" : "scale",
+                    pOutput->videoParams.width,
+                    pOutput->videoParams.height);
+            
+            struct TranscoderFilter* pFilter=GetFilter(pContext,pOutput,pDecoderContext,filterConfig);
+            
+            if (pFilter==NULL) {
+                return -1;
+            }
             
             AVRational frameRate={1,30};
             int width=pDecoderContext->ctx->width;
@@ -279,13 +288,17 @@ int add_output(struct TranscodeContext* pContext, struct TranscodeOutput * pOutp
                 picFormat= av_buffersink_get_format(pFilter->sink_ctx);
             }
             
-            init_video_encoder(pCodec,
+            ret=init_video_encoder(pCodec,
                                pDecoderContext->ctx->sample_aspect_ratio,
                                picFormat,
                                frameRate,
                                pOutput,
                                width,
                                height);
+            
+            if (ret<0) {
+                return ret;
+            }
 
             
             LOGGER(CATEGORY_DEFAULT,AV_LOG_INFO,"Output %s - Added encoder %d bitrate=%d",pOutput->name,pOutput->encoderId,pOutput->bitrate*1000);

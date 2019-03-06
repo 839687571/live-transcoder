@@ -15,6 +15,7 @@
 #define CATEGORY_DEFAULT "DEFAULT"
 #define CATEGORY_CODEC "CODEC"
 #define CATEGORY_OUTPUT "OUTPUT"
+#define CATEGORY_FILTER "FILTER"
 
 void logger1(char* category,int level,const char *fmt, ...);
 void logger2(char* category,int level,const char *fmt, va_list args);
