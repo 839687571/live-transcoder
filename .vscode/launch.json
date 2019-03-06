@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "/Users/guyjacubovski/dev/live-transcoder/transcoder",
-            "args": [],
+            "args": ["-f","/Users/guyjacubovski/dev/live-transcoder/config.json"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],

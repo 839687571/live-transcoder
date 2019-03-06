@@ -85,3 +85,8 @@ static void log_packet(const AVFormatContext *fmt_ctx, const AVPacket *pkt, cons
            av_ts2str(pkt->duration), av_ts2timestr(pkt->duration, time_base),
            pkt->flags);
 }*/
+
+void loggerFlush() 
+{
+    fflush(stderr);
+}

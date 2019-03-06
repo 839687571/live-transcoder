@@ -90,7 +90,7 @@ int main(int argc, char **argv)
     
 
 
-    AVFormatContext *ifmt_ctx;
+    AVFormatContext *ifmt_ctx=NULL;
     ret = avformat_open_input(&ifmt_ctx, pSourceFileName, NULL, NULL);
     if (ret < 0) {
         LOGGER(CATEGORY_DEFAULT,AV_LOG_FATAL,"Unable to open input %s %d (%s)",pSourceFileName,ret,av_err2str(ret));
@@ -182,6 +182,7 @@ int main(int argc, char **argv)
     
     avformat_close_input(&ifmt_ctx);
     
+    loggerFlush();
     return 0;
 }
 

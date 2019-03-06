@@ -18,7 +18,7 @@
 
 void logger1(char* category,int level,const char *fmt, ...);
 void logger2(char* category,int level,const char *fmt, va_list args);
-
+void loggerFlush();
 const char* pict_type_to_string(int pt);
 
 
