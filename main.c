@@ -26,14 +26,6 @@
 int sock=0;
 
 
-void ffmpeg_log_callback(void *ptr, int level, const char *fmt, va_list vargs)
-{
-    return;
-    if (level<AV_LOG_INFO)
-        return;
-    logger2("FFMPEG",level,fmt,vargs);
-}
-
 
 int init_socket(int port)
 {
@@ -74,6 +66,7 @@ void intHandler(int dummy) {
 
 int main(int argc, char **argv)
 {
+    log_init(AV_LOG_DEBUG);
     signal(SIGINT, intHandler);
 
 
@@ -85,8 +78,6 @@ int main(int argc, char **argv)
     char* pSourceFileName;
     json_get_string(GetConfig(),"input","",&pSourceFileName);
 
-    av_log_set_level(AV_LOG_DEBUG);
-    av_log_set_callback(ffmpeg_log_callback);
     
 
 

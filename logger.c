@@ -14,6 +14,7 @@
 #include "utils.h"
 
 
+static int logLevel =AV_LOG_VERBOSE;
 
 const   char* getLevel(int level) {
     switch(level){
@@ -27,7 +28,7 @@ const   char* getLevel(int level) {
     }
     return "";
 }
-void logger2(char* category,int level,const char *fmt, va_list args)
+void logger2(char* category,int level,const char *fmt, bool newLine, va_list args)
 {    
     const char* levelStr=getLevel(level);
     
@@ -42,7 +43,9 @@ void logger2(char* category,int level,const char *fmt, va_list args)
     
     fprintf( stderr, "%s.%03d %s %s ",buf,(int)( (now % 1000000)/1000 ),category, levelStr);
     vfprintf( stderr, fmt, args );
-    fprintf( stderr, "\n" );
+    if (newLine) {
+        fprintf( stderr, "\n" );
+    }
 }
 
 
@@ -51,7 +54,7 @@ void logger1(char* category,int level,const char *fmt, ...)
 {
     va_list args;
     va_start( args, fmt );
-    logger2(category,level,fmt,args);
+    logger2(category,level,fmt,true,args);
     va_end( args );
 }
 
@@ -86,6 +89,25 @@ static void log_packet(const AVFormatContext *fmt_ctx, const AVPacket *pkt, cons
            pkt->flags);
 }*/
 
+
+void ffmpeg_log_callback(void *ptr, int level, const char *fmt, va_list vargs)
+{
+    if (level>logLevel)
+        return;
+    logger2(CATEGORY_FFMPEG,level,fmt,false,vargs);
+}
+
+
+void log_init(int level)
+{
+    logLevel=level;
+    av_log_set_level(AV_LOG_INFO);
+    av_log_set_callback(ffmpeg_log_callback);
+}
+int get_log_level(char* category,int level)
+{
+    return logLevel;
+}
 void loggerFlush() 
 {
     fflush(stderr);

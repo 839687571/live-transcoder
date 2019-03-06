@@ -16,14 +16,15 @@
 #define CATEGORY_CODEC "CODEC"
 #define CATEGORY_OUTPUT "OUTPUT"
 #define CATEGORY_FILTER "FILTER"
+#define CATEGORY_FFMPEG "FFMPEG"
 
 void logger1(char* category,int level,const char *fmt, ...);
-void logger2(char* category,int level,const char *fmt, va_list args);
 void loggerFlush();
 const char* pict_type_to_string(int pt);
+void log_init(int level);
+int get_log_level(char* category,int level);
 
-
-#define LOGGER(CATEGORY,LEVEL,FMT,...) { logger1(CATEGORY,LEVEL,FMT,__VA_ARGS__); }
-#define LOGGER0(CATEGORY,LEVEL,FMT) { logger1(CATEGORY,LEVEL,FMT); }
+#define LOGGER(CATEGORY,LEVEL,FMT,...) { if (get_log_level(CATEGORY,LEVEL)>=LEVEL) { logger1(CATEGORY,LEVEL,FMT,__VA_ARGS__); }}
+#define LOGGER0(CATEGORY,LEVEL,FMT) {  if (get_log_level(CATEGORY,LEVEL)>=LEVEL) { logger1(CATEGORY,LEVEL,FMT); } }
 
 #endif /* LOGGER_h */
