@@ -19,6 +19,28 @@ pthread_cond_t cond1 = PTHREAD_COND_INITIALIZER;
 pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 
 
+struct TranscodeOutput outputs[100];
+int totalOutputs=0;
+
+int init_outputs(struct TranscodeContext* pContext,json_value_t* json)
+{
+    const json_value_t* outputsJson;
+    json_get(json,"outputs",&outputsJson);
+    
+    for (int i=0;i<json_get_array_count(outputsJson);i++)
+    {
+        const json_value_t outputJson;
+        json_get_array_index(outputsJson,i,&outputJson);
+        
+        struct TranscodeOutput *pOutput=&outputs[totalOutputs];
+        init_Transcode_output_from_json(pOutput,&outputJson);
+        
+        add_output(pContext,pOutput);
+        totalOutputs++;
+    }
+    return 0;
+}
+
 size_t recvEx(int socket,char* buffer,int bytesToRead) {
     
     size_t bytesRead=0;
@@ -156,6 +178,14 @@ void* listenerThread(void *vargp)
         convert_packet(pContext,&packet);
         
     }
+    
+    
+    for (int i=0;i<totalOutputs;i++){
+        close_Transcode_output(&outputs[i]);
+        
+    }
+
+    
     return NULL;
 }
 

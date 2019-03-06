@@ -21,10 +21,10 @@
 #include "utils.h"
 #include "config.h"
 
+#include <signal.h>
+
 int sock=0;
 
-struct TranscodeOutput outputs[100];
-int totalOutputs=0;
 
 void ffmpeg_log_callback(void *ptr, int level, const char *fmt, va_list vargs)
 {
@@ -65,26 +65,17 @@ int init_socket(int port)
 }
 
 
-int init_outputs(struct TranscodeContext* pContext,json_value_t* json)
-{
-    const json_value_t* outputsJson;
-    json_get(json,"outputs",&outputsJson);
-    
-    for (int i=0;i<json_get_array_count(outputsJson);i++)
-    {
-        const json_value_t outputJson;
-        json_get_array_index(outputsJson,i,&outputJson);
-        
-        struct TranscodeOutput *pOutput=&outputs[totalOutputs];
-        init_Transcode_output_from_json(pOutput,&outputJson);
-        
-        add_output(pContext,pOutput);
-        totalOutputs++;
-    }
-    return 0;
+static volatile int keepRunning = 1;
+
+void intHandler(int dummy) {
+    LOGGER0(CATEGORY_DEFAULT,AV_LOG_WARNING,"SIGINT detected!");
+    keepRunning = 0;
 }
+
 int main(int argc, char **argv)
 {
+    signal(SIGINT, intHandler);
+
 
     int ret=LoadConfig(argc,argv);
     if (ret < 0) {
@@ -147,7 +138,7 @@ int main(int argc, char **argv)
     if (in_stream->codecpar->extradata_size>0) {
         send(sock , in_stream->codecpar->extradata , in_stream->codecpar->extradata_size , 0 );
     }
-    while (!kbhit()) {
+    while (keepRunning && !kbhit()) {
         if ((ret = av_read_frame(ifmt_ctx, &packet)) < 0)
             break;
         
@@ -189,11 +180,6 @@ int main(int argc, char **argv)
     
     stopService();
     
-    for (int i=0;i<totalOutputs;i++){
-        close_Transcode_output(&outputs[i]);
-
-    }
-
     avformat_close_input(&ifmt_ctx);
     
     return 0;
