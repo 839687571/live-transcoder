@@ -76,7 +76,7 @@ int main(int argc, char **argv)
     }
 
     char* pSourceFileName;
-    json_get_string(GetConfig(),"input","",&pSourceFileName);
+    json_get_string(GetConfig(),"input.file","",&pSourceFileName);
 
     
 
@@ -100,8 +100,9 @@ int main(int argc, char **argv)
     
     struct TranscodeContext ctx;
     
-    int activeStream=0;
+    int activeStream=1;
     
+    json_get_int(GetConfig(),"activeStream",0,&activeStream);
 
 
     startService(&ctx,9999);
@@ -119,10 +120,20 @@ int main(int argc, char **argv)
     packetHeader.data_size=in_stream->codecpar->extradata_size;
     mediaInfo.bitrate=in_stream->codecpar->bit_rate;
     mediaInfo.format=in_stream->codecpar->codec_id;
-    mediaInfo.media_type=0;
-    mediaInfo.timescale=0;
-    mediaInfo.u.video.width=in_stream->codecpar->width;
-    mediaInfo.u.video.height=in_stream->codecpar->height;
+    mediaInfo.timescale=90000;
+    if (in_stream->codecpar->codec_type==AVMEDIA_TYPE_VIDEO)
+    {
+        mediaInfo.media_type=0;
+        mediaInfo.u.video.width=in_stream->codecpar->width;
+        mediaInfo.u.video.height=in_stream->codecpar->height;
+    }
+    if (in_stream->codecpar->codec_type==AVMEDIA_TYPE_AUDIO)
+    {
+        mediaInfo.media_type=1;
+        mediaInfo.u.audio.bits_per_sample=in_stream->codecpar->bits_per_raw_sample;
+        mediaInfo.u.audio.sample_rate=in_stream->codecpar->sample_rate;
+        mediaInfo.u.audio.channels=in_stream->codecpar->channels;
+    }
     
     send(sock , &packetHeader , sizeof(packetHeader) , 0 );
     send(sock , &mediaInfo , sizeof(mediaInfo) , 0 );

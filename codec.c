@@ -67,7 +67,7 @@ int init_decoder(struct TranscoderCodecContext * pContext,AVCodecParameters *pCo
         return ret;
     }
     pContext->ctx = codec_ctx;
-    LOGGER(CATEGORY_CODEC,AV_LOG_INFO, "Initialized decoder \"%s\"",dec->long_name);
+    LOGGER(CATEGORY_CODEC,AV_LOG_INFO, "Initialized decoder \"%s\" color space: %s",dec->long_name, av_get_pix_fmt_name (codec_ctx->pix_fmt));
 
     return 0;
 }
@@ -119,7 +119,7 @@ int init_video_encoder(struct TranscoderCodecContext * pContext,
     
     pContext->codec=codec;
     pContext->ctx=enc_ctx;
-    LOGGER(CATEGORY_CODEC,AV_LOG_INFO,"video encoder  \"%s\"  %dx%d %d Kbit/s initilaized",codec->long_name,enc_ctx->width,enc_ctx->height,enc_ctx->bit_rate);
+    LOGGER(CATEGORY_CODEC,AV_LOG_INFO,"video encoder  \"%s\"  %dx%d %d Kbit/s %s initilaized",codec->long_name,enc_ctx->width,enc_ctx->height,enc_ctx->bit_rate, av_get_pix_fmt_name (enc_ctx->pix_fmt));
 
     return 0;
 }
@@ -143,7 +143,8 @@ int init_audio_encoder(struct TranscoderCodecContext * pContext,struct Transcode
     enc_ctx->channels = av_buffersink_get_channels(pFilter->sink_ctx);
     enc_ctx->sample_rate = av_buffersink_get_sample_rate(pFilter->sink_ctx);
     enc_ctx->time_base = av_buffersink_get_time_base(pFilter->sink_ctx);
-    
+    enc_ctx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+
     ret = avcodec_open2(enc_ctx, codec,NULL);
     if (ret<0) {
         LOGGER(CATEGORY_CODEC,AV_LOG_ERROR,"error initilizing video encoder %d (%s)",ret,av_err2str(ret));

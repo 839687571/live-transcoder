@@ -34,16 +34,31 @@ int init_Transcode_output(struct TranscodeOutput* pOutput)  {
 }
 
 int print_output(struct TranscodeOutput* pOutput) {
-    LOGGER(CATEGORY_OUTPUT,AV_LOG_INFO,"(%s) output configuration: mode: %s bitrate: %d Kbit/s  resolution: %dx%d  fps: %.2f profile: %s preset: %s",
-           pOutput->name,
-           pOutput->passthrough ? "passthrough" : "transcode",
-           pOutput->bitrate,
-           pOutput->videoParams.width,
-           pOutput->videoParams.height,
-           pOutput->videoParams.fps,
-           pOutput->videoParams.profile,
-           pOutput->videoParams.preset
-           )
+    
+    if ( pOutput->passthrough) {
+        LOGGER(CATEGORY_OUTPUT,AV_LOG_INFO,"(%s) output configuration: mode: passthrough",pOutput->name);
+        return 0;
+    }
+    if (pOutput->codec_type==AVMEDIA_TYPE_VIDEO) {
+        LOGGER(CATEGORY_OUTPUT,AV_LOG_INFO,"(%s) output configuration: mode: transcode bitrate: %d Kbit/s  resolution: %dx%d  fps: %.2f profile: %s preset: %s",
+               pOutput->name,
+               pOutput->bitrate,
+               pOutput->videoParams.width,
+               pOutput->videoParams.height,
+               pOutput->videoParams.fps,
+               pOutput->videoParams.profile,
+               pOutput->videoParams.preset
+               )
+    }
+    if (pOutput->codec_type==AVMEDIA_TYPE_AUDIO) {
+        LOGGER(CATEGORY_OUTPUT,AV_LOG_INFO,"(%s) output configuration: mode: transcode bitrate: %d Kbit/s  %d channels, %d Hz",
+               pOutput->name,
+               pOutput->bitrate,
+               pOutput->audioParams.channels,
+               pOutput->audioParams.samplingRate
+               )
+    }
+    
     return 0;
 }
 
@@ -57,13 +72,18 @@ int init_Transcode_output_from_json(struct TranscodeOutput* pOutput,const json_v
     json_get_bool(json,"passthrough",true,&(pOutput->passthrough));
     json_get_string(json,"name","",&(pOutput->name));
     json_get_string(json,"codec","",&pOutput->codec);
-    json_value_t* pVideoParams;
+    const json_value_t* pVideoParams,*pAudioParams;
     if (JSON_OK==json_get(json,"videoParams",&pVideoParams)) {
         pOutput->codec_type=AVMEDIA_TYPE_VIDEO;
         pOutput->videoParams.width=-2;
         json_get_int(pVideoParams,"height",-1,&pOutput->videoParams.height);
         json_get_string(pVideoParams,"profile","",&pOutput->videoParams.profile);
         json_get_string(pVideoParams,"preset","veryfast",&pOutput->videoParams.preset);
+    }
+    if (JSON_OK==json_get(json,"audioParams",&pAudioParams)) {
+        pOutput->codec_type=AVMEDIA_TYPE_AUDIO;
+        json_get_int(pAudioParams,"channels",2,&pOutput->audioParams.channels);
+        json_get_int(pAudioParams,"samplingRate",48000,&pOutput->audioParams.samplingRate);
     }
 
     print_output(pOutput);
@@ -145,21 +165,24 @@ int set_output_format(struct TranscodeOutput *pOutput,struct AVCodecParameters* 
         sprintf(filename,fileNamePattern, pOutput->name);
         //pOutput->pOutputFile= fopen(filename,"wb+");  // r for read, b for binary
         
-        const AVBitStreamFilter *bsf = av_bsf_get_by_name("h264_mp4toannexb");
-        int ret = av_bsf_alloc(bsf, &pOutput->bsf);
-        if (ret < 0)
-            return ret;
-        
-        ret = avcodec_parameters_copy(pOutput->bsf->par_in, codecParams);
-        if (ret < 0)
-            return ret;
-        
-        
-        ret = av_bsf_init(pOutput->bsf);
-        if (ret < 0) {
-            return ret;
+        if (codecParams->codec_type==AVMEDIA_TYPE_VIDEO)
+        {
+            const AVBitStreamFilter *bsf = av_bsf_get_by_name("h264_mp4toannexb");
+            int ret = av_bsf_alloc(bsf, &pOutput->bsf);
+            if (ret < 0)
+                return ret;
+            
+            ret = avcodec_parameters_copy(pOutput->bsf->par_in, codecParams);
+            if (ret < 0)
+                return ret;
+            
+            
+            ret = av_bsf_init(pOutput->bsf);
+            if (ret < 0) {
+                return ret;
+            }
+            
         }
-        
 
         /* allocate the output media context */
         avformat_alloc_output_context2(&pOutput->oc, NULL, NULL, filename);
@@ -178,7 +201,7 @@ int set_output_format(struct TranscodeOutput *pOutput,struct AVCodecParameters* 
         
         avcodec_parameters_copy(st->codecpar,codecParams);
         
-        ret = avio_open(&pOutput->oc->pb, filename, AVIO_FLAG_WRITE);
+        int ret = avio_open(&pOutput->oc->pb, filename, AVIO_FLAG_WRITE);
         if (ret<0) {
             
             LOGGER(CATEGORY_OUTPUT,AV_LOG_FATAL,"(%s) cannot create filename %s",pOutput->name,filename)

@@ -122,18 +122,28 @@ void* listenerThread(void *vargp)
     }
     valread =recvEx(new_socket,(char*)&mediaInfo,sizeof(mediaInfo));
     
-    AVCodecParameters params;
-    params.bit_rate=mediaInfo.bitrate;
-    params.width=mediaInfo.u.video.width;
-    params.height=mediaInfo.u.video.height;
-    params.codec_id=mediaInfo.format;
-    params.extradata_size=header.data_size;
-    params.extradata=NULL;
-    if (params.extradata_size>0) {
-         params.extradata=av_mallocz(params.extradata_size + AV_INPUT_BUFFER_PADDING_SIZE);
-        valread =recvEx(new_socket,(char*)params.extradata,header.data_size);
+    AVCodecParameters* params=avcodec_parameters_alloc();
+    if (mediaInfo.media_type==1) {
+        params->codec_type=AVMEDIA_TYPE_AUDIO;
+        params->sample_rate=mediaInfo.u.audio.sample_rate;
+        params->bits_per_raw_sample=mediaInfo.u.audio.bits_per_sample;
+        params->channels=mediaInfo.u.audio.channels;
     }
-    init_transcoding_context(pContext,&params);
+    if (mediaInfo.media_type==0) {
+        params->codec_type=AVMEDIA_TYPE_VIDEO;
+        params->format=AV_PIX_FMT_YUV420P;
+        params->width=mediaInfo.u.video.width;
+        params->height=mediaInfo.u.video.height;
+    }
+    params->bit_rate=mediaInfo.bitrate;
+    params->codec_id=mediaInfo.format;
+    params->extradata_size=header.data_size;
+    params->extradata=NULL;
+    if (params->extradata_size>0) {
+         params->extradata=av_mallocz(params->extradata_size + AV_INPUT_BUFFER_PADDING_SIZE);
+        valread =recvEx(new_socket,(char*)params->extradata,header.data_size);
+    }
+    init_transcoding_context(pContext,params);
     init_outputs(pContext,config);
     
     
@@ -184,6 +194,8 @@ void* listenerThread(void *vargp)
         close_Transcode_output(&outputs[i]);
         
     }
+    
+    avcodec_parameters_free(params);
 
     
     return NULL;
