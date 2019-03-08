@@ -67,11 +67,11 @@ void GetFrameStatsAvg(struct FramesStats* pStats,int* bitRate,double *fps,double
 
         int64_t frames=(pStats->head - pStats->tail + 1);
 
-        if (ptsPassedInSec>0) {
+        if (ptsPassedInSec>0 && timePassedInSec>0) {
             double dbitRate= (double)(pStats->totalBitrateInWindow)/ptsPassedInSec;
             *bitRate=(int)dbitRate;
             *fps=frames/timePassedInSec;
-            *rate=1;//(currentPts-pHist->pts)
+            *rate=ptsPassedInSec/timePassedInSec;
         }
     }
 }
