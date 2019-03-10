@@ -140,9 +140,13 @@ int main(int argc, char **argv)
     if (in_stream->codecpar->extradata_size>0) {
         send(sock , in_stream->codecpar->extradata , in_stream->codecpar->extradata_size , 0 );
     }
+    srand(time(NULL));
     while (keepRunning && !kbhit()) {
         if ((ret = av_read_frame(ifmt_ctx, &packet)) < 0)
-            break;
+        {
+            av_seek_frame(ifmt_ctx,activeStream,0,AVSEEK_FLAG_FRAME);
+            continue;
+        }
         
         if (activeStream!=packet.stream_index) {
             continue;
@@ -165,9 +169,15 @@ int main(int argc, char **argv)
         }
         frame.dts=packet.dts+basePts;
         frame.flags=0;
-        send(sock , &packetHeader , sizeof(packetHeader) , 0 );
-        send(sock , &frame , sizeof(frame) , 0 );
-        send(sock, packet.data,packet.size,0);
+        send(sock, &packetHeader, sizeof(packetHeader), 0);
+        send(sock, &frame, sizeof(frame), 0);
+        if (rand() % 10 < 2 && false) {
+            LOGGER0(CATEGORY_DEFAULT,AV_LOG_FATAL,"random!");
+            for (int i=0;i<packet.size;i++) {
+                packet.data[i]=rand();
+            }
+        }
+        send(sock, packet.data, packet.size, 0);
         /*
         LOGGER("SENDER",AV_LOG_DEBUG,"sent packet pts=%s dts=%s  size=%d",
                ts2str(header.pts,true),

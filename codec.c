@@ -194,7 +194,7 @@ int send_decoder_packet(struct TranscoderCodecContext *decoder,const AVPacket* p
     
     int ret;
     
-    LOGGER0(CATEGORY_CODEC, AV_LOG_DEBUG,"Sending packget to decoder");
+    //LOGGER0(CATEGORY_CODEC, AV_LOG_DEBUG,"Sending packet to decoder");
     
     
     ret = avcodec_send_packet(decoder->ctx, pkt);
@@ -203,7 +203,7 @@ int send_decoder_packet(struct TranscoderCodecContext *decoder,const AVPacket* p
         return 0;
     }
     if (ret < 0) {
-        LOGGER(CATEGORY_CODEC,AV_LOG_ERROR, "Error sending a packet to decoder %d (%s)",ret,av_err2str(ret));
+        LOGGER(CATEGORY_CODEC,AV_LOG_ERROR, "[%d] Error sending a packet to decoder %d (%s)",pkt->stream_index, ret,av_err2str(ret));
         return ret;
     }
     

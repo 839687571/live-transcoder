@@ -99,7 +99,7 @@ int send_output_packet(struct TranscodeOutput *pOutput,struct AVPacket* packet)
     int avgBitrate;
     double fps,rate;
     GetFrameStatsAvg(&pOutput->stats,&avgBitrate,&fps,&rate);
-    LOGGER(CATEGORY_OUTPUT,AV_LOG_DEBUG,"output (%s) got data: pts=%s; dts=%s clock=%s, size=%d, flags=%d bitrate %.2lf Kbit/s fps=%.2lf rate=%.2lf",
+    LOGGER(CATEGORY_OUTPUT,AV_LOG_DEBUG,"[%s] got data: pts=%s; dts=%s clock=%s, size=%d, flags=%d bitrate %.2lf Kbit/s fps=%.2lf rate=x%.2lf",
            pOutput->name,
            ts2str(packet->pts,true),
            ts2str(packet->dts,true),
@@ -116,12 +116,13 @@ int send_output_packet(struct TranscodeOutput *pOutput,struct AVPacket* packet)
     
         if (ret<0) {
             
-            LOGGER(CATEGORY_OUTPUT,AV_LOG_FATAL,"(%s) cannot save frame  %d (%s)",pOutput->name,ret,av_err2str(ret))
+            LOGGER(CATEGORY_OUTPUT,AV_LOG_FATAL,"[%s] cannot save frame  %d (%s)",pOutput->name,ret,av_err2str(ret))
         }
         av_write_frame(pOutput->oc, NULL);
         
         av_packet_unref(cpPacket);
     }
+
     /*
     if (pOutput->pOutputFile!=NULL && packet->data) {
         

@@ -148,8 +148,8 @@ void* listenerThread(void *vargp)
     
     
     output_frame_t networkFrame;
-    AVPacket packet;
     
+    AVPacket packet;
     while (true) {
         
         packet_header_t header;
@@ -179,13 +179,15 @@ void* listenerThread(void *vargp)
         if (valread<0){
             break;
         }
-        LOGGER("RECEIVER",AV_LOG_DEBUG,"received packet pts=%s dts=%s size=%d",
+        LOGGER("RECEIVER",AV_LOG_DEBUG,"[0] received packet pts=%s dts=%s size=%d",
                ts2str(packet.pts,true),
                ts2str(packet.dts,true),
                packet.size);
 
         packet.pos=getClock64();
         convert_packet(pContext,&packet);
+        
+        av_packet_unref(&packet);
         
     }
     
