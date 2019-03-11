@@ -190,7 +190,7 @@ int sendFrameToFilter(struct TranscodeContext *pContext,int filterId, AVCodecCon
 {
     
     struct TranscodeFilter *pFilter=(struct TranscodeFilter *)&pContext->filter[filterId];
-    LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG,"sending frame to filter %d (%s): pts=%s",
+    LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG,"[0] sending frame to filter %d (%s): pts=%s",
            filterId,
            pContext->filter[filterId].config,
            ts2str(pFrame->pts,true));
@@ -198,7 +198,7 @@ int sendFrameToFilter(struct TranscodeContext *pContext,int filterId, AVCodecCon
     int ret=send_filter_frame(pFilter,pFrame);
     if (ret<0) {
         
-        LOGGER(CATEGORY_DEFAULT,AV_LOG_ERROR,"failed sending frame to filterId %d (%s): pts=%s %d (%s)",
+        LOGGER(CATEGORY_DEFAULT,AV_LOG_ERROR,"[0] failed sending frame to filterId %d (%s): pts=%s %d (%s)",
                filterId,
                pContext->filter[filterId].config,
                ts2str(pFrame->pts,true),
@@ -258,7 +258,8 @@ int OnDecodedFrame(struct TranscodeContext *pContext,AVCodecContext* pDecoderCon
     if (pFrame!=NULL) {
         if (pDecoderContext->codec_type==AVMEDIA_TYPE_VIDEO) {
             
-            LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG,"[0] decoded video: pts=%s, frame type=%s;width=%d;height=%d",
+            LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG,"[0] decoded video: pts=%s, key=%s;pictype=%s;width=%d;height=%d",
+                   pFrame->key_frame==1 ? "True" : "False",
                    ts2str(pFrame->pts,true),
                    pict_type_to_string(pFrame->pict_type),
                    pFrame->width,pFrame->height);

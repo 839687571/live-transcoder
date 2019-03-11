@@ -141,10 +141,12 @@ int main(int argc, char **argv)
         send(sock , in_stream->codecpar->extradata , in_stream->codecpar->extradata_size , 0 );
     }
     srand(time(NULL));
+    uint64_t lastDts=0;
     while (keepRunning && !kbhit()) {
         if ((ret = av_read_frame(ifmt_ctx, &packet)) < 0)
         {
             av_seek_frame(ifmt_ctx,activeStream,0,AVSEEK_FLAG_FRAME);
+            basePts+=lastDts;
             continue;
         }
         
@@ -169,6 +171,7 @@ int main(int argc, char **argv)
         }
         frame.dts=packet.dts+basePts;
         frame.flags=0;
+        lastDts=packet.dts;
         send(sock, &packetHeader, sizeof(packetHeader), 0);
         send(sock, &frame, sizeof(frame), 0);
         if (rand() % 10 < 2 && false) {
