@@ -21,18 +21,10 @@
 #include "utils.h"
 #include "config.h"
 
+#include <signal.h>
+
 int sock=0;
 
-struct TranscodeOutput outputs[100];
-int totalOutputs=0;
-
-void ffmpeg_log_callback(void *ptr, int level, const char *fmt, va_list vargs)
-{
-    return;
-    if (level<AV_LOG_INFO)
-        return;
-    logger2("FFMPEG",level,fmt,vargs);
-}
 
 
 int init_socket(int port)
@@ -65,26 +57,18 @@ int init_socket(int port)
 }
 
 
-int init_outputs(struct TranscodeContext* pContext,json_value_t* json)
-{
-    const json_value_t* outputsJson;
-    json_get(json,"outputs",&outputsJson);
-    
-    for (int i=0;i<json_get_array_count(outputsJson);i++)
-    {
-        const json_value_t outputJson;
-        json_get_array_index(outputsJson,i,&outputJson);
-        
-        struct TranscodeOutput *pOutput=&outputs[totalOutputs];
-        init_Transcode_output_from_json(pOutput,&outputJson);
-        
-        add_output(pContext,pOutput);
-        totalOutputs++;
-    }
-    return 0;
+static volatile int keepRunning = 1;
+
+void intHandler(int dummy) {
+    LOGGER0(CATEGORY_DEFAULT,AV_LOG_WARNING,"SIGINT detected!");
+    keepRunning = 0;
 }
+
 int main(int argc, char **argv)
 {
+    log_init(AV_LOG_DEBUG);
+    signal(SIGINT, intHandler);
+
 
     int ret=LoadConfig(argc,argv);
     if (ret < 0) {
@@ -92,14 +76,12 @@ int main(int argc, char **argv)
     }
 
     char* pSourceFileName;
-    json_get_string(GetConfig(),"input","",&pSourceFileName);
+    json_get_string(GetConfig(),"input.file","",&pSourceFileName);
 
-    av_log_set_level(AV_LOG_DEBUG);
-    av_log_set_callback(ffmpeg_log_callback);
     
 
 
-    AVFormatContext *ifmt_ctx;
+    AVFormatContext *ifmt_ctx=NULL;
     ret = avformat_open_input(&ifmt_ctx, pSourceFileName, NULL, NULL);
     if (ret < 0) {
         LOGGER(CATEGORY_DEFAULT,AV_LOG_FATAL,"Unable to open input %s %d (%s)",pSourceFileName,ret,av_err2str(ret));
@@ -118,8 +100,9 @@ int main(int argc, char **argv)
     
     struct TranscodeContext ctx;
     
-    int activeStream=0;
+    int activeStream=1;
     
+    json_get_int(GetConfig(),"activeStream",0,&activeStream);
 
 
     startService(&ctx,9999);
@@ -137,19 +120,33 @@ int main(int argc, char **argv)
     packetHeader.data_size=in_stream->codecpar->extradata_size;
     mediaInfo.bitrate=in_stream->codecpar->bit_rate;
     mediaInfo.format=in_stream->codecpar->codec_id;
-    mediaInfo.media_type=0;
-    mediaInfo.timescale=0;
-    mediaInfo.u.video.width=in_stream->codecpar->width;
-    mediaInfo.u.video.height=in_stream->codecpar->height;
+    mediaInfo.timescale=90000;
+    if (in_stream->codecpar->codec_type==AVMEDIA_TYPE_VIDEO)
+    {
+        mediaInfo.media_type=0;
+        mediaInfo.u.video.width=in_stream->codecpar->width;
+        mediaInfo.u.video.height=in_stream->codecpar->height;
+    }
+    if (in_stream->codecpar->codec_type==AVMEDIA_TYPE_AUDIO)
+    {
+        mediaInfo.media_type=1;
+        mediaInfo.u.audio.bits_per_sample=in_stream->codecpar->bits_per_raw_sample;
+        mediaInfo.u.audio.sample_rate=in_stream->codecpar->sample_rate;
+        mediaInfo.u.audio.channels=in_stream->codecpar->channels;
+    }
     
     send(sock , &packetHeader , sizeof(packetHeader) , 0 );
     send(sock , &mediaInfo , sizeof(mediaInfo) , 0 );
     if (in_stream->codecpar->extradata_size>0) {
         send(sock , in_stream->codecpar->extradata , in_stream->codecpar->extradata_size , 0 );
     }
-    while (!kbhit()) {
+    srand(time(NULL));
+    while (keepRunning && !kbhit()) {
         if ((ret = av_read_frame(ifmt_ctx, &packet)) < 0)
-            break;
+        {
+            av_seek_frame(ifmt_ctx,activeStream,0,AVSEEK_FLAG_FRAME);
+            continue;
+        }
         
         if (activeStream!=packet.stream_index) {
             continue;
@@ -172,9 +169,15 @@ int main(int argc, char **argv)
         }
         frame.dts=packet.dts+basePts;
         frame.flags=0;
-        send(sock , &packetHeader , sizeof(packetHeader) , 0 );
-        send(sock , &frame , sizeof(frame) , 0 );
-        send(sock, packet.data,packet.size,0);
+        send(sock, &packetHeader, sizeof(packetHeader), 0);
+        send(sock, &frame, sizeof(frame), 0);
+        if (rand() % 10 < 2 && false) {
+            LOGGER0(CATEGORY_DEFAULT,AV_LOG_FATAL,"random!");
+            for (int i=0;i<packet.size;i++) {
+                packet.data[i]=rand();
+            }
+        }
+        send(sock, packet.data, packet.size, 0);
         /*
         LOGGER("SENDER",AV_LOG_DEBUG,"sent packet pts=%s dts=%s  size=%d",
                ts2str(header.pts,true),
@@ -189,13 +192,9 @@ int main(int argc, char **argv)
     
     stopService();
     
-    for (int i=0;i<totalOutputs;i++){
-        close_Transcode_output(&outputs[i]);
-
-    }
-
     avformat_close_input(&ifmt_ctx);
     
+    loggerFlush();
     return 0;
 }
 

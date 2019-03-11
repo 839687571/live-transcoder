@@ -9,12 +9,29 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "/Users/guyjacubovski/dev/live-transcoder/transcoder",
-            "args": [],
+            "args": ["-f","/Users/guyjacubovski/dev/live-transcoder/config.json"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
             "externalConsole": true,
             "MIMode": "lldb"
-        }
+        },
+        {
+			"name": "C++ Launch (GDBSERVER)",
+			"type": "cppdbg",
+			"request": "launch",
+			"miDebuggerServerAddress": "localhost:2000",
+			"preLaunchTask": "start-gdbserver",
+			"miDebuggerPath": "/usr/bin/gdb",
+			"targetArchitecture": "x64",
+			"program": "/build/transcoder -f",
+			"args": [],
+			"stopAtEntry": false,
+			"cwd": "/build",
+			"sourceFileMap":{
+				"${workspaceFolder}": "/build/"
+			},
+			"environment": []
+	}
     ]
 }

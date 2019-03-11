@@ -38,7 +38,9 @@ int init_filter(struct TranscoderFilter *pFilter, AVCodecContext *dec_ctx,const 
     
     AVFilterInOut *outputs = avfilter_inout_alloc();
     AVFilterInOut *inputs  = avfilter_inout_alloc();
-    
+           
+    LOGGER(CATEGORY_FILTER,AV_LOG_INFO, "Create filter: config: \"%s\"  args: \"%s\"",filters_descr,args);
+
     pFilter->config=strdup(filters_descr);
     
     pFilter->filter_graph = avfilter_graph_alloc();
@@ -51,14 +53,14 @@ int init_filter(struct TranscoderFilter *pFilter, AVCodecContext *dec_ctx,const 
     ret = avfilter_graph_create_filter(&pFilter->src_ctx, buffersrc, "in",
                                        args, NULL, pFilter->filter_graph);
     if (ret < 0) {
-        LOGGER("FILTER",AV_LOG_ERROR, "Cannot create buffer source %d",ret)
+        LOGGER(CATEGORY_FILTER,AV_LOG_ERROR, "Cannot create buffer source %d (%s)",ret,av_err2str(ret))
         goto end;
     }
     
     ret = avfilter_graph_create_filter(&pFilter->sink_ctx, buffersink, "out",
                                        NULL, NULL, pFilter->filter_graph);
     if (ret < 0) {
-        LOGGER("FILTER", AV_LOG_ERROR, "Cannot create buffer sink %d",ret)
+        LOGGER(CATEGORY_FILTER, AV_LOG_ERROR, "Cannot create buffer sink %d (%s)",ret,av_err2str(ret))
         goto end;
     }
     
@@ -73,11 +75,16 @@ int init_filter(struct TranscoderFilter *pFilter, AVCodecContext *dec_ctx,const 
     inputs->next       = NULL;
     
     if ((ret = avfilter_graph_parse_ptr(pFilter->filter_graph, filters_descr,
-                                        &inputs, &outputs, NULL)) < 0)
+                                        &inputs, &outputs, NULL)) < 0)  {
+        LOGGER(CATEGORY_FILTER, AV_LOG_ERROR, "Cannot parse graph filters_descr: \"%s\" %d (%s)",filters_descr,ret,av_err2str(ret))
         goto end;
+    }
     
-    if ((ret = avfilter_graph_config(pFilter->filter_graph, NULL)) < 0)
+    if ((ret = avfilter_graph_config(pFilter->filter_graph, NULL)) < 0) {
+        
+        LOGGER(CATEGORY_FILTER, AV_LOG_ERROR, "Cannot config graph filters_descr: \"%s\" %d (%s)",filters_descr,ret,av_err2str(ret))
         goto end;
+    }
     
 end:
     avfilter_inout_free(&inputs);

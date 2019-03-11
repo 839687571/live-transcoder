@@ -2,6 +2,7 @@ ThirdParty
 *.mp4
 CMakeCache.txt
 cmake_install.cmake
-Makefile
+#Makefile
 transcoder
 CMakeFiles
+obj

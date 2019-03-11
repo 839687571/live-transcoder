@@ -19,6 +19,28 @@ pthread_cond_t cond1 = PTHREAD_COND_INITIALIZER;
 pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 
 
+struct TranscodeOutput outputs[100];
+int totalOutputs=0;
+
+int init_outputs(struct TranscodeContext* pContext,json_value_t* json)
+{
+    const json_value_t* outputsJson;
+    json_get(json,"outputs",&outputsJson);
+    
+    for (int i=0;i<json_get_array_count(outputsJson);i++)
+    {
+        const json_value_t outputJson;
+        json_get_array_index(outputsJson,i,&outputJson);
+        
+        struct TranscodeOutput *pOutput=&outputs[totalOutputs];
+        init_Transcode_output_from_json(pOutput,&outputJson);
+        
+        add_output(pContext,pOutput);
+        totalOutputs++;
+    }
+    return 0;
+}
+
 size_t recvEx(int socket,char* buffer,int bytesToRead) {
     
     size_t bytesRead=0;
@@ -100,24 +122,34 @@ void* listenerThread(void *vargp)
     }
     valread =recvEx(new_socket,(char*)&mediaInfo,sizeof(mediaInfo));
     
-    AVCodecParameters params;
-    params.bit_rate=mediaInfo.bitrate;
-    params.width=mediaInfo.u.video.width;
-    params.height=mediaInfo.u.video.height;
-    params.codec_id=mediaInfo.format;
-    params.extradata_size=header.data_size;
-    params.extradata=NULL;
-    if (params.extradata_size>0) {
-         params.extradata=av_mallocz(params.extradata_size + AV_INPUT_BUFFER_PADDING_SIZE);
-        valread =recvEx(new_socket,(char*)params.extradata,header.data_size);
+    AVCodecParameters* params=avcodec_parameters_alloc();
+    if (mediaInfo.media_type==1) {
+        params->codec_type=AVMEDIA_TYPE_AUDIO;
+        params->sample_rate=mediaInfo.u.audio.sample_rate;
+        params->bits_per_raw_sample=mediaInfo.u.audio.bits_per_sample;
+        params->channels=mediaInfo.u.audio.channels;
     }
-    init_transcoding_context(pContext,&params);
+    if (mediaInfo.media_type==0) {
+        params->codec_type=AVMEDIA_TYPE_VIDEO;
+        params->format=AV_PIX_FMT_YUV420P;
+        params->width=mediaInfo.u.video.width;
+        params->height=mediaInfo.u.video.height;
+    }
+    params->bit_rate=mediaInfo.bitrate;
+    params->codec_id=mediaInfo.format;
+    params->extradata_size=header.data_size;
+    params->extradata=NULL;
+    if (params->extradata_size>0) {
+         params->extradata=av_mallocz(params->extradata_size + AV_INPUT_BUFFER_PADDING_SIZE);
+        valread =recvEx(new_socket,(char*)params->extradata,header.data_size);
+    }
+    init_transcoding_context(pContext,params);
     init_outputs(pContext,config);
     
     
     output_frame_t networkFrame;
-    AVPacket packet;
     
+    AVPacket packet;
     while (true) {
         
         packet_header_t header;
@@ -147,7 +179,7 @@ void* listenerThread(void *vargp)
         if (valread<0){
             break;
         }
-        LOGGER("RECEIVER",AV_LOG_DEBUG,"received packet pts=%s dts=%s size=%d",
+        LOGGER("RECEIVER",AV_LOG_DEBUG,"[0] received packet pts=%s dts=%s size=%d",
                ts2str(packet.pts,true),
                ts2str(packet.dts,true),
                packet.size);
@@ -155,7 +187,19 @@ void* listenerThread(void *vargp)
         packet.pos=getClock64();
         convert_packet(pContext,&packet);
         
+        av_packet_unref(&packet);
+        
     }
+    
+    
+    for (int i=0;i<totalOutputs;i++){
+        close_Transcode_output(&outputs[i]);
+        
+    }
+    
+    avcodec_parameters_free(params);
+
+    
     return NULL;
 }
 
