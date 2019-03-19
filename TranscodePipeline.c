@@ -33,7 +33,7 @@ void get_filter_config(char *filterConfig, struct TranscoderCodecContext *pDecod
     if (pOutput->codec_type==AVMEDIA_TYPE_VIDEO)
     {
         if (pDecoderContext->nvidiaAccelerated) {
-            sprintf(filterConfig,"format=cuda;scale_npp=w=%d:h=%d:interp_algo=%s",
+            sprintf(filterConfig,"scale_npp=w=%d:h=%d:interp_algo=%s",
                     pOutput->videoParams.width,
                     pOutput->videoParams.height,
                     "super");
