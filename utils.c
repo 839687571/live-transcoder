@@ -11,6 +11,7 @@
 #include <termios.h>
 #include <time.h>
 #include <sys/ioctl.h> // For FIONREAD
+#include <libavutil/pixdesc.h>
 
 int load_file_to_memory(const char *filename, char **result)
 {
@@ -101,6 +102,43 @@ char *av_ts_make_time_stringEx(char *buf, int64_t ts,bool shortFormat)
     {
         snprintf(buf+written, K_TS_MAX_STRING_SIZE-(size_t)written, ".%03ld", ((1000*ts) / standard_timebase.den) % 1000);
         
+    }
+    return buf;
+}
+
+const char* pict_type_to_string(int pt) {
+    
+    const char *pict_type;
+    switch (pt)
+    {
+        case AV_PICTURE_TYPE_I: pict_type="I"; break;     ///< Intra
+        case AV_PICTURE_TYPE_P: pict_type="P"; break;      ///< Predicted
+        case AV_PICTURE_TYPE_B: pict_type="B"; break;      ///< Bi-dir predicted
+        case AV_PICTURE_TYPE_S: pict_type="S"; break;      ///< S(GMC)-VOP MPEG-4
+        case AV_PICTURE_TYPE_SI: pict_type="SI"; break;     ///< Switching Intra
+        case AV_PICTURE_TYPE_SP: pict_type="SP"; break;     ///< Switching Predicted
+        case AV_PICTURE_TYPE_BI: pict_type="BI"; break;     ///< BI type
+        default: pict_type="";
+    }
+    return pict_type;
+}
+
+char *av_get_frame_desc(char* buf, int size,AVFrame * pFrame)
+{
+    if (pFrame->width>0) {
+        snprintf(buf,size,"pts=%s;key=%s;data=%p;hwctx=%p;format=%s;pictype=%s;width=%d;height=%d",
+             ts2str(pFrame->pts,true),
+             pFrame->key_frame==1 ? "True" : "False",
+             &pFrame->data[0],
+             pFrame->hw_frames_ctx,
+             av_get_pix_fmt_name(pFrame->format),
+             pict_type_to_string(pFrame->pict_type),
+             pFrame->width,
+             pFrame->height);
+    } else {
+        snprintf(buf,size,"pts=%s;channels=%d;sampleRate=%d;format=%d;size=%d",
+                 ts2str(pFrame->pts,true),
+                 pFrame->channels,pFrame->sample_rate,pFrame->format,pFrame->nb_samples);
     }
     return buf;
 }

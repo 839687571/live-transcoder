@@ -1,32 +1,38 @@
 {
     "input": {
-        "file": "/Users/guyjacubovski/Sample_video/900.mp4",
-        "activeStream": 0
+        "file": "/Users/guyjacubovski/Sample_video/1080p60fps.mp4",
+        "activeStream": 0,
+        "numberOfFrames": 100
     },
     "debug": {
         "saveFile": true,
         "outputFileNamePattern": "/Users/guyjacubovski/dev/live-transcoder/output_%s.mp4"
     },
     "engine": {
-        "useNvidiaDecoder": false
+        "useNvidiaDecoder": true,
+        "codecs":"libx264|h264_videotoolbox|h264_nvenc"
     },
     "outputs": [
         {
             "name": "32",
+            "enabled": true,
             "passthrough": true
         },
         {
             "name": "33",
             "passthrough": false,
+            "enabled": true,
             "bitrate": 900,
             "codec": "libx264",
             "videoParams": {
                 "profile": "main",
-                "height": 480
+                "height": 480,
+                "fps": 5
             }
         },
         {
             "name": "34",
+            "enabled": false,
             "passthrough": false,
             "bitrate": 600,
             "codec": "libx264",
@@ -37,6 +43,7 @@
         },
         {
             "name": "35",
+            "enabled": false,
             "passthrough": false,
             "bitrate": 400,
             "codec": "libx264",
@@ -47,6 +54,7 @@
         },
         {
             "name": "42",
+            "enabled": false,
             "passthrough": false,
             "bitrate": 1500,
             "codec": "libx264",
@@ -57,12 +65,14 @@
         },
         {
             "name": "43",
+            "enabled": false,
             "passthrough": false,
             "bitrate": 2500,
             "codec": "libx264",
             "videoParams": {
                 "profile": "high",
-                "height": 720
+                "height": 720,
+                "fps": 5
             }
         }
     ]

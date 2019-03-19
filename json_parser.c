@@ -21,7 +21,7 @@
 #define ASSERT_CHAR(state, ch)                                        \
 if (*(state)->cur_pos != ch)                                    \
 {                                                                \
-snprintf(state->error, state->error_size, "expected 0x%xd got 0x%xd", (int)ch, (int)*(state)->cur_pos); \
+snprintf(state->error, state->error_size, "expected 0x%xd got 0x%xd (%s)", (int)ch, (int)*(state)->cur_pos,(state)->cur_pos); \
 return JSON_BAD_DATA;                                    \
 }
 
@@ -535,7 +535,7 @@ json_parse_object(json_parser_state_t* state, json_object_t* result)
                 continue;
         }
         
-        snprintf(state->error, state->error_size, "expected , or } while parsing object, got 0x%xd", (int)*state->cur_pos);
+        snprintf(state->error, state->error_size, "expected , or } while parsing object, got 0x%xd (%s)", (int)*state->cur_pos,state->cur_pos);
         return JSON_BAD_DATA;
     }
 }

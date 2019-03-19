@@ -17,12 +17,12 @@
 #define CATEGORY_OUTPUT "OUTPUT"
 #define CATEGORY_FILTER "FILTER"
 #define CATEGORY_FFMPEG "FFMPEG"
-
+#define CATEGORY_RECEIVER "RECEIVER"
 void logger1(char* category,int level,const char *fmt, ...);
 void loggerFlush();
-const char* pict_type_to_string(int pt);
 void log_init(int level);
 int get_log_level(char* category,int level);
+void init_ffmpeg_log_level(int logLevel);
 
 #define LOGGER(CATEGORY,LEVEL,FMT,...) { if (get_log_level(CATEGORY,LEVEL)>=LEVEL) { logger1(CATEGORY,LEVEL,FMT,__VA_ARGS__); }}
 #define LOGGER0(CATEGORY,LEVEL,FMT) {  if (get_log_level(CATEGORY,LEVEL)>=LEVEL) { logger1(CATEGORY,LEVEL,FMT); } }

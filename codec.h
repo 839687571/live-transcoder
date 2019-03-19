@@ -16,17 +16,22 @@
 
 struct TranscoderCodecContext
 {
+    AVBufferRef *hw_device_ctx,*hw_frames_ctx;
     AVCodec* codec;
     AVCodecContext* ctx;
+    int64_t inPts,outPts;
     bool nvidiaAccelerated;
 };
 
 int init_decoder(struct TranscoderCodecContext * pContext,AVCodecParameters *pCodecParams);
 
+int close_codec(struct TranscoderCodecContext * pContext);
+
 int init_video_encoder(struct TranscoderCodecContext * pContext,
                        AVRational inputAspectRatio,
                        enum AVPixelFormat inputPixelFormat,
                        AVRational inputFrameRate,
+                       struct AVBufferRef* hw_frames_ctx,
                        const struct TranscodeOutput* pOutput,
                        int width,int height);
 
@@ -39,5 +44,7 @@ int receive_encoder_packet(struct TranscoderCodecContext *encoder,AVPacket* pkt)
 int send_decoder_packet(struct TranscoderCodecContext *decoder,const AVPacket* pkt);
 int receive_decoder_frame(struct TranscoderCodecContext *decoder,AVFrame *pFrame);
 
-    
+int reset_decoder(struct TranscoderCodecContext *decoder);
+
+inline int64_t get_latency(struct TranscoderCodecContext *codec) { return llabs(codec->outPts-codec->inPts);}
 #endif /* TranscoderEncoder_h */

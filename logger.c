@@ -12,6 +12,7 @@
 #include <sys/time.h>
 #include "logger.h"
 #include "utils.h"
+#include <pthread.h>
 
 
 static int logLevel =AV_LOG_VERBOSE;
@@ -28,7 +29,7 @@ const   char* getLevel(int level) {
     }
     return "";
 }
-void logger2(char* category,int level,const char *fmt, bool newLine, va_list args)
+void logger2(const char* category,const char* subcategory,int level,const char *fmt, bool newLine, va_list args)
 {    
     const char* levelStr=getLevel(level);
     
@@ -41,7 +42,7 @@ void logger2(char* category,int level,const char *fmt, bool newLine, va_list arg
     strftime(buf, 25, "%Y-%m-%dT%H:%M:%S",gm);
     
     
-    fprintf( stderr, "%s.%03d %s %s ",buf,(int)( (now % 1000000)/1000 ),category, levelStr);
+    fprintf( stderr, "%s.%03d %s:%s %s [%x] ",buf,(int)( (now % 1000000)/1000 ),category,subcategory!=NULL ? subcategory : "", levelStr,pthread_self());
     vfprintf( stderr, fmt, args );
     if (newLine) {
         fprintf( stderr, "\n" );
@@ -54,27 +55,11 @@ void logger1(char* category,int level,const char *fmt, ...)
 {
     va_list args;
     va_start( args, fmt );
-    logger2(category,level,fmt,true,args);
+    logger2("TRANSCODER",category,level,fmt,true,args);
     va_end( args );
 }
 
 
-const char* pict_type_to_string(int pt) {
-    
-    const char *pict_type;
-    switch (pt)
-    {
-        case AV_PICTURE_TYPE_I: pict_type="I"; break;     ///< Intra
-        case AV_PICTURE_TYPE_P: pict_type="P"; break;      ///< Predicted
-        case AV_PICTURE_TYPE_B: pict_type="B"; break;      ///< Bi-dir predicted
-        case AV_PICTURE_TYPE_S: pict_type="S"; break;      ///< S(GMC)-VOP MPEG-4
-        case AV_PICTURE_TYPE_SI: pict_type="SI"; break;     ///< Switching Intra
-        case AV_PICTURE_TYPE_SP: pict_type="SP"; break;     ///< Switching Predicted
-        case AV_PICTURE_TYPE_BI: pict_type="BI"; break;     ///< BI type
-        default: pict_type="";
-    }
-    return pict_type;
-}
 /*
 static void log_packet(const AVFormatContext *fmt_ctx, const AVPacket *pkt, const char *tag)
 {
@@ -90,19 +75,36 @@ static void log_packet(const AVFormatContext *fmt_ctx, const AVPacket *pkt, cons
 }*/
 
 
+
+/*
+const char *av_default_item_name(void *ptr)
+{
+    return (*(AVClass **) ptr)->class_name;
+}
+
+AVClassCategory av_default_get_category(void *ptr)
+{
+    return (*(AVClass **) ptr)->category;
+}*/
+
 void ffmpeg_log_callback(void *ptr, int level, const char *fmt, va_list vargs)
 {
     if (level>logLevel)
         return;
-    logger2(CATEGORY_FFMPEG,level,fmt,false,vargs);
+    logger2 (CATEGORY_FFMPEG, ptr!=NULL ? av_default_item_name(ptr) : "",level,fmt,false,vargs);
 }
 
 
 void log_init(int level)
 {
     logLevel=level;
-    av_log_set_level(AV_LOG_INFO);
+}
+
+void init_ffmpeg_log_level(int logLevel)
+{
+    av_log_set_level(logLevel);
     av_log_set_callback(ffmpeg_log_callback);
+
 }
 int get_log_level(char* category,int level)
 {

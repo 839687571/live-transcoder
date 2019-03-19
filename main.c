@@ -78,6 +78,8 @@ int main(int argc, char **argv)
     char* pSourceFileName;
     json_get_string(GetConfig(),"input.file","",&pSourceFileName);
 
+    int numberOfFrames=0;
+    json_get_int(GetConfig(),"input.numberOfFrames",-1,&numberOfFrames);
     
 
 
@@ -97,6 +99,8 @@ int main(int argc, char **argv)
     //LOGGER("Version: %s\n", VERSION);
 
     avformat_network_init();
+    
+    init_ffmpeg_log_level(AV_LOG_DEBUG);
     
     struct TranscodeContext ctx;
     
@@ -154,6 +158,13 @@ int main(int argc, char **argv)
             continue;
         }
         
+        if (numberOfFrames!=-1) {
+            numberOfFrames--;
+            if (numberOfFrames<0) {
+                break;
+            }
+        }
+        
         AVStream *in_stream=ifmt_ctx->streams[packet.stream_index];
         
         av_packet_rescale_ts(&packet,in_stream->time_base, standard_timebase);
@@ -191,8 +202,14 @@ int main(int argc, char **argv)
 
     }
     LOGGER0(CATEGORY_DEFAULT,AV_LOG_FATAL,"stopping!");
-
     
+    packetHeader.packet_type=PACKET_TYPE_HEADER;
+    packetHeader.header_size=0;
+    packetHeader.data_size=0;
+    send(sock, &packetHeader, sizeof(packetHeader), 0);
+
+
+    close(sock);
     stopService();
     
     avformat_close_input(&ifmt_ctx);

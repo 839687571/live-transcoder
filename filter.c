@@ -57,10 +57,36 @@ int init_filter(struct TranscoderFilter *pFilter, AVCodecContext *dec_ctx,const 
         goto end;
     }
     
+    
+    
+    if (dec_ctx->hw_frames_ctx!=NULL) {
+        LOGGER0(CATEGORY_FILTER, AV_LOG_INFO, "Setting hardware device context")
+        AVBufferSrcParameters *par = av_buffersrc_parameters_alloc();
+        memset(par, 0, sizeof(*par));
+        par->format = AV_PIX_FMT_NONE;
+        par->hw_frames_ctx=dec_ctx->hw_frames_ctx;
+        ret = av_buffersrc_parameters_set(pFilter->src_ctx, par);
+        if (ret<0) {
+            LOGGER(CATEGORY_FILTER, AV_LOG_ERROR, "Failed setting hardware device context %d (%s)",ret,av_err2str(ret))
+            goto end;
+        }
+        av_freep(&par);
+    }
+    
+    
+    
     ret = avfilter_graph_create_filter(&pFilter->sink_ctx, buffersink, "out",
                                        NULL, NULL, pFilter->filter_graph);
     if (ret < 0) {
         LOGGER(CATEGORY_FILTER, AV_LOG_ERROR, "Cannot create buffer sink %d (%s)",ret,av_err2str(ret))
+        goto end;
+    }
+
+    enum AVPixelFormat pix_fmts[] = { AV_PIX_FMT_CUDA, AV_PIX_FMT_NV12, AV_PIX_FMT_YUV420P, AV_PIX_FMT_NONE };
+    ret = av_opt_set_int_list(pFilter->sink_ctx, "pix_fmts", pix_fmts,
+                              AV_PIX_FMT_NONE, AV_OPT_SEARCH_CHILDREN);
+    if (ret < 0) {
+        av_log(NULL, AV_LOG_ERROR, "Cannot set output pixel format\n");
         goto end;
     }
     
@@ -80,6 +106,12 @@ int init_filter(struct TranscoderFilter *pFilter, AVCodecContext *dec_ctx,const 
         goto end;
     }
     
+    if (dec_ctx->hw_frames_ctx!=NULL) {
+        for (int i = 0; i < pFilter->filter_graph->nb_filters; i++) {
+            pFilter->filter_graph->filters[i]->hw_device_ctx = av_buffer_ref(dec_ctx->hw_frames_ctx);
+        }
+    }
+        
     if ((ret = avfilter_graph_config(pFilter->filter_graph, NULL)) < 0) {
         
         LOGGER(CATEGORY_FILTER, AV_LOG_ERROR, "Cannot config graph filters_descr: \"%s\" %d (%s)",filters_descr,ret,av_err2str(ret))
@@ -91,6 +123,12 @@ end:
     avfilter_inout_free(&outputs);
     
     return ret;
+}
+int close_filter(struct TranscoderFilter *pFilter)
+{
+    avfilter_graph_free(&pFilter->filter_graph);
+
+    return 0;
 }
 
 int send_filter_frame(struct TranscoderFilter *pFilter,struct AVFrame* pInFrame)

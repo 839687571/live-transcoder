@@ -32,6 +32,14 @@ int init_outputs(struct TranscodeContext* pContext,json_value_t* json)
         const json_value_t outputJson;
         json_get_array_index(outputsJson,i,&outputJson);
         
+        bool enabled=true;
+        json_get_bool(&outputJson,"enabled",true,&enabled);
+        if (!enabled) {
+            char* name;
+            json_get_string(&outputJson,"name","",&name);
+            LOGGER(CATEGORY_RECEIVER,AV_LOG_INFO,"Skipping output %s since it's disabled",name);
+            continue;
+        }
         struct TranscodeOutput *pOutput=&outputs[totalOutputs];
         init_Transcode_output_from_json(pOutput,&outputJson);
         
@@ -60,6 +68,8 @@ size_t recvEx(int socket,char* buffer,int bytesToRead) {
 
 void* listenerThread(void *vargp)
 {
+    
+    LOGGER0(CATEGORY_RECEIVER,AV_LOG_INFO,"listenerThread");
     
     struct TranscodeContext *pContext = (struct TranscodeContext *)vargp;
     
@@ -101,9 +111,9 @@ void* listenerThread(void *vargp)
         perror("listen");
         exit(EXIT_FAILURE);
     }
+    LOGGER0(CATEGORY_RECEIVER,AV_LOG_INFO,"Waiting for accept");
     pthread_cond_signal(&cond1);
 
-    
     if ((new_socket = accept(server_fd, (struct sockaddr *)&address,
                              (socklen_t*)&addrlen))<0)
     {
@@ -154,16 +164,18 @@ void* listenerThread(void *vargp)
         
         packet_header_t header;
         valread =recvEx(new_socket,(char*)&header,sizeof(header));
+        
+        if (header.data_size==0 && header.header_size==0) {
+            close_transcoding_context(pContext);
+            break;
+        }
+        
         valread =recvEx(new_socket,(char*)&networkFrame,header.header_size);
         
         if (valread<0){
             break;
         }
         
-        if (networkFrame.flags==99) {
-            close_transcoding_context(pContext);
-            break;
-        }
         
         av_new_packet(&packet,(int)header.data_size);
         packet.dts=networkFrame.dts;
@@ -179,7 +191,7 @@ void* listenerThread(void *vargp)
         if (valread<0){
             break;
         }
-        LOGGER("RECEIVER",AV_LOG_DEBUG,"[0] received packet pts=%s dts=%s size=%d",
+        LOGGER(CATEGORY_RECEIVER,AV_LOG_DEBUG,"[0] received packet pts=%s dts=%s size=%d",
                ts2str(packet.pts,true),
                ts2str(packet.dts,true),
                packet.size);
@@ -190,15 +202,18 @@ void* listenerThread(void *vargp)
         av_packet_unref(&packet);
         
     }
-    
+    LOGGER0(CATEGORY_RECEIVER,AV_LOG_INFO,"Destorying receive thread");
+
     
     for (int i=0;i<totalOutputs;i++){
+        LOGGER(CATEGORY_RECEIVER,AV_LOG_INFO,"Closing output %s",outputs[i].name);
         close_Transcode_output(&outputs[i]);
         
     }
     
-    avcodec_parameters_free(params);
+    avcodec_parameters_free(&params);
 
+    LOGGER0(CATEGORY_RECEIVER,AV_LOG_INFO,"Completed receive thread");
     
     return NULL;
 }
@@ -213,5 +228,5 @@ void startService(struct TranscodeContext *pContext,int port)
 
 
 void stopService() {
-    pthread_join(&thread_id,NULL);
+    pthread_join(thread_id,NULL);
 }

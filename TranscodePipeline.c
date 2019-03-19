@@ -15,7 +15,7 @@
 /* initialization */
 int init_transcoding_context(struct TranscodeContext *pContext,struct AVCodecParameters* codecParams)
 {
-    pContext->inputs=0;
+    pContext->decoders=0;
     pContext->outputs=0;
     pContext->filters=0;
     pContext->encoders=0;
@@ -32,10 +32,15 @@ void get_filter_config(char *filterConfig, struct TranscoderCodecContext *pDecod
 {
     if (pOutput->codec_type==AVMEDIA_TYPE_VIDEO)
     {
-        sprintf(filterConfig,"%s=w=%d:h=%d",
-                pDecoderContext->nvidiaAccelerated ? "scale_npp" : "scale",
-                pOutput->videoParams.width,
-                pOutput->videoParams.height);
+        if (pDecoderContext->nvidiaAccelerated) {
+            sprintf(filterConfig,"format=cuda;scale_npp=w=%d:h=%d:interp_algo=%s",
+                    pOutput->videoParams.width,
+                    pOutput->videoParams.height,
+                    "super");
+        } else {
+            sprintf(filterConfig,"scale=w=%d:h=%d:sws_flags=%s",pOutput->videoParams.width,pOutput->videoParams.height,"lanczos");
+        }
+       
     }
     if (pOutput->codec_type==AVMEDIA_TYPE_AUDIO)
     {
@@ -83,18 +88,21 @@ int config_encoder(struct TranscodeOutput *pOutput, struct TranscoderCodecContex
         int width=pDecoderContext->ctx->width;
         int height=pDecoderContext->ctx->height;
         enum AVPixelFormat picFormat=pDecoderContext->ctx->pix_fmt;
-        
+        AVBufferRef *hw_frames_ctx = pDecoderContext->ctx->hw_frames_ctx;
+
         if (pFilter) {
             
             width=av_buffersink_get_w(pFilter->sink_ctx);
             height=av_buffersink_get_h(pFilter->sink_ctx);
-            picFormat= av_buffersink_get_format(pFilter->sink_ctx);
+            picFormat=av_buffersink_get_format(pFilter->sink_ctx);
+            hw_frames_ctx=av_buffersink_get_hw_frames_ctx(pFilter->sink_ctx);
         }
         
         ret=init_video_encoder(pEncoderContext,
                                pDecoderContext->ctx->sample_aspect_ratio,
                                picFormat,
                                frameRate,
+                               hw_frames_ctx,
                                pOutput,
                                width,
                                height);
@@ -190,18 +198,18 @@ int sendFrameToFilter(struct TranscodeContext *pContext,int filterId, AVCodecCon
 {
     
     struct TranscodeFilter *pFilter=(struct TranscodeFilter *)&pContext->filter[filterId];
-    LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG,"[0] sending frame to filter %d (%s): pts=%s",
+    LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG,"[0] sending frame to filter %d (%s) %s",
            filterId,
            pContext->filter[filterId].config,
-           ts2str(pFrame->pts,true));
+           getFrameDesc(pFrame));
     
     int ret=send_filter_frame(pFilter,pFrame);
     if (ret<0) {
         
-        LOGGER(CATEGORY_DEFAULT,AV_LOG_ERROR,"[0] failed sending frame to filterId %d (%s): pts=%s %d (%s)",
+        LOGGER(CATEGORY_DEFAULT,AV_LOG_ERROR,"[0] failed sending frame to filterId %d (%s): %s %d (%s)",
                filterId,
                pContext->filter[filterId].config,
-               ts2str(pFrame->pts,true),
+               getFrameDesc(pFrame),
                ret,
                av_err2str(ret));
     }
@@ -221,24 +229,14 @@ int sendFrameToFilter(struct TranscodeContext *pContext,int filterId, AVCodecCon
             return ret;
         }
         
-        if (pDecoderContext->codec_type==AVMEDIA_TYPE_VIDEO) {
-            LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG,"[0] recieved video from filterId %d (%s): pts=%s, frame type=%s;width=%d;height=%d",
-                   filterId,
-                   pContext->filter[filterId].config,
-                   ts2str(pOutFrame->pts,true),
-                   pict_type_to_string(pOutFrame->pict_type),
-                   pOutFrame->width,pOutFrame->height);
-        }
+        LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG,"[0] recieved from filterId %d (%s): %s",
+               filterId,
+               pContext->filter[filterId].config,getFrameDesc(pOutFrame))
         
-        if (pDecoderContext->codec_type==AVMEDIA_TYPE_AUDIO) {
-            LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG,"[0] recieved audio from filterId(%d): pts=%s, size=%d",
-                   filterId,
-                   ts2str(pOutFrame->pts,true),pOutFrame->nb_samples);
-        }
         
         for (int outputId=0;outputId<pContext->outputs;outputId++) {
             struct TranscodeOutput *pOutput=pContext->output[outputId];
-            if (pOutput->filterId==filterId){
+            if (pOutput->filterId==filterId && pOutput->encoderId!=-1){
                 LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG,"[%s] sending frame from filterId %d to encoderId %d",pOutput->name,filterId,pOutput->encoderId);
                 encodeFrame(pContext,pOutput->encoderId,outputId,pOutFrame);
             }
@@ -256,27 +254,15 @@ bool shouldDrop(AVFrame *pFrame)
 int OnDecodedFrame(struct TranscodeContext *pContext,AVCodecContext* pDecoderContext, AVFrame *pFrame)
 {
     if (pFrame!=NULL) {
-        if (pDecoderContext->codec_type==AVMEDIA_TYPE_VIDEO) {
-            
-            LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG,"[0] decoded video: pts=%s, key=%s;pictype=%s;width=%d;height=%d",
-                   pFrame->key_frame==1 ? "True" : "False",
-                   ts2str(pFrame->pts,true),
-                   pict_type_to_string(pFrame->pict_type),
-                   pFrame->width,pFrame->height);
-            
-            if (shouldDrop(pFrame))
-            {
-                return 0;
-            }
+        
+        LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG,"[0] decoded: %s",getFrameDesc(pFrame));
+        
+        if (shouldDrop(pFrame))
+        {
+            return 0;
+        }
             //return 0;
             //  printf("saving frame %3d\n", pDecoderContext->frame_number);
-        } else {
-            LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG,"decoded audio: pts=%s;channels=%d;sample rate=%d; length=%d; format=%d ",
-                   ts2str(pFrame->pts,true),
-                   pFrame->channels,pFrame->sample_rate,pFrame->nb_samples,pFrame->format);
-            
-            
-        }
     }
     for (int filterId=0;filterId<pContext->filters;filterId++) {
         
@@ -301,7 +287,7 @@ int decodePacket(struct TranscodeContext *transcodingContext,const AVPacket* pkt
     
     
     if (pkt!=NULL) {
-        LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG, "[%d] Sending packet  to decoder pts=%s dts=%s",
+        LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG, "[%d] Sending packet to decoder pts=%s dts=%s",
                pkt->stream_index,
                ts2str(pkt->pts,true),
                ts2str(pkt->dts,true));
@@ -365,7 +351,22 @@ int convert_packet(struct TranscodeContext *pContext ,struct AVPacket* packet)
 
 int close_transcoding_context(struct TranscodeContext *pContext) {
     
+    LOGGER0(CATEGORY_DEFAULT,AV_LOG_INFO, "Flushing started");
     convert_packet(pContext,NULL);
 
+    LOGGER0(CATEGORY_DEFAULT,AV_LOG_INFO, "Flushing completed");
+    
+    for (int i=0;i<pContext->decoders;i++) {
+        LOGGER(CATEGORY_DEFAULT,AV_LOG_INFO,"Closing decoder %d",i);
+        close_codec(&pContext->decoder[i]);
+    }
+    for (int i=0;i<pContext->filters;i++) {
+        LOGGER(CATEGORY_DEFAULT,AV_LOG_INFO,"Closing filter %d",i);
+        close_filter(&pContext->filter[i]);
+    }
+    for (int i=0;i<pContext->encoders;i++) {
+        LOGGER(CATEGORY_DEFAULT,AV_LOG_INFO,"Closing encoder %d",i);
+        close_codec(&pContext->encoder[i]);
+    }
     return 0;
 }

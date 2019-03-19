@@ -22,5 +22,6 @@ struct TranscoderFilter
 int init_filter(struct TranscoderFilter *pFilter, AVCodecContext *dec_ctx,const char *filters_descr);
 int send_filter_frame(struct TranscoderFilter *pFilter,struct AVFrame* pInFrame);
 int receive_filter_frame(struct TranscoderFilter *pFilter,struct AVFrame* pOutFrame);
+int close_filter(struct TranscoderFilter *pFilter);
 
 #endif /* filter_h */
