@@ -81,6 +81,13 @@ int main(int argc, char **argv)
     int numberOfFrames=0;
     json_get_int(GetConfig(),"input.numberOfFrames",-1,&numberOfFrames);
     
+    bool realTime;
+    json_get_bool(GetConfig(),"input.realTime",false,&realTime);
+    
+    int activeStream=0;
+    json_get_int(GetConfig(),"activeStream",0,&activeStream);
+    int randomDataPercentage;
+    json_get_int(GetConfig(),"input.randomDataPercentage",0,&randomDataPercentage);
 
 
     AVFormatContext *ifmt_ctx=NULL;
@@ -104,11 +111,8 @@ int main(int argc, char **argv)
     
     struct TranscodeContext ctx;
     
-    int activeStream=1;
+
     
-    json_get_int(GetConfig(),"activeStream",0,&activeStream);
-
-
     startService(&ctx,9999);
     AVPacket packet;
     av_init_packet(&packet);
@@ -148,9 +152,12 @@ int main(int argc, char **argv)
             send(sock , in_stream->codecpar->extradata , in_stream->codecpar->extradata_size , 0 );
         }
     }
+    LOGGER("SENDER",AV_LOG_INFO,"Realtime = %s",realTime ? "true" : "false");
     srand(time(NULL));
     uint64_t lastDts=0;
+    int64_t start_time=av_gettime_relative();
     while (keepRunning && !kbhit()) {
+        
         if ((ret = av_read_frame(ifmt_ctx, &packet)) < 0)
         {
             av_seek_frame(ifmt_ctx,activeStream,0,AVSEEK_FLAG_FRAME);
@@ -174,8 +181,6 @@ int main(int argc, char **argv)
         
         av_packet_rescale_ts(&packet,in_stream->time_base, standard_timebase);
         
-       // convert_packet(&ctx,&packet);
-        
         if (sock!=0)
         {
             packetHeader.packet_type=PACKET_TYPE_HEADER;
@@ -190,9 +195,23 @@ int main(int argc, char **argv)
             frame.dts=packet.dts+basePts;
             frame.flags=0;
             lastDts=packet.dts;
+            
+            
+            
+            if (realTime==true) {
+                
+                int64_t timePassed=av_rescale_q(frame.dts-basePts,standard_timebase,AV_TIME_BASE_Q);
+                //LOGGER("SENDER",AV_LOG_DEBUG,"XXXX dt=%ld dd=%ld", (av_gettime_relative() - start_time),timePassed);
+                while ((av_gettime_relative() - start_time) < timePassed) {
+                    
+                    // LOGGER0("SENDER",AV_LOG_DEBUG,"XXXX Sleep 10ms");
+                    av_usleep(10*1000);//10ms
+                }
+            } 
+            
             send(sock, &packetHeader, sizeof(packetHeader), 0);
             send(sock, &frame, sizeof(frame), 0);
-            if (rand() % 10 < 2 && false) {
+            if (randomDataPercentage>0 && ((rand() % 100) < randomDataPercentage)) {
                 LOGGER0(CATEGORY_DEFAULT,AV_LOG_FATAL,"random!");
                 for (int i=0;i<packet.size;i++) {
                     packet.data[i]=rand();
@@ -200,11 +219,13 @@ int main(int argc, char **argv)
             }
             send(sock, packet.data, packet.size, 0);
         }
+        /*
         LOGGER("SENDER",AV_LOG_DEBUG,"sent packet pts=%s dts=%s  size=%d",
                ts2str(packet.pts,true),
                ts2str(packet.dts,true),
-               packet.dts,packet.size);
+               packet.dts,packet.size);*/
 
+        
         av_packet_unref(&packet);
 
     }
