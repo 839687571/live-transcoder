@@ -32,16 +32,16 @@ if [ ! -f "$BASE_DIR/nasm/nasm" ]; then
     make install || echo "Installing docs fails but should be OK otherwise"
 fi
 
-if [ ! -f "$BASE_DIR/x264/x264" ]; then
-    rm -rf "$BASE_DIR/x264"
-    git clone http://git.videolan.org/git/x264.git "$BASE_DIR/x264"
+#if [ ! -f "$BASE_DIR/x264/x264" ]; then
+#    rm -rf "$BASE_DIR/x264"
+#git clone http://git.videolan.org/git/x264.git "$BASE_DIR/x264"
     cd "$BASE_DIR/x264"
     # git master as of this writing
     git checkout master
-    ./configure --prefix="$BASE_DIR/compiled" --enable-pic --enable-static
+    ./configure --enable-debug --prefix="$BASE_DIR/compiled" --enable-pic --enable-static
     make
     make install-lib-static
-fi
+#fi
 
 #if [ ! -f "$BASE_DIR/ffmpeg/libavcodec/libavcodec.a" ]; then
 #   rm -rf "$BASE_DIR/ffmpeg"

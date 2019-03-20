@@ -281,8 +281,9 @@ int init_audio_encoder(struct TranscoderCodecContext * pContext,struct Transcode
 }
 int close_codec(struct TranscoderCodecContext * pContext)
 {
-    avcodec_close(pContext->ctx);
-    av_free(pContext->ctx);
+    avcodec_free_context(&pContext->ctx);
+   // avcodec_close(pContext->ctx);
+    //av_free(pContext->ctx);
     pContext->ctx=NULL;
     return 0;
 }
