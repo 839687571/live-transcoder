@@ -226,7 +226,7 @@ int set_output_format(struct TranscodeOutput *pOutput,struct AVCodecParameters* 
 
 int close_Transcode_output(struct TranscodeOutput* pOutput)
 {
-    if (pOutput->oc==NULL) {
+    if (pOutput->oc!=NULL) {
         int ret = av_write_trailer(pOutput->oc);
     
         avio_closep(&pOutput->oc->pb);
