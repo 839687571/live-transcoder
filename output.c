@@ -111,8 +111,11 @@ int send_output_packet(struct TranscodeOutput *pOutput,struct AVPacket* packet)
            rate)
     
     if (pOutput->oc) {
-        AVPacket *cpPacket=av_packet_clone(packet);
-        int ret=av_write_frame(pOutput->oc, cpPacket);
+        
+        AVPacket cpPacket;
+        av_packet_ref(&cpPacket,packet);
+        
+        int ret=av_write_frame(pOutput->oc, &cpPacket);
     
         if (ret<0) {
             
@@ -120,7 +123,7 @@ int send_output_packet(struct TranscodeOutput *pOutput,struct AVPacket* packet)
         }
         av_write_frame(pOutput->oc, NULL);
         
-        av_packet_unref(cpPacket);
+        av_packet_unref(&cpPacket);
     }
 
     /*
