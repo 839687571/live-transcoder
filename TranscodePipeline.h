@@ -48,7 +48,7 @@ struct TranscodeContext {
  1
  */
 
-int init_transcoding_context(struct TranscodeContext *ctx,struct AVCodecParameters* codecParams);
+int init_transcoding_context(struct TranscodeContext *ctx,struct AVCodecParameters* codecParams,AVRational framerate);
 int convert_packet(struct TranscodeContext *pContext, struct AVPacket* packet);
 int close_transcoding_context(struct TranscodeContext *ctx);
 

@@ -91,6 +91,7 @@ void ffmpeg_log_callback(void *ptr, int level, const char *fmt, va_list vargs)
 {
     if (level>logLevel)
         return;
+    
     logger2 (CATEGORY_FFMPEG, ptr!=NULL ? av_default_item_name(ptr) : "",level,fmt,false,vargs);
 }
 

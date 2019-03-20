@@ -30,9 +30,14 @@ typedef struct {
 } audio_media_info_t;
 
 typedef struct {
+    uint16_t den,num;
+} rational_t;
+
+typedef struct {
     uint16_t width;
     uint16_t height;
-    double frame_rate;        // currently rounded by nginx-rtmp, will need a patch to avoid it
+    rational_t sample_aspect_ratio;
+    rational_t frame_rate;        // currently rounded by nginx-rtmp, will need a patch to avoid it
 } video_media_info_t;
 
 typedef struct media_info_s {

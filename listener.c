@@ -132,6 +132,7 @@ void* listenerThread(void *vargp)
     }
     valread =recvEx(new_socket,(char*)&mediaInfo,sizeof(mediaInfo));
     
+    AVRational frameRate;
     AVCodecParameters* params=avcodec_parameters_alloc();
     if (mediaInfo.media_type==1) {
         params->codec_type=AVMEDIA_TYPE_AUDIO;
@@ -144,6 +145,12 @@ void* listenerThread(void *vargp)
         params->format=AV_PIX_FMT_YUV420P;
         params->width=mediaInfo.u.video.width;
         params->height=mediaInfo.u.video.height;
+        AVRational sampleRatio={1,1};
+        params->sample_aspect_ratio.den=mediaInfo.u.video.sample_aspect_ratio.den;
+        params->sample_aspect_ratio.num=mediaInfo.u.video.sample_aspect_ratio.num;
+        frameRate.den=mediaInfo.u.video.frame_rate.den;
+        frameRate.num=mediaInfo.u.video.frame_rate.num;
+        
     }
     params->bit_rate=mediaInfo.bitrate;
     params->codec_id=mediaInfo.format;
@@ -153,7 +160,7 @@ void* listenerThread(void *vargp)
          params->extradata=av_mallocz(params->extradata_size + AV_INPUT_BUFFER_PADDING_SIZE);
         valread =recvEx(new_socket,(char*)params->extradata,header.data_size);
     }
-    init_transcoding_context(pContext,params);
+    init_transcoding_context(pContext,params,frameRate);
     init_outputs(pContext,config);
     
     

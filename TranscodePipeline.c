@@ -13,7 +13,7 @@
 
 
 /* initialization */
-int init_transcoding_context(struct TranscodeContext *pContext,struct AVCodecParameters* codecParams)
+int init_transcoding_context(struct TranscodeContext *pContext,struct AVCodecParameters* codecParams,AVRational framerate)
 {
     pContext->decoders=0;
     pContext->outputs=0;
@@ -22,7 +22,7 @@ int init_transcoding_context(struct TranscodeContext *pContext,struct AVCodecPar
     pContext->inputCodecParams=codecParams;
     
     struct TranscoderCodecContext *pDecoderContext=&pContext->decoder[0];
-    init_decoder(pDecoderContext,codecParams);
+    init_decoder(pDecoderContext,codecParams,framerate);
     
     return 0;
 }
@@ -91,9 +91,11 @@ int config_encoder(struct TranscodeOutput *pOutput, struct TranscoderCodecContex
     int ret=-1;
     if (pOutput->codec_type==AVMEDIA_TYPE_VIDEO)
     {
-        AVRational frameRate={1,30};
         int width=pDecoderContext->ctx->width;
         int height=pDecoderContext->ctx->height;
+        AVRational sample_aspect_ratio=pDecoderContext->ctx->sample_aspect_ratio;
+        AVRational time_base=pDecoderContext->ctx->time_base;
+        AVRational frameRate=pDecoderContext->ctx->framerate;
         enum AVPixelFormat picFormat=pDecoderContext->ctx->pix_fmt;
         AVBufferRef *hw_frames_ctx = pDecoderContext->ctx->hw_frames_ctx;
 
@@ -103,11 +105,15 @@ int config_encoder(struct TranscodeOutput *pOutput, struct TranscoderCodecContex
             height=av_buffersink_get_h(pFilter->sink_ctx);
             picFormat=av_buffersink_get_format(pFilter->sink_ctx);
             hw_frames_ctx=av_buffersink_get_hw_frames_ctx(pFilter->sink_ctx);
+            time_base=av_buffersink_get_time_base(pFilter->sink_ctx);
+            sample_aspect_ratio=av_buffersink_get_sample_aspect_ratio(pFilter->sink_ctx);
+            frameRate=av_buffersink_get_frame_rate(pFilter->sink_ctx);
         }
         
         ret=init_video_encoder(pEncoderContext,
-                               pDecoderContext->ctx->sample_aspect_ratio,
+                               sample_aspect_ratio,
                                picFormat,
+                               time_base,
                                frameRate,
                                hw_frames_ctx,
                                pOutput,

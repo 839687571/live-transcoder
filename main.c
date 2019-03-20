@@ -118,7 +118,7 @@ int main(int argc, char **argv)
     av_init_packet(&packet);
     
     init_socket(9999);
-    uint64_t  basePts=av_rescale_q( getClock64(), clockScale, standard_timebase);
+    uint64_t  basePts=0;//av_rescale_q( getClock64(), clockScale, standard_timebase);
     
     AVStream *in_stream=ifmt_ctx->streams[activeStream];
     media_info_t mediaInfo;
@@ -137,6 +137,10 @@ int main(int argc, char **argv)
             mediaInfo.media_type=0;
             mediaInfo.u.video.width=in_stream->codecpar->width;
             mediaInfo.u.video.height=in_stream->codecpar->height;
+            mediaInfo.u.video.sample_aspect_ratio.den=in_stream->codecpar->sample_aspect_ratio.den;
+            mediaInfo.u.video.sample_aspect_ratio.num=in_stream->codecpar->sample_aspect_ratio.num;
+            mediaInfo.u.video.frame_rate.den=1;
+            mediaInfo.u.video.frame_rate.num=15;
         }
         if (in_stream->codecpar->codec_type==AVMEDIA_TYPE_AUDIO)
         {

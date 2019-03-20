@@ -21,10 +21,12 @@ int init_filter(struct TranscoderFilter *pFilter, AVCodecContext *dec_ctx,const 
         buffersrc  = avfilter_get_by_name("buffer");
         buffersink = avfilter_get_by_name("buffersink");
         snprintf(args, sizeof(args),
-                 "video_size=%dx%d:pix_fmt=%d:time_base=%d/%d:pixel_aspect=%d/%d",
+                 "video_size=%dx%d:pix_fmt=%d:time_base=%d/%d:pixel_aspect=%d/%d:frame_rate=%d/%d:sws_param=%s",
                  dec_ctx->width, dec_ctx->height, dec_ctx->pix_fmt,
                  dec_ctx->time_base.num, dec_ctx->time_base.den,
-                 dec_ctx->sample_aspect_ratio.num, dec_ctx->sample_aspect_ratio.den);
+                 dec_ctx->sample_aspect_ratio.num, dec_ctx->sample_aspect_ratio.den,
+                 dec_ctx->framerate.num, dec_ctx->framerate.den,
+                 "flags=2");
     }
     if (dec_ctx->codec_type==AVMEDIA_TYPE_AUDIO) {
         buffersrc  = avfilter_get_by_name("abuffer");

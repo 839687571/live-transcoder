@@ -23,13 +23,14 @@ struct TranscoderCodecContext
     bool nvidiaAccelerated;
 };
 
-int init_decoder(struct TranscoderCodecContext * pContext,AVCodecParameters *pCodecParams);
+int init_decoder(struct TranscoderCodecContext * pContext,AVCodecParameters *pCodecParams,AVRational framerate);
 
 int close_codec(struct TranscoderCodecContext * pContext);
 
 int init_video_encoder(struct TranscoderCodecContext * pContext,
                        AVRational inputAspectRatio,
                        enum AVPixelFormat inputPixelFormat,
+                       AVRational timebase,
                        AVRational inputFrameRate,
                        struct AVBufferRef* hw_frames_ctx,
                        const struct TranscodeOutput* pOutput,

@@ -90,7 +90,7 @@ static int get_decoder_buffer(AVCodecContext *s, AVFrame *frame, int flags)
 
 
 
-int init_decoder(struct TranscoderCodecContext * pContext,AVCodecParameters *pCodecParams)
+int init_decoder(struct TranscoderCodecContext * pContext,AVCodecParameters *pCodecParams,AVRational framerate)
 {
     bool result;
     json_get_bool(GetConfig(),"engine.useNvidiaDecoder",false,&result);
@@ -137,6 +137,8 @@ int init_decoder(struct TranscoderCodecContext * pContext,AVCodecParameters *pCo
         return AVERROR(ENOMEM);
     }
     codec_ctx->opaque=pContext;
+    codec_ctx->framerate=framerate;
+    
     codec_ctx->time_base=standard_timebase;
 
     int ret = avcodec_parameters_to_context(codec_ctx, pCodecParams);
@@ -168,6 +170,8 @@ int init_decoder(struct TranscoderCodecContext * pContext,AVCodecParameters *pCo
         codec_ctx->hw_frames_ctx = av_buffer_ref(pContext->hw_frames_ctx);
     }
     pContext->ctx = codec_ctx;
+    codec_ctx->time_base=standard_timebase;
+
     LOGGER(CATEGORY_CODEC,AV_LOG_INFO, "Initialized decoder \"%s\" color space: %s",dec->long_name, av_get_pix_fmt_name (codec_ctx->pix_fmt));
 
     return 0;
@@ -177,6 +181,7 @@ int init_decoder(struct TranscoderCodecContext * pContext,AVCodecParameters *pCo
 int init_video_encoder(struct TranscoderCodecContext * pContext,
                        AVRational inputAspectRatio,
                        enum AVPixelFormat inputPixelFormat,
+                       AVRational timebase,
                        AVRational inputFrameRate,
                        struct AVBufferRef* hw_frames_ctx,
                        const struct TranscodeOutput* pOutput,
@@ -195,7 +200,7 @@ int init_video_encoder(struct TranscoderCodecContext * pContext,
     enc_ctx = avcodec_alloc_context3(codec);
     enc_ctx->height = height;
     enc_ctx->width = width;
-   // enc_ctx->sample_aspect_ratio = inputAspectRatio;
+    enc_ctx->sample_aspect_ratio = inputAspectRatio;
     enc_ctx->pix_fmt = inputPixelFormat;
     enc_ctx->bit_rate = 1000*pOutput->bitrate;
     enc_ctx->bit_rate_tolerance = pOutput->bitrate*100; //10%
@@ -208,16 +213,8 @@ int init_video_encoder(struct TranscoderCodecContext * pContext,
         }
     }
     
-    //if (codec->pix_fmts)
-    //    enc_ctx->pix_fmt = codec->pix_fmts[0];
-    //else
-    enc_ctx->pix_fmt = inputPixelFormat;
-
-    //enc_ctx->rc_min_rate=bitrate*0.8;
-    //enc_ctx->rc_max_rate=bitrate*1.2;
-    //enc_ctx->rc_buffer_size=4*bitrate/30;
     enc_ctx->gop_size=60;
-    enc_ctx->time_base = standard_timebase;
+    enc_ctx->time_base = av_inv_q(inputFrameRate);
     enc_ctx->framerate = inputFrameRate;
 
     if (pOutput->videoParams.preset!=NULL && strlen(pOutput->videoParams.preset)>0) {
@@ -226,9 +223,12 @@ int init_video_encoder(struct TranscoderCodecContext * pContext,
     if (pOutput->videoParams.profile!=NULL && strlen(pOutput->videoParams.profile)>0) {
         av_opt_set(enc_ctx->priv_data, "profile", pOutput->videoParams.profile, 0);
     }
+    av_opt_set(enc_ctx->priv_data, "x264-params", "nal-hrd=cbr:force-cfr=1", AV_OPT_SEARCH_CHILDREN);
+
   //  av_opt_set(enc_ctx->priv_data, "tune", "zerolatency", 0);
     enc_ctx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
     
+        
     ret = avcodec_open2(enc_ctx, codec,NULL);
     if (ret<0) {
         LOGGER(CATEGORY_CODEC,AV_LOG_ERROR,"error initilizing video encoder %d (%s)",ret,av_err2str(ret));
