@@ -33,10 +33,17 @@ void get_filter_config(char *filterConfig, struct TranscoderCodecContext *pDecod
     if (pOutput->codec_type==AVMEDIA_TYPE_VIDEO)
     {
         if (pDecoderContext->nvidiaAccelerated) {
-            sprintf(filterConfig,"scale_npp=w=%d:h=%d:interp_algo=%s",
+            
+            char* hwdownload="";
+            //in case of use software encoder we need to copy to CPU memory
+            if (strcmp(pOutput->codec,"libx264")==0) {
+                hwdownload=",hwdownload";
+            }
+            sprintf(filterConfig,"scale_npp=w=%d:h=%d:interp_algo=%s%s",
                     pOutput->videoParams.width,
                     pOutput->videoParams.height,
-                    "super");
+                    "super",
+                    hwdownload);
         } else {
             sprintf(filterConfig,"scale=w=%d:h=%d:sws_flags=%s",pOutput->videoParams.width,pOutput->videoParams.height,"lanczos");
         }

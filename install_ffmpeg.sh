@@ -47,7 +47,7 @@ fi
 #   rm -rf "$BASE_DIR/ffmpeg"
 #   git clone -b n4.1 https://git.ffmpeg.org/ffmpeg.git "$BASE_DIR/ffmpeg" || echo "FFmpeg dir already exists"
     cd "$BASE_DIR/ffmpeg"
-    ./configure --prefix="$BASE_DIR/compiled"  --enable-libx264 --enable-gpl --enable-static #--enable-gnutls
+    ./configure --prefix="$BASE_DIR/compiled"  --enable-debug --enable-libx264 --enable-gpl --enable-static #--enable-gnutls
     make
     make install
 #fi

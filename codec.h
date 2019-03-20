@@ -47,4 +47,5 @@ int receive_decoder_frame(struct TranscoderCodecContext *decoder,AVFrame *pFrame
 int reset_decoder(struct TranscoderCodecContext *decoder);
 
 inline int64_t get_latency(struct TranscoderCodecContext *codec) { return llabs(codec->outPts-codec->inPts);}
+
 #endif /* TranscoderEncoder_h */

@@ -78,7 +78,7 @@ int init_Transcode_output_from_json(struct TranscodeOutput* pOutput,const json_v
         pOutput->videoParams.width=-2;
         json_get_int(pVideoParams,"height",-1,&pOutput->videoParams.height);
         json_get_string(pVideoParams,"profile","",&pOutput->videoParams.profile);
-        json_get_string(pVideoParams,"preset","veryfast",&pOutput->videoParams.preset);
+        json_get_string(pVideoParams,"preset","",&pOutput->videoParams.preset);
     }
     if (JSON_OK==json_get(json,"audioParams",&pAudioParams)) {
         pOutput->codec_type=AVMEDIA_TYPE_AUDIO;

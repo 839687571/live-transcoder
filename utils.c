@@ -126,7 +126,7 @@ const char* pict_type_to_string(int pt) {
 char *av_get_frame_desc(char* buf, int size,AVFrame * pFrame)
 {
     if (pFrame->width>0) {
-        snprintf(buf,size,"pts=%s;key=%s;data=%p;hwctx=%p;format=%s;pictype=%s;width=%d;height=%d",
+        snprintf(buf,size,"pts=%s;key=%s;data=%p;hwctx=%p;format=%s;pictype=%s;width=%d;height=%d;size=%d",
              ts2str(pFrame->pts,true),
              pFrame->key_frame==1 ? "True" : "False",
              &pFrame->data[0],
@@ -134,7 +134,8 @@ char *av_get_frame_desc(char* buf, int size,AVFrame * pFrame)
              av_get_pix_fmt_name(pFrame->format),
              pict_type_to_string(pFrame->pict_type),
              pFrame->width,
-             pFrame->height);
+             pFrame->height,
+             av_image_get_buffer_size(pFrame->format, pFrame->width, pFrame->height, 1)/1024);
     } else {
         snprintf(buf,size,"pts=%s;channels=%d;sampleRate=%d;format=%d;size=%d",
                  ts2str(pFrame->pts,true),

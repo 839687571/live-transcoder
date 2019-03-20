@@ -220,9 +220,13 @@ int init_video_encoder(struct TranscoderCodecContext * pContext,
     enc_ctx->time_base = standard_timebase;
     enc_ctx->framerate = inputFrameRate;
 
-    av_opt_set(enc_ctx->priv_data, "preset",   pOutput->videoParams.preset, 0);
+    if (pOutput->videoParams.preset!=NULL && strlen(pOutput->videoParams.preset)>0) {
+        av_opt_set(enc_ctx->priv_data, "preset",   pOutput->videoParams.preset, 0);
+    }
+    if (pOutput->videoParams.profile!=NULL && strlen(pOutput->videoParams.profile)>0) {
+        av_opt_set(enc_ctx->priv_data, "profile", pOutput->videoParams.profile, 0);
+    }
   //  av_opt_set(enc_ctx->priv_data, "tune", "zerolatency", 0);
-    av_opt_set(enc_ctx->priv_data, "profile", pOutput->videoParams.profile, 0);
     enc_ctx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
     
     ret = avcodec_open2(enc_ctx, codec,NULL);
