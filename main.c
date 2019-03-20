@@ -20,7 +20,7 @@
 #include "json_parser.h"
 #include "utils.h"
 #include "config.h"
-
+#include <unistd.h>
 #include <signal.h>
 
 int sock=0;
@@ -119,30 +119,34 @@ int main(int argc, char **argv)
     AVStream *in_stream=ifmt_ctx->streams[activeStream];
     media_info_t mediaInfo;
     packet_header_t packetHeader;
-    packetHeader.packet_type=PACKET_TYPE_HEADER;
-    packetHeader.header_size=sizeof(mediaInfo);
-    packetHeader.data_size=in_stream->codecpar->extradata_size;
-    mediaInfo.bitrate=in_stream->codecpar->bit_rate;
-    mediaInfo.format=in_stream->codecpar->codec_id;
-    mediaInfo.timescale=90000;
-    if (in_stream->codecpar->codec_type==AVMEDIA_TYPE_VIDEO)
-    {
-        mediaInfo.media_type=0;
-        mediaInfo.u.video.width=in_stream->codecpar->width;
-        mediaInfo.u.video.height=in_stream->codecpar->height;
-    }
-    if (in_stream->codecpar->codec_type==AVMEDIA_TYPE_AUDIO)
-    {
-        mediaInfo.media_type=1;
-        mediaInfo.u.audio.bits_per_sample=in_stream->codecpar->bits_per_raw_sample;
-        mediaInfo.u.audio.sample_rate=in_stream->codecpar->sample_rate;
-        mediaInfo.u.audio.channels=in_stream->codecpar->channels;
-    }
     
-    send(sock , &packetHeader , sizeof(packetHeader) , 0 );
-    send(sock , &mediaInfo , sizeof(mediaInfo) , 0 );
-    if (in_stream->codecpar->extradata_size>0) {
-        send(sock , in_stream->codecpar->extradata , in_stream->codecpar->extradata_size , 0 );
+    if (sock!=0)
+    {
+        packetHeader.packet_type=PACKET_TYPE_HEADER;
+        packetHeader.header_size=sizeof(mediaInfo);
+        packetHeader.data_size=in_stream->codecpar->extradata_size;
+        mediaInfo.bitrate=in_stream->codecpar->bit_rate;
+        mediaInfo.format=in_stream->codecpar->codec_id;
+        mediaInfo.timescale=90000;
+        if (in_stream->codecpar->codec_type==AVMEDIA_TYPE_VIDEO)
+        {
+            mediaInfo.media_type=0;
+            mediaInfo.u.video.width=in_stream->codecpar->width;
+            mediaInfo.u.video.height=in_stream->codecpar->height;
+        }
+        if (in_stream->codecpar->codec_type==AVMEDIA_TYPE_AUDIO)
+        {
+            mediaInfo.media_type=1;
+            mediaInfo.u.audio.bits_per_sample=in_stream->codecpar->bits_per_raw_sample;
+            mediaInfo.u.audio.sample_rate=in_stream->codecpar->sample_rate;
+            mediaInfo.u.audio.channels=in_stream->codecpar->channels;
+        }
+        
+        send(sock , &packetHeader , sizeof(packetHeader) , 0 );
+        send(sock , &mediaInfo , sizeof(mediaInfo) , 0 );
+        if (in_stream->codecpar->extradata_size>0) {
+            send(sock , in_stream->codecpar->extradata , in_stream->codecpar->extradata_size , 0 );
+        }
     }
     srand(time(NULL));
     uint64_t lastDts=0;
@@ -155,6 +159,7 @@ int main(int argc, char **argv)
         }
         
         if (activeStream!=packet.stream_index) {
+            av_packet_unref(&packet);
             continue;
         }
         
@@ -171,32 +176,34 @@ int main(int argc, char **argv)
         
        // convert_packet(&ctx,&packet);
         
-        packetHeader.packet_type=PACKET_TYPE_HEADER;
-        packetHeader.header_size=sizeof(output_frame_t);
-        packetHeader.data_size=packet.size;
-        output_frame_t frame;
-        if (AV_NOPTS_VALUE!=packet.pts) {
-            frame.pts_delay=packet.pts-packet.dts;
-        } else {
-            frame.pts_delay=-999999;
-        }
-        frame.dts=packet.dts+basePts;
-        frame.flags=0;
-        lastDts=packet.dts;
-        send(sock, &packetHeader, sizeof(packetHeader), 0);
-        send(sock, &frame, sizeof(frame), 0);
-        if (rand() % 10 < 2 && false) {
-            LOGGER0(CATEGORY_DEFAULT,AV_LOG_FATAL,"random!");
-            for (int i=0;i<packet.size;i++) {
-                packet.data[i]=rand();
+        if (sock!=0)
+        {
+            packetHeader.packet_type=PACKET_TYPE_HEADER;
+            packetHeader.header_size=sizeof(output_frame_t);
+            packetHeader.data_size=packet.size;
+            output_frame_t frame;
+            if (AV_NOPTS_VALUE!=packet.pts) {
+                frame.pts_delay=packet.pts-packet.dts;
+            } else {
+                frame.pts_delay=-999999;
             }
+            frame.dts=packet.dts+basePts;
+            frame.flags=0;
+            lastDts=packet.dts;
+            send(sock, &packetHeader, sizeof(packetHeader), 0);
+            send(sock, &frame, sizeof(frame), 0);
+            if (rand() % 10 < 2 && false) {
+                LOGGER0(CATEGORY_DEFAULT,AV_LOG_FATAL,"random!");
+                for (int i=0;i<packet.size;i++) {
+                    packet.data[i]=rand();
+                }
+            }
+            send(sock, packet.data, packet.size, 0);
         }
-        send(sock, packet.data, packet.size, 0);
-        /*
         LOGGER("SENDER",AV_LOG_DEBUG,"sent packet pts=%s dts=%s  size=%d",
-               ts2str(header.pts,true),
-               ts2str(header.dts,true),
-               packet.dts,packet.size);*/
+               ts2str(packet.pts,true),
+               ts2str(packet.dts,true),
+               packet.dts,packet.size);
 
         av_packet_unref(&packet);
 
