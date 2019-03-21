@@ -1,8 +1,10 @@
 {
     "input": {
-        "file": "/Users/guyjacubovski/Sample_video/1080p60fps.mp4",
+        "file": "/Users/guyjacubovski/Downloads/bbb_sunflower_1080p_30fps_normal.mp4",
+        "realTime": false,
         "activeStream": 0,
-        "numberOfFrames": 100
+        "numberOfFrames": 10000,
+        "randomDataPercentage": 0
     },
     "debug": {
         "saveFile": true,
@@ -26,53 +28,57 @@
             "codec": "libx264",
             "videoParams": {
                 "profile": "main",
-                "height": 480,
-                "fps": 5
+                "preset": "veryfast",
+                "height": 480
             }
         },
         {
             "name": "34",
-            "enabled": false,
+            "enabled": true,
             "passthrough": false,
             "bitrate": 600,
             "codec": "libx264",
             "videoParams": {
                 "profile": "baseline",
+                "preset": "veryfast",
                 "height": 360
             }
         },
         {
             "name": "35",
-            "enabled": false,
+            "enabled": true,
             "passthrough": false,
             "bitrate": 400,
             "codec": "libx264",
             "videoParams": {
                 "profile": "baseline",
+                "preset": "veryfast",
                 "height": 360
             }
         },
         {
             "name": "42",
-            "enabled": false,
+            "enabled": true,
             "passthrough": false,
             "bitrate": 1500,
             "codec": "libx264",
             "videoParams": {
                 "profile": "high",
+                "preset": "veryfast",
                 "height": 720
             }
         },
         {
             "name": "43",
-            "enabled": false,
+            "enabled": true,
             "passthrough": false,
             "bitrate": 2500,
             "codec": "libx264",
             "videoParams": {
                 "profile": "high",
+                "preset": "veryfast",
                 "height": 720,
-                "fps": 5
+                "skipFrame": 1
             }
         }
     ]

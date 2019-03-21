@@ -39,13 +39,18 @@ void get_filter_config(char *filterConfig, struct TranscoderCodecContext *pDecod
             if (strcmp(pOutput->codec,"libx264")==0) {
                 hwdownload=",hwdownload";
             }
-            sprintf(filterConfig,"scale_npp=w=%d:h=%d:interp_algo=%s%s",
+            sprintf(filterConfig,"framestep=step=%d,scale_npp=w=%d:h=%d:interp_algo=%s%s",
+                    pOutput->videoParams.skipFrame,
                     pOutput->videoParams.width,
                     pOutput->videoParams.height,
                     "super",
                     hwdownload);
         } else {
-            sprintf(filterConfig,"scale=w=%d:h=%d:sws_flags=%s",pOutput->videoParams.width,pOutput->videoParams.height,"lanczos");
+            sprintf(filterConfig,"framestep=step=%d,scale=w=%d:h=%d:sws_flags=%s",
+                    pOutput->videoParams.skipFrame,
+                    pOutput->videoParams.width,
+                    pOutput->videoParams.height,
+                    "lanczos");
         }
        
     }

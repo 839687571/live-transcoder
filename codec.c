@@ -225,7 +225,7 @@ int init_video_encoder(struct TranscoderCodecContext * pContext,
     }
     av_opt_set(enc_ctx->priv_data, "x264-params", "nal-hrd=cbr:force-cfr=1", AV_OPT_SEARCH_CHILDREN);
 
-  //  av_opt_set(enc_ctx->priv_data, "tune", "zerolatency", 0);
+    av_opt_set(enc_ctx->priv_data, "tune", "zerolatency", 0);
     enc_ctx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
     
         
@@ -237,7 +237,7 @@ int init_video_encoder(struct TranscoderCodecContext * pContext,
     
     pContext->codec=codec;
     pContext->ctx=enc_ctx;
-    LOGGER(CATEGORY_CODEC,AV_LOG_INFO,"video encoder  \"%s\"  %dx%d %d Kbit/s %s initilaized",codec->long_name,enc_ctx->width,enc_ctx->height,enc_ctx->bit_rate, av_get_pix_fmt_name (enc_ctx->pix_fmt));
+    LOGGER(CATEGORY_CODEC,AV_LOG_INFO,"video encoder  \"%s\"  %dx%d %d Kbit/s %s initilaized",codec->long_name,enc_ctx->width,enc_ctx->height,enc_ctx->bit_rate/1000, av_get_pix_fmt_name (enc_ctx->pix_fmt));
     
     pContext->inPts=0;
     pContext->outPts=0;

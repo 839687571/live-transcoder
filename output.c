@@ -23,7 +23,8 @@ int init_Transcode_output(struct TranscodeOutput* pOutput)  {
     pOutput->filterId=-1;
     pOutput->encoderId=-1;
     pOutput->oc=NULL;
-    pOutput->videoParams.width=pOutput->videoParams.height=pOutput->videoParams.fps=-1;
+    pOutput->videoParams.width=pOutput->videoParams.height=-1;
+    pOutput->videoParams.skipFrame=1;
     pOutput->videoParams.frameRate=-1;
     pOutput->videoParams.level="";
     pOutput->videoParams.profile="";
@@ -40,12 +41,11 @@ int print_output(struct TranscodeOutput* pOutput) {
         return 0;
     }
     if (pOutput->codec_type==AVMEDIA_TYPE_VIDEO) {
-        LOGGER(CATEGORY_OUTPUT,AV_LOG_INFO,"(%s) output configuration: mode: transcode bitrate: %d Kbit/s  resolution: %dx%d  fps: %.2f profile: %s preset: %s",
+        LOGGER(CATEGORY_OUTPUT,AV_LOG_INFO,"(%s) output configuration: mode: transcode bitrate: %d Kbit/s  resolution: %dx%d  profile: %s preset: %s",
                pOutput->name,
                pOutput->bitrate,
                pOutput->videoParams.width,
                pOutput->videoParams.height,
-               pOutput->videoParams.fps,
                pOutput->videoParams.profile,
                pOutput->videoParams.preset
                )
@@ -79,6 +79,8 @@ int init_Transcode_output_from_json(struct TranscodeOutput* pOutput,const json_v
         json_get_int(pVideoParams,"height",-1,&pOutput->videoParams.height);
         json_get_string(pVideoParams,"profile","",&pOutput->videoParams.profile);
         json_get_string(pVideoParams,"preset","",&pOutput->videoParams.preset);
+        json_get_int(pVideoParams,"skipFrame",1,&pOutput->videoParams.skipFrame);
+        
     }
     if (JSON_OK==json_get(json,"audioParams",&pAudioParams)) {
         pOutput->codec_type=AVMEDIA_TYPE_AUDIO;
