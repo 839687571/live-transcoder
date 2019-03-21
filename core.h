@@ -9,6 +9,7 @@
 #include <libavfilter/buffersink.h>
 #include <libavfilter/buffersrc.h>
 #include <libavutil/opt.h>
+#include <libavutil/time.h>
 #include <libavutil/pixdesc.h>
 #include <stdint.h>
 #include <stdbool.h>

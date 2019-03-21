@@ -42,8 +42,12 @@ void logger2(const char* category,const char* subcategory,int level,const char *
     strftime(buf, 25, "%Y-%m-%dT%H:%M:%S",gm);
     
     
-    fprintf( stderr, "%s.%03d %s:%s %s [%x] ",buf,(int)( (now % 1000000)/1000 ),category,subcategory!=NULL ? subcategory : "", levelStr,pthread_self());
-    vfprintf( stderr, fmt, args );
+    fprintf( stderr, "%s.%03d %s:%s %s [%p] ",buf,(int)( (now % 1000000)/1000 ),category,subcategory!=NULL ? subcategory : "", levelStr,pthread_self());
+    if (args!=NULL) {
+        vfprintf( stderr, fmt, args );
+    } else {
+        fprintf(stderr,"%s",fmt);
+    }
     if (newLine) {
         fprintf( stderr, "\n" );
     }
@@ -92,7 +96,10 @@ void ffmpeg_log_callback(void *ptr, int level, const char *fmt, va_list vargs)
     if (level>logLevel)
         return;
     
-    logger2 (CATEGORY_FFMPEG, ptr!=NULL ? av_default_item_name(ptr) : "",level,fmt,false,vargs);
+    char tmp[1024];
+    int prefix=1;
+    av_log_format_line(ptr,level,fmt,vargs,tmp,sizeof(tmp), &prefix);
+    logger2 (CATEGORY_FFMPEG, ptr!=NULL ? av_default_item_name(ptr) : "",level,tmp,false,NULL);
 }
 
 

@@ -17,6 +17,7 @@ int load_file_to_memory(const char *filename, char **result);
 
 uint64_t getClock64();
 uint64_t getTime64();
+int kbhit(void);
 
 #define K_TS_MAX_STRING_SIZE 100
 

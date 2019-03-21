@@ -1,7 +1,7 @@
 {
     "input": {
         "file": "/Users/guyjacubovski/Downloads/bbb_sunflower_1080p_30fps_normal.mp4",
-        "realTime": false,
+        "realTime": true,
         "activeStream": 0,
         "numberOfFrames": 10000,
         "randomDataPercentage": 0

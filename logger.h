@@ -11,13 +11,13 @@
 #include <libavformat/avformat.h>
 
 
-
 #define CATEGORY_DEFAULT "DEFAULT"
 #define CATEGORY_CODEC "CODEC"
 #define CATEGORY_OUTPUT "OUTPUT"
 #define CATEGORY_FILTER "FILTER"
 #define CATEGORY_FFMPEG "FFMPEG"
 #define CATEGORY_RECEIVER "RECEIVER"
+
 void logger1(char* category,int level,const char *fmt, ...);
 void loggerFlush();
 void log_init(int level);

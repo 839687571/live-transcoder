@@ -42,6 +42,7 @@
 		0874214921D8EC1500F0D6E6 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0874214821D8EC1500F0D6E6 /* CoreFoundation.framework */; };
 		0874214B21D8EC3200F0D6E6 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 0874214A21D8EC3200F0D6E6 /* libz.tbd */; };
 		0874214F21D8ED6E00F0D6E6 /* libbz2.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 0874214E21D8ED6E00F0D6E6 /* libbz2.tbd */; };
+		0886F1D422439B5D005C4B5B /* sender.c in Sources */ = {isa = PBXBuildFile; fileRef = 0886F1D322439B5D005C4B5B /* sender.c */; };
 		08C4211A2219D78F003AA42F /* FramesStats.c in Sources */ = {isa = PBXBuildFile; fileRef = 08C421192219D78F003AA42F /* FramesStats.c */; };
 		08C4211D2219EAB7003AA42F /* listener.c in Sources */ = {isa = PBXBuildFile; fileRef = 08C4211C2219EAB7003AA42F /* listener.c */; };
 		08F2959E21DDF7FF0028EEE5 /* codec.c in Sources */ = {isa = PBXBuildFile; fileRef = 08F2959D21DDF7FF0028EEE5 /* codec.c */; };
@@ -111,6 +112,8 @@
 		0874214A21D8EC3200F0D6E6 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		0874214C21D8ECF900F0D6E6 /* libz.1.2.11.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.1.2.11.tbd; path = usr/lib/libz.1.2.11.tbd; sourceTree = SDKROOT; };
 		0874214E21D8ED6E00F0D6E6 /* libbz2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libbz2.tbd; path = usr/lib/libbz2.tbd; sourceTree = SDKROOT; };
+		0886F1D222439B5D005C4B5B /* sender.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = sender.h; sourceTree = "<group>"; };
+		0886F1D322439B5D005C4B5B /* sender.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = sender.c; sourceTree = "<group>"; };
 		08C421182219D78F003AA42F /* FramesStats.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FramesStats.h; sourceTree = "<group>"; };
 		08C421192219D78F003AA42F /* FramesStats.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = FramesStats.c; sourceTree = "<group>"; };
 		08C4211B2219EAB7003AA42F /* listener.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = listener.h; sourceTree = "<group>"; };
@@ -158,6 +161,8 @@
 		086E7AC41E044C7400206F21 = {
 			isa = PBXGroup;
 			children = (
+				0886F1D222439B5D005C4B5B /* sender.h */,
+				0886F1D322439B5D005C4B5B /* sender.c */,
 				0865E41122240FFA00B8F793 /* kalturaMediaProtocol.h */,
 				08141DBA2222B23700EA1219 /* core.h */,
 				0822C6B12221C7880095F76B /* config.h */,
@@ -301,6 +306,7 @@
 				085E1F601EA6BA470056B80C /* main.c in Sources */,
 				08C4211A2219D78F003AA42F /* FramesStats.c in Sources */,
 				0822C6B0221FEF690095F76B /* utils.c in Sources */,
+				0886F1D422439B5D005C4B5B /* sender.c in Sources */,
 				08C4211D2219EAB7003AA42F /* listener.c in Sources */,
 				0822C6B32221C7880095F76B /* config.c in Sources */,
 				0822C6AD221FEF300095F76B /* config.json in Sources */,
