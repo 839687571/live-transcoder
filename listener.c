@@ -224,7 +224,7 @@ void* listenerThread(void *vargp)
 }
 
 
-void startService(struct TranscodeContext *pContext,int port)
+void start_listener(struct TranscodeContext *pContext,int port)
 {
     pthread_create(&thread_id, NULL, listenerThread, pContext);
     pthread_cond_wait(&cond1, &lock);
@@ -232,6 +232,6 @@ void startService(struct TranscodeContext *pContext,int port)
 }
 
 
-void stopService() {
+void stop_listener() {
     pthread_join(thread_id,NULL);
 }

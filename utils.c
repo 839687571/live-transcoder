@@ -125,6 +125,9 @@ const char* pict_type_to_string(int pt) {
 
 char *av_get_frame_desc(char* buf, int size,const AVFrame * pFrame)
 {
+    if (pFrame==NULL) {
+        return "<NULL>";
+    }
     if (pFrame->width>0) {
         snprintf(buf,size,"pts=%s;key=%s;data=%p;hwctx=%p;format=%s;pictype=%s;width=%d;height=%d",
              ts2str(pFrame->pts,true),
@@ -145,6 +148,9 @@ char *av_get_frame_desc(char* buf, int size,const AVFrame * pFrame)
 
 char *av_get_packet_desc(char *buf,int len,const  AVPacket * packet)
 {
+    if (packet==NULL) {
+        return "<NULL>";
+    }
     snprintf(buf,len,"mem=%p;data=%p;pts=%s;dts=%s;key=%s;size=%d;flags=%d",
              packet,
              packet->data,

@@ -177,11 +177,13 @@ int encodeFrame(struct TranscodeContext *pContext,int encoderId,int outputId,AVF
     
     int ret=0;
     
-    //key frame aligment
-    if ((pFrame->flags & AV_PKT_FLAG_KEY)!=AV_PKT_FLAG_KEY)
-        pFrame->pict_type=AV_PICTURE_TYPE_NONE;
-    else
-        pFrame->pict_type=AV_PICTURE_TYPE_I;
+    if (pFrame) {
+        //key frame aligment
+        if ((pFrame->flags & AV_PKT_FLAG_KEY)!=AV_PKT_FLAG_KEY)
+            pFrame->pict_type=AV_PICTURE_TYPE_NONE;
+        else
+            pFrame->pict_type=AV_PICTURE_TYPE_I;
+    }
     
     ret=send_encode_frame(pEncoder,pFrame);
     
@@ -190,12 +192,16 @@ int encodeFrame(struct TranscodeContext *pContext,int encoderId,int outputId,AVF
         
         ret = receive_encoder_packet(pEncoder,pOutPacket);
         if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
+            
+            if (ret == AVERROR_EOF) {
+                LOGGER0(CATEGORY_DEFAULT, AV_LOG_INFO,"encoding completed!")
+            }
             av_packet_free(&pOutPacket);
             return 0;
         }
         else if (ret < 0)
         {
-            LOGGER(CATEGORY_DEFAULT, AV_LOG_ERROR,"Error during decoding %d (%s)",ret,av_err2str(ret))
+            LOGGER(CATEGORY_DEFAULT, AV_LOG_ERROR,"Error during encoding %d (%s)",ret,av_err2str(ret))
             return ret;
         }
         
@@ -271,16 +277,22 @@ bool shouldDrop(AVFrame *pFrame)
 
 int OnDecodedFrame(struct TranscodeContext *pContext,AVCodecContext* pDecoderContext, AVFrame *pFrame)
 {
-    if (pFrame!=NULL) {
+    if (pFrame==NULL) {
         
-        LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG,"[0] decoded: %s",getFrameDesc(pFrame));
-        
-        if (shouldDrop(pFrame))
-        {
-            return 0;
+        for (int outputId=0;outputId<pContext->outputs;outputId++) {
+            struct TranscodeOutput *pOutput=pContext->output[outputId];
+            if (pOutput->encoderId!=-1){
+                LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG,"[0] flushing encoderId %d for output %s",pOutput->encoderId,pOutput->name);
+                encodeFrame(pContext,pOutput->encoderId,outputId,NULL);
+            }
         }
-            //return 0;
-            //  printf("saving frame %3d\n", pDecoderContext->frame_number);
+        return 0;
+    }
+    LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG,"[0] decoded: %s",getFrameDesc(pFrame));
+        
+    if (shouldDrop(pFrame))
+    {
+        return 0;
     }
     for (int filterId=0;filterId<pContext->filters;filterId++) {
         
@@ -324,6 +336,10 @@ int decodePacket(struct TranscodeContext *transcodingContext,const AVPacket* pkt
         ret = receive_decoder_frame(pDecoder, pFrame);
         if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
             av_frame_free(&pFrame);
+            if (ret == AVERROR_EOF) {
+                LOGGER(CATEGORY_DEFAULT,AV_LOG_INFO,"[%d] EOS from decode",0)
+                OnDecodedFrame(transcodingContext,pDecoder->ctx,NULL);
+            }
             return 0;
         }
         else if (ret < 0)
@@ -334,11 +350,6 @@ int decodePacket(struct TranscodeContext *transcodingContext,const AVPacket* pkt
         OnDecodedFrame(transcodingContext,pDecoder->ctx,pFrame);
         
         av_frame_free(&pFrame);
-    }
-    
-    //drain mode
-    if (pkt==NULL) {
-        OnDecodedFrame(transcodingContext,pDecoder->ctx,NULL);
     }
     return 0;
 }

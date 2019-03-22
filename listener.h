@@ -13,6 +13,6 @@
 #include "TranscodePipeline.h"
 #include "kalturaMediaProtocol.h"
 
-void startService(struct TranscodeContext *pContext,int port);
-void stopService();
+void start_listener(struct TranscodeContext *pContext,int port);
+void stop_listener();
 #endif /* listener_h */

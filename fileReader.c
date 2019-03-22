@@ -107,6 +107,8 @@ int stream_from_file(const char* pSourceFileName,bool *keepRunning)
         av_packet_unref(&packet);
         
     }
+    send_eof();
+
     avformat_close_input(&ifmt_ctx);
     return 0;
 }

@@ -23,6 +23,10 @@
 #include "sender.h"
 #include "fileReader.h"
 
+#ifndef APPLICATION_VERSION
+#define APPLICATION_VERSION __TIMESTAMP__
+#endif
+
 static volatile bool keepRunning = true;
 
 void intHandler(int dummy) {
@@ -30,13 +34,13 @@ void intHandler(int dummy) {
     keepRunning = false;
 }
 
-
-
 int main(int argc, char **argv)
 {
     log_init(AV_LOG_DEBUG);
-    signal(SIGINT, intHandler);
+    
+    LOGGER(CATEGORY_DEFAULT,AV_LOG_INFO,"Version: %s", APPLICATION_VERSION)
 
+    signal(SIGINT, intHandler);
 
     int ret=LoadConfig(argc,argv);
     if (ret < 0) {
@@ -45,21 +49,17 @@ int main(int argc, char **argv)
 
     char* pSourceFileName;
     json_get_string(GetConfig(),"input.file","",&pSourceFileName);
-
-
-
-
-    //LOGGER("Version: %s\n", VERSION);
-
-    avformat_network_init();
     
     init_ffmpeg_log_level(AV_LOG_DEBUG);
+    avformat_network_init();
     
     struct TranscodeContext ctx;
     
+    int listenPort;
+    json_get_int(GetConfig(),"listener.port",9999,&listenPort);
 
     
-    startService(&ctx,9999);
+    start_listener(&ctx,listenPort);
     
     if (strlen(pSourceFileName)>0)
     {
@@ -70,15 +70,15 @@ int main(int argc, char **argv)
     else
     {
     }
-    LOGGER0(CATEGORY_DEFAULT,AV_LOG_FATAL,"stopping!");
     
-    send_eof();
-
-
-    stopService();
+    LOGGER0(CATEGORY_DEFAULT,AV_LOG_INFO,"stopping!");
+    
+    stop_listener();
     
     
     loggerFlush();
+    LOGGER0(CATEGORY_DEFAULT,AV_LOG_INFO,"exiting");
+
     return 0;
 }
 

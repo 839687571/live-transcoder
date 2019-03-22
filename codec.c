@@ -291,6 +291,8 @@ int send_encode_frame(struct TranscoderCodecContext *encoder,const AVFrame* pFra
 {
     if (pFrame!=NULL) {
         encoder->inPts=pFrame->pts;
+    } else {
+        int x=5;
     }
     int ret = avcodec_send_frame(encoder->ctx, pFrame);
     if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)

@@ -41,15 +41,16 @@ void logger2(const char* category,const char* subcategory,int level,const char *
     char buf[25];
     strftime(buf, 25, "%Y-%m-%dT%H:%M:%S",gm);
     
+    FILE* out=stdout;
     
-    fprintf( stderr, "%s.%03d %s:%s %s [%p] ",buf,(int)( (now % 1000000)/1000 ),category,subcategory!=NULL ? subcategory : "", levelStr,pthread_self());
+    fprintf( out, "%s.%03d %s:%s %s [%p] ",buf,(int)( (now % 1000000)/1000 ),category,subcategory!=NULL ? subcategory : "", levelStr,pthread_self());
     if (args!=NULL) {
-        vfprintf( stderr, fmt, args );
+        vfprintf( out, fmt, args );
     } else {
-        fprintf(stderr,"%s",fmt);
+        fprintf(out,"%s",fmt);
     }
     if (newLine) {
-        fprintf( stderr, "\n" );
+        fprintf( out, "\n" );
     }
 }
 

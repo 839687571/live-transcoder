@@ -6,6 +6,9 @@
         "duration": 900000,
         "randomDataPercentage": 0
     },
+    "listener": {
+        "port": 9000
+    },
     "debug": {
         "saveFile": true,
         "outputFileNamePattern": "/Users/guyjacubovski/Sample_video/output_%s.mp4"

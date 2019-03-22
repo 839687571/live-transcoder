@@ -92,21 +92,30 @@ int init_Transcode_output_from_json(struct TranscodeOutput* pOutput,const json_v
     return 0;
 }
 
+void print_output_stats(struct TranscodeOutput *pOutput)
+{
+    
+    int avgBitrate;
+    double fps,rate;
+    GetFrameStatsAvg(&pOutput->stats,&avgBitrate,&fps,&rate);
+    LOGGER(CATEGORY_OUTPUT,AV_LOG_DEBUG,"[%s] Stats: total frames: %ld bitrate %.2lf Kbit/s fps=%.2lf rate=x%.2lf",
+           pOutput->name,
+           pOutput->stats.totalFrames,
+           ((double)avgBitrate)/(1000.0),
+           fps,
+           rate)
+}
 int send_output_packet(struct TranscodeOutput *pOutput,struct AVPacket* packet)
 {
     if (packet==NULL){
         return 0;
     }
     AddFrameToStats(&pOutput->stats,packet->dts,packet->size);
-    int avgBitrate;
-    double fps,rate;
-    GetFrameStatsAvg(&pOutput->stats,&avgBitrate,&fps,&rate);
-    LOGGER(CATEGORY_OUTPUT,AV_LOG_DEBUG,"[%s] got data: %s bitrate %.2lf Kbit/s fps=%.2lf rate=x%.2lf",
-           pOutput->name,
-           getPacketDesc(packet),
-           ((double)avgBitrate)/(1000.0),
-           fps,
-           rate)
+    
+    LOGGER(CATEGORY_OUTPUT,AV_LOG_DEBUG,"[%s] got data: %s", pOutput->name,getPacketDesc(packet))
+    print_output_stats(pOutput);
+    
+    print_output(pOutput);
     
     if (pOutput->oc) {
         
@@ -227,6 +236,7 @@ int set_output_format(struct TranscodeOutput *pOutput,struct AVCodecParameters* 
 
 int close_Transcode_output(struct TranscodeOutput* pOutput)
 {
+    print_output_stats(pOutput);
     if (pOutput->oc!=NULL) {
         int ret = av_write_trailer(pOutput->oc);
     
