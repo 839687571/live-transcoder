@@ -13,15 +13,22 @@
 #include <libavformat/avformat.h>
 #include "filter.h"
 #include "output.h"
+#include "FramesStats.h"
 
 struct TranscoderCodecContext
 {
+    char name[256];
     AVBufferRef *hw_device_ctx,*hw_frames_ctx;
     AVCodec* codec;
     AVCodecContext* ctx;
     int64_t inPts,outPts;
     bool nvidiaAccelerated;
+    struct FramesStats inStats,outStats;
+
 };
+
+int init_codec(struct TranscoderCodecContext * pContext);
+
 
 int init_decoder(struct TranscoderCodecContext * pContext,AVCodecParameters *pCodecParams,AVRational framerate);
 

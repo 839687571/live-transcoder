@@ -37,7 +37,7 @@ int init_Transcode_output(struct TranscodeOutput* pOutput)  {
 int print_output(struct TranscodeOutput* pOutput) {
     
     if ( pOutput->passthrough) {
-        LOGGER(CATEGORY_OUTPUT,AV_LOG_INFO,"(%s) output configuration: mode: passthrough",pOutput->name);
+        LOGGER(CATEGORY_OUTPUT,AV_LOG_INFO,"[%s] output configuration: mode: passthrough",pOutput->name);
         return 0;
     }
     if (pOutput->codec_type==AVMEDIA_TYPE_VIDEO) {
@@ -114,9 +114,7 @@ int send_output_packet(struct TranscodeOutput *pOutput,struct AVPacket* packet)
     
     LOGGER(CATEGORY_OUTPUT,AV_LOG_DEBUG,"[%s] got data: %s", pOutput->name,getPacketDesc(packet))
     print_output_stats(pOutput);
-    
-    print_output(pOutput);
-    
+        
     if (pOutput->oc) {
         
         AVPacket cpPacket;

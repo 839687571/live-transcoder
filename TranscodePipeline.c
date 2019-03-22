@@ -23,7 +23,9 @@ int init_transcoding_context(struct TranscodeContext *pContext,struct AVCodecPar
     
     struct TranscoderCodecContext *pDecoderContext=&pContext->decoder[0];
     init_decoder(pDecoderContext,codecParams,framerate);
-    
+    sprintf(pDecoderContext->name,"Decoder for input %s","0");
+    pContext->decoders++;
+
     return 0;
 }
 
@@ -128,6 +130,8 @@ int config_encoder(struct TranscodeOutput *pOutput, struct TranscoderCodecContex
     {
         ret=init_audio_encoder(pEncoderContext, pFilter);
     }
+    
+    sprintf(pEncoderContext->name,"Encoder for output %s",pOutput->name);
     return ret;
 }
 

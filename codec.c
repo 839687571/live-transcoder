@@ -13,6 +13,15 @@
 
 static enum AVPixelFormat hw_pix_fmt;
 
+int init_codec(struct TranscoderCodecContext * pContext)
+{
+    pContext->name[0]=0;
+    pContext->inPts=pContext->outPts=0;
+    InitFrameStats(&pContext->inStats);
+    InitFrameStats(&pContext->outStats);
+    return 0;
+}
+
 static int hw_decoder_init(struct TranscoderCodecContext * pContext,AVCodec* decoder,AVCodecContext *ctx, const enum AVHWDeviceType type)
 {
     LOGGER0(CATEGORY_CODEC,AV_LOG_INFO, "Intialize hardware device");
@@ -92,6 +101,7 @@ static int get_decoder_buffer(AVCodecContext *s, AVFrame *frame, int flags)
 
 int init_decoder(struct TranscoderCodecContext * pContext,AVCodecParameters *pCodecParams,AVRational framerate)
 {
+    init_codec(pContext);
     bool result;
     json_get_bool(GetConfig(),"engine.useNvidiaDecoder",false,&result);
 
@@ -187,6 +197,9 @@ int init_video_encoder(struct TranscoderCodecContext * pContext,
                        const struct TranscodeOutput* pOutput,
                        int width,int height)
 {
+    
+    init_codec(pContext);
+    
     AVCodec *codec      = NULL;
     AVCodecContext *enc_ctx  = NULL;
     int ret = 0;
@@ -247,6 +260,9 @@ int init_video_encoder(struct TranscoderCodecContext * pContext,
 
 int init_audio_encoder(struct TranscoderCodecContext * pContext,struct TranscoderFilter* pFilter)
 {
+    init_codec(pContext);
+
+    
     AVCodec *codec      = NULL;
     AVCodecContext *enc_ctx  = NULL;
     int ret = 0;
@@ -281,19 +297,24 @@ int init_audio_encoder(struct TranscoderCodecContext * pContext,struct Transcode
 }
 int close_codec(struct TranscoderCodecContext * pContext)
 {
+    LOGGER(CATEGORY_CODEC,AV_LOG_INFO,"closing codec '%s' total input = %ld output=%ld",
+           pContext->name,
+           pContext->inStats.totalFrames,
+           pContext->outStats.totalFrames)
     avcodec_free_context(&pContext->ctx);
    // avcodec_close(pContext->ctx);
     //av_free(pContext->ctx);
     pContext->ctx=NULL;
+    
     return 0;
 }
 int send_encode_frame(struct TranscoderCodecContext *encoder,const AVFrame* pFrame)
 {
     if (pFrame!=NULL) {
         encoder->inPts=pFrame->pts;
-    } else {
-        int x=5;
+        AddFrameToStats(&encoder->inStats,pFrame->pts,0);
     }
+
     int ret = avcodec_send_frame(encoder->ctx, pFrame);
     if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)
     {
@@ -318,6 +339,7 @@ int receive_encoder_packet(struct TranscoderCodecContext *encoder,AVPacket* pkt)
         return ret;
     }
     encoder->outPts=pkt->pts;
+    AddFrameToStats(&encoder->outStats,pkt->pts,pkt->size);
 
     return ret;
     
@@ -332,6 +354,7 @@ int send_decoder_packet(struct TranscoderCodecContext *decoder,const AVPacket* p
     
     if (pkt!=NULL) {
         decoder->inPts=pkt->pts;
+        AddFrameToStats(&decoder->inStats,pkt->pts,pkt->size);
     }
     ret = avcodec_send_packet(decoder->ctx, pkt);
     if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)
@@ -364,6 +387,7 @@ int receive_decoder_frame(struct TranscoderCodecContext *decoder,AVFrame *pFrame
     
     
     decoder->outPts=pFrame->pts;
+    AddFrameToStats(&decoder->outStats,pFrame->pts,0);
 
     return 0;
 }
