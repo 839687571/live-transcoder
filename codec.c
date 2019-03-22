@@ -227,7 +227,7 @@ int init_video_encoder(struct TranscoderCodecContext * pContext,
     }
     
     enc_ctx->gop_size=60;
-    enc_ctx->time_base = av_inv_q(inputFrameRate);
+    enc_ctx->time_base = timebase;
     enc_ctx->framerate = inputFrameRate;
 
     if (pOutput->videoParams.preset!=NULL && strlen(pOutput->videoParams.preset)>0) {
