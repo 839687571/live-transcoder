@@ -123,7 +123,7 @@ const char* pict_type_to_string(int pt) {
     return pict_type;
 }
 
-char *av_get_frame_desc(char* buf, int size,AVFrame * pFrame)
+char *av_get_frame_desc(char* buf, int size,const AVFrame * pFrame)
 {
     if (pFrame->width>0) {
         snprintf(buf,size,"pts=%s;key=%s;data=%p;hwctx=%p;format=%s;pictype=%s;width=%d;height=%d",
@@ -140,5 +140,18 @@ char *av_get_frame_desc(char* buf, int size,AVFrame * pFrame)
                  ts2str(pFrame->pts,true),
                  pFrame->channels,pFrame->sample_rate,pFrame->format,pFrame->nb_samples);
     }
+    return buf;
+}
+
+char *av_get_packet_desc(char *buf,int len,const  AVPacket * packet)
+{
+    snprintf(buf,len,"mem=%p;data=%p;pts=%s;dts=%s;key=%s;size=%d;flags=%d",
+             packet,
+             packet->data,
+             ts2str(packet->pts,true),
+             ts2str(packet->dts,true),
+             (packet->flags & AV_PKT_FLAG_KEY)==AV_PKT_FLAG_KEY ? "Yes" : "No",
+             packet->size,
+             packet->flags);
     return buf;
 }

@@ -101,13 +101,9 @@ int send_output_packet(struct TranscodeOutput *pOutput,struct AVPacket* packet)
     int avgBitrate;
     double fps,rate;
     GetFrameStatsAvg(&pOutput->stats,&avgBitrate,&fps,&rate);
-    LOGGER(CATEGORY_OUTPUT,AV_LOG_DEBUG,"[%s] got data: pts=%s; dts=%s clock=%s, size=%d, flags=%d bitrate %.2lf Kbit/s fps=%.2lf rate=x%.2lf",
+    LOGGER(CATEGORY_OUTPUT,AV_LOG_DEBUG,"[%s] got data: %s bitrate %.2lf Kbit/s fps=%.2lf rate=x%.2lf",
            pOutput->name,
-           ts2str(packet->pts,true),
-           ts2str(packet->dts,true),
-           ts2str(packet->pos,true),
-           packet->size,
-           packet->flags,
+           getPacketDesc(packet),
            ((double)avgBitrate)/(1000.0),
            fps,
            rate)

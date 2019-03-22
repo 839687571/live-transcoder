@@ -198,10 +198,8 @@ void* listenerThread(void *vargp)
         if (valread<0){
             break;
         }
-        LOGGER(CATEGORY_RECEIVER,AV_LOG_DEBUG,"[0] received packet pts=%s dts=%s size=%d",
-               ts2str(packet.pts,true),
-               ts2str(packet.dts,true),
-               packet.size);
+        LOGGER(CATEGORY_RECEIVER,AV_LOG_DEBUG,"[0] received packet %s",
+               getPacketDesc(&packet));
 
         packet.pos=getClock64();
         convert_packet(pContext,&packet);

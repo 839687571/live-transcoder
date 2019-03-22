@@ -32,22 +32,20 @@ void get_filter_config(char *filterConfig, struct TranscoderCodecContext *pDecod
 {
     if (pOutput->codec_type==AVMEDIA_TYPE_VIDEO)
     {
+        int n=sprintf(filterConfig,"framestep=step=%d,",pOutput->videoParams.skipFrame);
         if (pDecoderContext->nvidiaAccelerated) {
             
-            char* hwdownload="";
-            //in case of use software encoder we need to copy to CPU memory
-            if (strcmp(pOutput->codec,"libx264")==0) {
-                hwdownload=",hwdownload";
-            }
-            sprintf(filterConfig,"framestep=step=%d,scale_npp=w=%d:h=%d:interp_algo=%s%s",
-                    pOutput->videoParams.skipFrame,
+            n+=sprintf(filterConfig+n,"scale_npp=w=%d:h=%d:interp_algo=%s",
                     pOutput->videoParams.width,
                     pOutput->videoParams.height,
-                    "super",
-                    hwdownload);
+                    "super");
+                    
+            //in case of use software encoder we need to copy to CPU memory
+            if (strcmp(pOutput->codec,"libx264")==0) {
+                n+=sprintf(filterConfig+n,",hwdownload");
+            }
         } else {
-            sprintf(filterConfig,"framestep=step=%d,scale=w=%d:h=%d:sws_flags=%s",
-                    pOutput->videoParams.skipFrame,
+            n+=sprintf(filterConfig+n,"scale=w=%d:h=%d:sws_flags=%s",
                     pOutput->videoParams.width,
                     pOutput->videoParams.height,
                     "lanczos");
@@ -171,15 +169,19 @@ int encodeFrame(struct TranscodeContext *pContext,int encoderId,int outputId,AVF
     struct TranscoderCodecContext* pEncoder=&pContext->encoder[encoderId];
     struct TranscodeOutput* pOutput=pContext->output[outputId];
     
-    LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG, "[%s] Sending packet to encoderId %d, pts=%s key=%s",
+    LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG, "[%s] Sending packet %s to encoderId %d",
            pOutput->name,
-           encoderId,
-           ts2str(pFrame->pts,true),
-           (pFrame->flags & AV_PKT_FLAG_KEY)==AV_PKT_FLAG_KEY ? "I" : "P");
+           getFrameDesc(pFrame),
+           encoderId);
     
     
     int ret=0;
     
+    //key frame aligment
+    if ((pFrame->flags & AV_PKT_FLAG_KEY)!=AV_PKT_FLAG_KEY)
+        pFrame->pict_type=AV_PICTURE_TYPE_NONE;
+    else
+        pFrame->pict_type=AV_PICTURE_TYPE_I;
     
     ret=send_encode_frame(pEncoder,pFrame);
     
@@ -197,12 +199,10 @@ int encodeFrame(struct TranscodeContext *pContext,int encoderId,int outputId,AVF
             return ret;
         }
         
-        LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG,"[%s] encoded frame from encoder Id %d: pts=%s  size=%d key=%s",
+        LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG,"[%s] encoded frame %s from encoder Id %d",
                pOutput->name,
-               encoderId,
-               ts2str(pOutPacket->pts,true),
-               pOutPacket->size,
-               (pOutPacket->flags & AV_PKT_FLAG_KEY)==AV_PKT_FLAG_KEY ? "I" : "P");
+               getFrameDesc(pFrame),
+               encoderId);
         
         
         send_output_packet(pOutput,pOutPacket);
@@ -305,10 +305,9 @@ int decodePacket(struct TranscodeContext *transcodingContext,const AVPacket* pkt
     
     
     if (pkt!=NULL) {
-        LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG, "[%d] Sending packet to decoder pts=%s dts=%s",
+        LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG, "[%d] Sending packet %s to decoder",
                pkt->stream_index,
-               ts2str(pkt->pts,true),
-               ts2str(pkt->dts,true));
+               getPacketDesc(pkt));
     }
     struct TranscoderCodecContext* pDecoder=&transcodingContext->decoder[0];
     

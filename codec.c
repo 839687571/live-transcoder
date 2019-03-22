@@ -223,9 +223,9 @@ int init_video_encoder(struct TranscoderCodecContext * pContext,
     if (pOutput->videoParams.profile!=NULL && strlen(pOutput->videoParams.profile)>0) {
         av_opt_set(enc_ctx->priv_data, "profile", pOutput->videoParams.profile, 0);
     }
-    av_opt_set(enc_ctx->priv_data, "x264-params", "nal-hrd=cbr:force-cfr=1", AV_OPT_SEARCH_CHILDREN);
-
-    av_opt_set(enc_ctx->priv_data, "tune", "zerolatency", 0);
+    if (strcmp(pOutput->codec,"libx264")==0) {
+        av_opt_set(enc_ctx->priv_data, "x264-params", "nal-hrd=cbr:ratetol=10", AV_OPT_SEARCH_CHILDREN);
+    }
     enc_ctx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
     
         

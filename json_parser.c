@@ -953,3 +953,19 @@ json_status_t json_get_bool(const json_value_t* obj,char* path,bool defaultValue
     *result=jresult->v.boolean;
     return JSON_OK;
 }
+
+json_status_t json_get_double(const json_value_t* obj,char* path,double defaultValue,double* result)
+{
+    json_value_t* jresult;
+    json_status_t ret=json_get(obj,path,&jresult);
+    if (ret!=JSON_OK){
+        *result=defaultValue;
+        return ret;
+    }
+    
+    if (jresult->type!=JSON_FRAC) {
+        return JSON_BAD_DATA;
+    }
+    *result = ((double)jresult->v.num.denom) / ((double)jresult->v.num.num);
+    return JSON_OK;
+}
