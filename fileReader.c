@@ -40,7 +40,9 @@ int stream_from_file(const char* pSourceFileName,bool *keepRunning)
     av_init_packet(&packet);
     
     struct KalturaMediaProtocolContext kmp;
-    KMP_connect(&kmp,"127.0.0.1",9999);
+    if (KMP_connect(&kmp,"127.0.0.1",9999)<0) {
+        return -1;
+    }
     uint64_t  basePts=0;//av_rescale_q( getClock64(), clockScale, standard_timebase);
     
     AVStream *in_stream=ifmt_ctx->streams[activeStream];

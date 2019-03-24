@@ -19,12 +19,16 @@
 
 int KMP_connect(struct KalturaMediaProtocolContext *context,char* url,int port)
 {
+    
+    context->socket=0;
+    int ret=0;
     struct sockaddr_in serv_addr;
-    if ((context->socket = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+    if ((ret = socket(AF_INET, SOCK_STREAM, 0)) <= 0)
     {
-        printf("\n Socket creation error \n");
-        return -1;
+        LOGGER(CATEGORY_KMP,AV_LOG_FATAL,"Socket creation error %d (%s)",ret,av_err2str(ret));
+        return ret;
     }
+    context->socket=ret;
     
     memset(&serv_addr, '0', sizeof(serv_addr));
     
@@ -32,24 +36,25 @@ int KMP_connect(struct KalturaMediaProtocolContext *context,char* url,int port)
     serv_addr.sin_port = htons(port);
     
     // Convert IPv4 and IPv6 addresses from text to binary form
-    if(inet_pton(AF_INET, url, &serv_addr.sin_addr)<=0)
+    if((ret=inet_pton(AF_INET, url, &serv_addr.sin_addr))<=0)
     {
-        printf("\nInvalid address/ Address not supported \n");
-        return -1;
+        LOGGER(CATEGORY_KMP,AV_LOG_FATAL,"Invalid address/ Address not supported (%s) %d (%s)",url,ret,av_err2str(ret));
+        return ret;
     }
     
-    if (connect(context->socket, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
+    if ( (ret=connect(context->socket, (struct sockaddr *)&serv_addr, sizeof(serv_addr))) < 0)
     {
-        printf("\nConnection Failed \n");
-        return -1;
+        LOGGER(CATEGORY_KMP,AV_LOG_FATAL,"Connection Failed (%s) %d (%s)",url,ret,av_err2str(ret));
+        return ret;
     }
-    return 0;
+    return 1;
 }
 
 int KMP_send_header(struct KalturaMediaProtocolContext *context,AVCodecParameters *codecpar,AVRational frame_rate)
 {
     if (context->socket==0)
     {
+        LOGGER0(CATEGORY_KMP,AV_LOG_FATAL,"Invalid socket");
         return -1;
     }
     media_info_t mediaInfo;
@@ -119,24 +124,27 @@ int KMP_send_eof(struct KalturaMediaProtocolContext *context)
     packetHeader.data_size=0;
     send(context->socket, &packetHeader, sizeof(packetHeader), 0);
     
-    close(context->socket);
     return 0;
 }
 
 int KMP_close(struct KalturaMediaProtocolContext *context)
 {
+    close(context->socket);
+    context->socket=0;
     return 0;
 }
 
 int KMP_listen(struct KalturaMediaProtocolContext *context,int port)
 {
-    
+    int ret=0;
     // Creating socket file descriptor
-    if ((context->socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == 0)
+    if ((ret = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) <= 0)
     {
-        perror("socket failed");
-        exit(EXIT_FAILURE);
+        LOGGER(CATEGORY_KMP,AV_LOG_FATAL,"Socket creation error %d (%s)",ret,av_err2str(ret));
+        return ret;
     }
+    
+    context->socket =ret;
     
     /*
      if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT,
@@ -150,15 +158,15 @@ int KMP_listen(struct KalturaMediaProtocolContext *context,int port)
     context->address.sin_port = htons( port );
     
     // Forcefully attaching socket to the port
-    if (bind(context->socket, (struct sockaddr *)&context->address,sizeof(context->address))<0)
+    if ( (ret=bind(context->socket, (struct sockaddr *)&context->address,sizeof(context->address)))<0)
     {
-        perror("bind failed");
-        exit(EXIT_FAILURE);
+        LOGGER(CATEGORY_KMP,AV_LOG_FATAL,"bind error %d (%s)",ret,av_err2str(ret));
+        return ret;
     }
-    if (listen(context->socket, 10) < 0)
+    if ( (ret=listen(context->socket, 10)) < 0)
     {
-        perror("listen");
-        exit(EXIT_FAILURE);
+        LOGGER(CATEGORY_KMP,AV_LOG_FATAL,"listen failed %d (%s)",ret,av_err2str(ret));
+        return ret;
     }
     return 0;
 }

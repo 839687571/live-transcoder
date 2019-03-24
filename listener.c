@@ -62,18 +62,19 @@ void* listenerThread(void *vargp)
     struct json_value_t* config=GetConfig();
     
     
-    struct KalturaMediaProtocolContext kmp;
-    KMP_listen(&kmp,9999);
+    struct KalturaMediaProtocolContext kmpServer;
+    if (KMP_listen(&kmpServer,9999)<0) {
+        return NULL;
+    }
     LOGGER0(CATEGORY_RECEIVER,AV_LOG_INFO,"Waiting for accept");
     pthread_cond_signal(&cond1);
 
     
     struct KalturaMediaProtocolContext kmpClient;
 
-    if (KMP_accept(&kmp,&kmpClient)<0) {
+    if (KMP_accept(&kmpServer,&kmpClient)<0) {
         
-        perror("accept");
-        exit(EXIT_FAILURE);
+        return NULL;
     }
     
     AVRational frameRate;
@@ -114,6 +115,8 @@ void* listenerThread(void *vargp)
     
     avcodec_parameters_free(&params);
 
+    KMP_close(&kmpClient);
+    KMP_close(&kmpServer);
     LOGGER0(CATEGORY_RECEIVER,AV_LOG_INFO,"Completed receive thread");
     
     return NULL;

@@ -17,6 +17,7 @@
 #define CATEGORY_FILTER "FILTER"
 #define CATEGORY_FFMPEG "FFMPEG"
 #define CATEGORY_RECEIVER "RECEIVER"
+#define CATEGORY_KMP "KMP"
 
 void logger1(char* category,int level,const char *fmt, ...);
 void loggerFlush();
