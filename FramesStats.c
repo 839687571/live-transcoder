@@ -84,7 +84,7 @@ int stats_to_json(struct FramesStats *pStats,char* buf)
     GetFrameStatsAvg(pStats,&bitRate,&fps,&rate);
     
     JSON_SERIALIZE_INIT(buf)
-    JSON_SERIALIZE_INT("totalSamples",pStats->totalFrames)
+    JSON_SERIALIZE_INT64("totalSamples",(int64_t)pStats->totalFrames)
     JSON_SERIALIZE_INT("bitrate",bitRate)
     JSON_SERIALIZE_DOUBLE("fps",fps)
     JSON_SERIALIZE_DOUBLE("rate",rate)

@@ -17,6 +17,7 @@
 #include <arpa/inet.h>
 #include <regex.h>
 #include <netdb.h>
+#include <unistd.h> // close function
 
 int KMP_connect(struct KalturaMediaProtocolContext *context,char* url)
 {

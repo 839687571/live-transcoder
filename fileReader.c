@@ -24,8 +24,8 @@ int stream_from_file(const char* pSourceFileName,bool *keepRunning)
         return ret;
     }
     
-    int duration=0;
-    json_get_int(GetConfig(),"input.duration",-1,&duration);
+    int64_t duration=0;
+    json_get_int64(GetConfig(),"input.duration",-1,&duration);
     
     bool realTime;
     json_get_bool(GetConfig(),"input.realTime",false,&realTime);
@@ -51,7 +51,7 @@ int stream_from_file(const char* pSourceFileName,bool *keepRunning)
     KMP_send_header(&kmp,in_stream->codecpar,frame_rate);
     
     LOGGER("SENDER",AV_LOG_INFO,"Realtime = %s",realTime ? "true" : "false");
-    srand(time(NULL));
+    srand((int)time(NULL));
     uint64_t lastDts=0;
     int64_t start_time=av_gettime_relative();
     while (*keepRunning && !kbhit()) {

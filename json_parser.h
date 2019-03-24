@@ -85,6 +85,7 @@ json_status_t json_decode_string(str_t* dest, str_t* src);
 json_status_t json_get(const json_value_t* obj,char* path,const json_value_t** result);
 json_status_t json_get_string(const json_value_t* obj,char* path,char* defaultValue,char** result);
 json_status_t json_get_int(const json_value_t* obj,char* path,int defaultValue,int* result);
+json_status_t json_get_int64(const json_value_t* obj,char* path,int64_t defaultValue,int64_t* result);
 json_status_t json_get_bool(const json_value_t* obj,char* path,bool defaultValue,bool* result);
 json_status_t json_get_double(const json_value_t* obj,char* path,double defaultValue,double* result);
 

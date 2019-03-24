@@ -924,6 +924,19 @@ json_status_t json_get_string(const json_value_t* obj,char* path,char* defaultVa
 
 json_status_t json_get_int(const json_value_t* obj,char* path,int defaultValue,int* result)
 {
+    int64_t t;
+    json_status_t ret=json_get_int64(obj,path,defaultValue,&t);
+    if (ret!=JSON_OK){
+        *result=defaultValue;
+        return ret;
+    }
+    
+    *result=(int)t;
+    return JSON_OK;
+}
+
+json_status_t json_get_int64(const json_value_t* obj,char* path,int64_t defaultValue,int64_t* result)
+{
     json_value_t* jresult;
     json_status_t ret=json_get(obj,path,&jresult);
     if (ret!=JSON_OK){
@@ -934,9 +947,11 @@ json_status_t json_get_int(const json_value_t* obj,char* path,int defaultValue,i
     if (jresult->type!=JSON_INT) {
         return JSON_BAD_DATA;
     }
-    *result=(int)jresult->v.num.num;
+    *result=jresult->v.num.num;
     return JSON_OK;
 }
+
+
 
 json_status_t json_get_bool(const json_value_t* obj,char* path,bool defaultValue,bool* result)
 {
