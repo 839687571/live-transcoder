@@ -13,12 +13,13 @@
 #include "config.h"
 #include "KMP.h"
 
+
+struct KalturaMediaProtocolContext kmpServer;
+
 pthread_t thread_id;
 
 pthread_cond_t cond1 = PTHREAD_COND_INITIALIZER;
 pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
-
-int server_fd;
 
 struct TranscodeOutput outputs[100];
 int totalOutputs=0;
@@ -62,7 +63,6 @@ void* listenerThread(void *vargp)
     struct json_value_t* config=GetConfig();
     
     
-    struct KalturaMediaProtocolContext kmpServer;
     if (KMP_listen(&kmpServer,9999)<0) {
         return NULL;
     }
@@ -116,7 +116,6 @@ void* listenerThread(void *vargp)
     avcodec_parameters_free(&params);
 
     KMP_close(&kmpClient);
-    KMP_close(&kmpServer);
     LOGGER0(CATEGORY_RECEIVER,AV_LOG_INFO,"Completed receive thread");
     
     return NULL;
@@ -133,6 +132,6 @@ void start_listener(struct TranscodeContext *pContext,int port)
 
 void stop_listener() {
     
-    close(server_fd);
+    KMP_close(&kmpServer);
     pthread_join(thread_id,NULL);
 }
