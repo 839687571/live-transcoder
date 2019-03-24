@@ -19,7 +19,7 @@ struct KalturaMediaProtocolContext
     struct sockaddr_in address;
 };
 
-int KMP_connect(struct KalturaMediaProtocolContext *context,char* url,int port);
+int KMP_connect(struct KalturaMediaProtocolContext *context,char* url);
 int KMP_send_header(struct KalturaMediaProtocolContext *context,AVCodecParameters *codecpar,AVRational frame_rate);
 
 int KMP_send_packet(struct KalturaMediaProtocolContext *context,AVPacket*);

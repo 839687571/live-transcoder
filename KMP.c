@@ -15,9 +15,10 @@
 
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <regex.h>
+#include <netdb.h>
 
-
-int KMP_connect(struct KalturaMediaProtocolContext *context,char* url,int port)
+int KMP_connect(struct KalturaMediaProtocolContext *context,char* url)
 {
     
     context->socket=0;
@@ -30,17 +31,26 @@ int KMP_connect(struct KalturaMediaProtocolContext *context,char* url,int port)
     }
     context->socket=ret;
     
-    memset(&serv_addr, '0', sizeof(serv_addr));
     
+    char host[256];
+    int port=0;
+    
+    int n=sscanf(url,"kmp://%255[^:]:%d",host,&port);// this line isnt working properly
+    if (n!=2) {
+        LOGGER(CATEGORY_KMP,AV_LOG_FATAL,"Cannot parse url '%s'",url);
+        return 0;
+    }
+
+    struct hostent        *he;
+    if ( (he = gethostbyname(host) ) == NULL ) {
+        LOGGER(CATEGORY_KMP,AV_LOG_FATAL,"Cannot resolve %s",host);
+        return -1;
+    }
+    
+    memset(&serv_addr, '0', sizeof(serv_addr));
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_port = htons(port);
-    
-    // Convert IPv4 and IPv6 addresses from text to binary form
-    if((ret=inet_pton(AF_INET, url, &serv_addr.sin_addr))<=0)
-    {
-        LOGGER(CATEGORY_KMP,AV_LOG_FATAL,"Invalid address/ Address not supported (%s) %d (%s)",url,ret,av_err2str(ret));
-        return ret;
-    }
+    memcpy(&serv_addr.sin_addr, he->h_addr_list[0], he->h_length);
     
     if ( (ret=connect(context->socket, (struct sockaddr *)&serv_addr, sizeof(serv_addr))) < 0)
     {
