@@ -182,8 +182,12 @@ int init_decoder(struct TranscoderCodecContext * pContext,AVCodecParameters *pCo
     pContext->ctx = codec_ctx;
     codec_ctx->time_base=standard_timebase;
 
-    LOGGER(CATEGORY_CODEC,AV_LOG_INFO, "Initialized decoder \"%s\" color space: %s",dec->long_name, av_get_pix_fmt_name (codec_ctx->pix_fmt));
-
+    if (codec_ctx->codec_type==AVMEDIA_TYPE_VIDEO) {
+        LOGGER(CATEGORY_CODEC,AV_LOG_INFO, "Initialized video decoder \"%s\" color space: %s",dec->long_name, av_get_pix_fmt_name (codec_ctx->pix_fmt));
+    }
+    if (codec_ctx->codec_type==AVMEDIA_TYPE_AUDIO) {
+        LOGGER(CATEGORY_CODEC,AV_LOG_INFO, "Initialized audio decoder \"%s\"",dec->long_name);
+    }
     return 0;
 }
 
@@ -258,7 +262,7 @@ int init_video_encoder(struct TranscoderCodecContext * pContext,
     return 0;
 }
 
-int init_audio_encoder(struct TranscoderCodecContext * pContext,struct TranscoderFilter* pFilter)
+int init_audio_encoder(struct TranscoderCodecContext * pContext,struct TranscoderFilter* pFilter, const struct TranscodeOutput* pOutput)
 {
     init_codec(pContext);
 
@@ -282,6 +286,7 @@ int init_audio_encoder(struct TranscoderCodecContext * pContext,struct Transcode
     enc_ctx->time_base = av_buffersink_get_time_base(pFilter->sink_ctx);
     enc_ctx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
 
+    enc_ctx->bit_rate=pOutput->bitrate*1000;
     ret = avcodec_open2(enc_ctx, codec,NULL);
     if (ret<0) {
         LOGGER(CATEGORY_CODEC,AV_LOG_ERROR,"error initilizing video encoder %d (%s)",ret,av_err2str(ret));
@@ -392,3 +397,26 @@ int receive_decoder_frame(struct TranscoderCodecContext *decoder,AVFrame *pFrame
     return 0;
 }
 
+
+int decoder_to_json(struct TranscoderCodecContext *codec,char *buf)
+{
+    char tmp[2048];
+    JSON_SERIALIZE_INIT(buf)
+    JSON_SERIALIZE_STRING("name",codec->name)
+    
+    JSON_SERIALIZE_OBJECT_BEGIN("input")
+        stats_to_json(&codec->inStats, tmp);
+        JSON_SERIALIZE_INT64("pts", codec->inPts)
+        JSON_SERIALIZE_OBJECT("stats", tmp)
+    JSON_SERIALIZE_OBJECT_END()
+    
+    JSON_SERIALIZE_OBJECT_BEGIN("output")
+        stats_to_json(&codec->outStats, tmp);
+        JSON_SERIALIZE_INT64("pts", codec->outPts)
+        JSON_SERIALIZE_OBJECT("stats", tmp)
+    JSON_SERIALIZE_OBJECT_END()
+    JSON_SERIALIZE_INT64("delay", codec->outPts-codec->inPts)
+
+    JSON_SERIALIZE_END()
+    return n;
+}

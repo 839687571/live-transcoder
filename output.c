@@ -94,7 +94,6 @@ int init_Transcode_output_from_json(struct TranscodeOutput* pOutput,const json_v
 
 void print_output_stats(struct TranscodeOutput *pOutput)
 {
-    
     int avgBitrate;
     double fps,rate;
     GetFrameStatsAvg(&pOutput->stats,&avgBitrate,&fps,&rate);
@@ -114,7 +113,7 @@ int send_output_packet(struct TranscodeOutput *pOutput,struct AVPacket* packet)
     
     LOGGER(CATEGORY_OUTPUT,AV_LOG_DEBUG,"[%s] got data: %s", pOutput->name,getPacketDesc(packet))
     print_output_stats(pOutput);
-        
+    
     if (pOutput->oc) {
         
         AVPacket cpPacket;
@@ -244,4 +243,19 @@ int close_Transcode_output(struct TranscodeOutput* pOutput)
         return ret;
     }
     return 0;
+}
+
+int output_to_json(struct TranscodeOutput *pOutput,char* buf)
+{
+    
+    JSON_SERIALIZE_INIT(buf)
+    JSON_SERIALIZE_STRING("name",pOutput->name)
+    JSON_SERIALIZE_INT("bitrate",pOutput->bitrate)
+    JSON_SERIALIZE_INT("codec_type",pOutput->codec_type)
+    JSON_SERIALIZE_BOOL("passthrough",pOutput->passthrough)
+    char tmp[2048];
+    stats_to_json(&pOutput->stats, tmp);
+    JSON_SERIALIZE_OBJECT("stats",tmp)
+    JSON_SERIALIZE_END()
+    return n;
 }

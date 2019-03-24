@@ -84,14 +84,17 @@ int init_filter(struct TranscoderFilter *pFilter, AVCodecContext *dec_ctx,const 
         goto end;
     }
 
-    enum AVPixelFormat pix_fmts[] = { AV_PIX_FMT_CUDA, AV_PIX_FMT_NV12, AV_PIX_FMT_YUV420P, AV_PIX_FMT_NONE };
-    ret = av_opt_set_int_list(pFilter->sink_ctx, "pix_fmts", pix_fmts,
-                              AV_PIX_FMT_NONE, AV_OPT_SEARCH_CHILDREN);
-    if (ret < 0) {
-        av_log(NULL, AV_LOG_ERROR, "Cannot set output pixel format\n");
-        goto end;
+    if (dec_ctx->codec_type==AVMEDIA_TYPE_VIDEO)
+    {
+        enum AVPixelFormat pix_fmts[] = { AV_PIX_FMT_CUDA, AV_PIX_FMT_NV12, AV_PIX_FMT_YUV420P, AV_PIX_FMT_NONE };
+        ret = av_opt_set_int_list(pFilter->sink_ctx, "pix_fmts", pix_fmts,
+                                  AV_PIX_FMT_NONE, AV_OPT_SEARCH_CHILDREN);
+        if (ret < 0) {
+            av_log(NULL, AV_LOG_ERROR, "Cannot set output pixel format\n");
+            goto end;
+        }
     }
-    
+        
     outputs->name       = av_strdup("in");
     outputs->filter_ctx = pFilter->src_ctx;
     outputs->pad_idx    = 0;

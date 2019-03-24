@@ -9,7 +9,7 @@
 #include "FramesStats.h"
 #include "logger.h"
 #include "utils.h"
-
+#include "json_parser.h"
 
 
 void InitFrameStats(struct FramesStats* pStats)
@@ -74,4 +74,20 @@ void GetFrameStatsAvg(struct FramesStats* pStats,int* bitRate,double *fps,double
             *rate=ptsPassedInSec/timePassedInSec;
         }
     }
+}
+
+int stats_to_json(struct FramesStats *pStats,char* buf)
+{
+    int bitRate;
+    double fps;
+    double rate;
+    GetFrameStatsAvg(pStats,&bitRate,&fps,&rate);
+    
+    JSON_SERIALIZE_INIT(buf)
+    JSON_SERIALIZE_INT("totalSamples",pStats->totalFrames)
+    JSON_SERIALIZE_INT("bitrate",bitRate)
+    JSON_SERIALIZE_DOUBLE("fps",fps)
+    JSON_SERIALIZE_DOUBLE("rate",rate)
+    JSON_SERIALIZE_END()
+    return n;
 }

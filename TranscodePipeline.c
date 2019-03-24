@@ -128,7 +128,7 @@ int config_encoder(struct TranscodeOutput *pOutput, struct TranscoderCodecContex
     }
     if (pOutput->codec_type==AVMEDIA_TYPE_AUDIO)
     {
-        ret=init_audio_encoder(pEncoderContext, pFilter);
+        ret=init_audio_encoder(pEncoderContext, pFilter,pOutput);
     }
     
     sprintf(pEncoderContext->name,"Encoder for output %s",pOutput->name);
@@ -401,4 +401,33 @@ int close_transcoding_context(struct TranscodeContext *pContext) {
         close_codec(&pContext->encoder[i]);
     }
     return 0;
+}
+
+int transcoding_context_to_json(struct TranscodeContext *ctx,char* buf)
+{
+    
+    JSON_SERIALIZE_INIT(buf)
+    
+    JSON_SERIALIZE_ARRAY_START("decoders")
+    for (int i=0;i<ctx->decoders;i++)
+    {
+        struct TranscoderCodecContext* context=&ctx->decoder[i];
+        char tmp[1024];
+        decoder_to_json(context,tmp);
+        JSON_SERIALIZE_ARRAY_ITEM(tmp)
+    }
+    JSON_SERIALIZE_ARRAY_END()
+    JSON_SERIALIZE_ARRAY_START("outputs")
+    for (int i=0;i<ctx->outputs;i++)
+    {
+        struct TranscodeOutput* output=ctx->output[i];
+        char tmp[1024];
+        output_to_json(output,tmp);
+        JSON_SERIALIZE_ARRAY_ITEM(tmp)
+    }
+    JSON_SERIALIZE_ARRAY_END()
+    
+    JSON_SERIALIZE_END()
+
+    return n;
 }

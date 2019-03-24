@@ -1,98 +1,68 @@
 {
     "input": {
-        "file": "/Users/guyjacubovski/Sample_video/bbb_sunflower_1080p_30fps_normal.mp4",
-        "realTime": false,
-        "activeStream": 0,
-        "duration": 900000,
-        "randomDataPercentage": 0
-    },
-    "listener": {
-        "port": 9000
+        "file": "/Users/guyjacubovski/Sample_video/1080p50fps.mp4",
+        "activeStream": 0
     },
     "debug": {
         "saveFile": true,
-        "outputFileNamePattern": "/Users/guyjacubovski/Sample_video/output_%s.mp4"
+        "outputFileNamePattern": "/Users/guyjacubovski/dev/live-transcoder/output_%s.mp4"
     },
     "engine": {
-        "useNvidiaDecoder": true,
-        "codecs":"libx264|h264_videotoolbox|h264_nvenc"
+        "useNvidiaDecoder": false
     },
     "outputs": [
         {
             "name": "32",
-            "enabled": true,
             "passthrough": true
-        },
-        {
-            "name": "32t",
-            "enabled": false,
-            "bitrate": 64,
-            "passthrough": false,
-            "codec": "aac",
-            "audioParams": {
-                "samplingRate": 44100,
-                "channels": 2
-            }
         },
         {
             "name": "33",
             "passthrough": false,
-            "enabled": true,
             "bitrate": 900,
             "codec": "libx264",
             "videoParams": {
                 "profile": "main",
-                "preset": "veryfast",
                 "height": 480
             }
         },
         {
             "name": "34",
-            "enabled": false,
             "passthrough": false,
             "bitrate": 600,
             "codec": "libx264",
             "videoParams": {
                 "profile": "baseline",
-                "preset": "veryfast",
                 "height": 360
             }
         },
         {
             "name": "35",
-            "enabled": false,
             "passthrough": false,
             "bitrate": 400,
             "codec": "libx264",
             "videoParams": {
                 "profile": "baseline",
-                "preset": "veryfast",
                 "height": 360
             }
         },
         {
             "name": "42",
-            "enabled": false,
             "passthrough": false,
             "bitrate": 1500,
             "codec": "libx264",
             "videoParams": {
                 "profile": "high",
-                "preset": "veryfast",
                 "height": 720
             }
         },
         {
             "name": "43",
-            "enabled": false,
             "passthrough": false,
             "bitrate": 2500,
             "codec": "libx264",
             "videoParams": {
                 "profile": "high",
-                "preset": "veryfast",
-                "height": 720,
-                "skipFrame": 1
+                "height": 720
             }
         }
     ]

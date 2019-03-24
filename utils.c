@@ -139,9 +139,9 @@ char *av_get_frame_desc(char* buf, int size,const AVFrame * pFrame)
              pFrame->width,
              pFrame->height);
     } else {
-        snprintf(buf,size,"pts=%s;channels=%d;sampleRate=%d;format=%d;size=%d",
+        snprintf(buf,size,"pts=%s;channels=%d;sampleRate=%d;format=%d;size=%d;channel_layout=%ld",
                  ts2str(pFrame->pts,true),
-                 pFrame->channels,pFrame->sample_rate,pFrame->format,pFrame->nb_samples);
+                 pFrame->channels,pFrame->sample_rate,pFrame->format,pFrame->nb_samples,pFrame->channel_layout);
     }
     return buf;
 }

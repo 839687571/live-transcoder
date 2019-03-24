@@ -60,6 +60,8 @@ int close_Transcode_output(struct TranscodeOutput* pOutput) ;
 int set_output_format(struct TranscodeOutput *pOutput,struct AVCodecParameters* output) ;
 int send_output_packet(struct TranscodeOutput *pOutput,struct AVPacket* output) ;
 
+int output_to_json(struct TranscodeOutput *pOutput,char* buf);
+
 #endif /* output_h */
 
 

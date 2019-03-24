@@ -91,4 +91,22 @@ json_status_t json_get_double(const json_value_t* obj,char* path,double defaultV
 size_t json_get_array_count(const json_value_t* obj);
 json_status_t json_get_array_index(const json_value_t* obj,int index, json_value_t* result);
 
+
+#define JSON_SERIALIZE_INIT(buf) char * jsbuffer=buf; int n=0; bool shouldAddComma=false; n+=sprintf(jsbuffer,"{");
+#define ADD_COMMA() if (shouldAddComma) { n+=sprintf(jsbuffer+n,","); shouldAddComma=false;}
+#define JSON_SERIALIZE_STRING(key,value)  ADD_COMMA() n+=sprintf(jsbuffer+n,"\"%s\": \"%s\"",key,value); shouldAddComma=true;
+#define JSON_SERIALIZE_INT(key,value)  ADD_COMMA() n+=sprintf(jsbuffer+n,"\"%s\": %d",key,value); shouldAddComma=true;
+#define JSON_SERIALIZE_INT64(key,value)  ADD_COMMA() n+=sprintf(jsbuffer+n,"\"%s\": %ld",key,value); shouldAddComma=true;
+#define JSON_SERIALIZE_BOOL(key,value)  ADD_COMMA() n+=sprintf(jsbuffer+n,"\"%s\": %s",key,value ? "true" : "false"); shouldAddComma=true;
+#define JSON_SERIALIZE_DOUBLE(key,value)  ADD_COMMA() n+=sprintf(jsbuffer+n,"\"%s\": %.2lf",key,value); shouldAddComma=true;
+#define JSON_SERIALIZE_OBJECT(key,value)  ADD_COMMA() n+=sprintf(jsbuffer+n,"\"%s\": %s",key,value); shouldAddComma=true;
+#define JSON_SERIALIZE_OBJECT_BEGIN(key)  ADD_COMMA() n+=sprintf(jsbuffer+n,"\"%s\": {",key); shouldAddComma=false;
+#define JSON_SERIALIZE_OBJECT_END()  n+=sprintf(jsbuffer+n,"}"); shouldAddComma=true;
+
+#define JSON_SERIALIZE_ARRAY_START(key) ADD_COMMA() n+=sprintf(jsbuffer+n,"\"%s\": [",key); shouldAddComma=false;
+#define JSON_SERIALIZE_ARRAY_ITEM(item) ADD_COMMA() n+=sprintf(jsbuffer+n,"%s",item); shouldAddComma=true;
+#define JSON_SERIALIZE_ARRAY_END()  n+=sprintf(jsbuffer+n,"]"); shouldAddComma=true;
+#define JSON_SERIALIZE_END()  n+=sprintf(jsbuffer+n,"}"); shouldAddComma=true;
+
+
 #endif // __JSON_PARSER_H__

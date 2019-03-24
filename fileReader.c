@@ -7,6 +7,7 @@
 //
 
 #include "fileReader.h"
+#include "KMP.h"
 
 int stream_from_file(const char* pSourceFileName,bool *keepRunning)
 {
@@ -30,7 +31,7 @@ int stream_from_file(const char* pSourceFileName,bool *keepRunning)
     json_get_bool(GetConfig(),"input.realTime",false,&realTime);
     
     int activeStream=0;
-    json_get_int(GetConfig(),"activeStream",0,&activeStream);
+    json_get_int(GetConfig(),"input.activeStream",0,&activeStream);
     
     int randomDataPercentage;
     json_get_int(GetConfig(),"input.randomDataPercentage",0,&randomDataPercentage);
@@ -38,13 +39,14 @@ int stream_from_file(const char* pSourceFileName,bool *keepRunning)
     AVPacket packet;
     av_init_packet(&packet);
     
-    init_sender_socket(9999);
+    struct KalturaMediaProtocolContext kmp;
+    KMP_connect(&kmp,"127.0.0.1",9999);
     uint64_t  basePts=0;//av_rescale_q( getClock64(), clockScale, standard_timebase);
     
     AVStream *in_stream=ifmt_ctx->streams[activeStream];
     
     AVRational frame_rate={15,1};
-    send_header(in_stream->codecpar,frame_rate);
+    KMP_send_header(&kmp,in_stream->codecpar,frame_rate);
     
     LOGGER("SENDER",AV_LOG_INFO,"Realtime = %s",realTime ? "true" : "false");
     srand(time(NULL));
@@ -95,7 +97,7 @@ int stream_from_file(const char* pSourceFileName,bool *keepRunning)
         }
         
         lastDts=packet.dts;
-        send_packet(&packet);
+        KMP_send_packet(&kmp,&packet);
         
         /*
          LOGGER("SENDER",AV_LOG_DEBUG,"sent packet pts=%s dts=%s  size=%d",
@@ -107,8 +109,9 @@ int stream_from_file(const char* pSourceFileName,bool *keepRunning)
         av_packet_unref(&packet);
         
     }
-    send_eof();
+    KMP_send_eof(&kmp);
 
+    KMP_close(&kmp);
     avformat_close_input(&ifmt_ctx);
     return 0;
 }

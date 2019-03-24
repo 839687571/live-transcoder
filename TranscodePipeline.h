@@ -51,5 +51,7 @@ struct TranscodeContext {
 int init_transcoding_context(struct TranscodeContext *ctx,struct AVCodecParameters* codecParams,AVRational framerate);
 int convert_packet(struct TranscodeContext *pContext, struct AVPacket* packet);
 int close_transcoding_context(struct TranscodeContext *ctx);
+int transcoding_context_to_json(struct TranscodeContext *ctx,char* buf);
+
 
 #endif /* TranscodePipeline_hpp */

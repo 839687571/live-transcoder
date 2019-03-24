@@ -34,5 +34,6 @@ struct FramesStats
 void InitFrameStats(struct FramesStats* pStats);
 void AddFrameToStats(struct FramesStats* pStats,uint64_t pts,int size);
 void GetFrameStatsAvg(struct FramesStats* pStats,int* bitRate,double *fps,double*rate);
+int stats_to_json(struct FramesStats *pStats,char* buf);
 
 #endif /* Stats_h */

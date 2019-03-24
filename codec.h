@@ -43,7 +43,7 @@ int init_video_encoder(struct TranscoderCodecContext * pContext,
                        const struct TranscodeOutput* pOutput,
                        int width,int height);
 
-int init_audio_encoder(struct TranscoderCodecContext * pContext,struct TranscoderFilter* pFilter);
+int init_audio_encoder(struct TranscoderCodecContext * pContext,struct TranscoderFilter* pFilter,const struct TranscodeOutput* pOutput);
 
 
 int send_encode_frame(struct TranscoderCodecContext *encoder,const AVFrame* pFrame);
@@ -55,5 +55,7 @@ int receive_decoder_frame(struct TranscoderCodecContext *decoder,AVFrame *pFrame
 int reset_decoder(struct TranscoderCodecContext *decoder);
 
 inline int64_t get_latency(struct TranscoderCodecContext *codec) { return llabs(codec->outPts-codec->inPts);}
+
+int decoder_to_json(struct TranscoderCodecContext *decoder,char* buf);
 
 #endif /* TranscoderEncoder_h */

@@ -20,8 +20,8 @@
 #include "config.h"
 #include <unistd.h>
 #include <signal.h>
-#include "sender.h"
 #include "fileReader.h"
+#include "httpServer.h"
 
 #ifndef APPLICATION_VERSION
 #define APPLICATION_VERSION __TIMESTAMP__
@@ -29,10 +29,35 @@
 
 static volatile bool keepRunning = true;
 
+struct TranscodeContext ctx;
+
 void intHandler(int dummy) {
     LOGGER0(CATEGORY_DEFAULT,AV_LOG_WARNING,"SIGINT detected!");
     keepRunning = false;
 }
+
+
+int on_http_request(const char* uri, char* buf,int bufSize,int* bytesWritten)
+{
+    int retVal=404;
+    JSON_SERIALIZE_INIT(buf)
+    JSON_SERIALIZE_STRING("uri", uri)
+    
+    char tmp[2048];
+    strcpy(tmp,"{}");
+    if (strcmp(uri,"/stats")==0) {
+        transcoding_context_to_json(&ctx,tmp);
+        retVal=200;
+    }
+    
+    JSON_SERIALIZE_OBJECT("result", tmp);
+    
+    JSON_SERIALIZE_END()
+    *bytesWritten=n;
+
+    return retVal;
+}
+
 
 int main(int argc, char **argv)
 {
@@ -53,11 +78,11 @@ int main(int argc, char **argv)
     init_ffmpeg_log_level(AV_LOG_DEBUG);
     avformat_network_init();
     
-    struct TranscodeContext ctx;
     
     int listenPort;
     json_get_int(GetConfig(),"listener.port",9999,&listenPort);
 
+    start_http_server(12345, on_http_request);
     
     start_listener(&ctx,listenPort);
     
@@ -69,11 +94,16 @@ int main(int argc, char **argv)
     }
     else
     {
+        while (keepRunning && !kbhit()) {
+            av_usleep(10000);
+        }
     }
     
     LOGGER0(CATEGORY_DEFAULT,AV_LOG_INFO,"stopping!");
     
     stop_listener();
+    
+    stop_http_server();
     
     
     loggerFlush();
