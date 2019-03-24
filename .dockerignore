@@ -6,3 +6,6 @@ cmake_install.cmake
 transcoder
 CMakeFiles
 obj
+.vscode
+build
+live-transcoder.xcodeproj
