@@ -12,6 +12,8 @@
 int stream_from_file(const char* pSourceFileName,bool *keepRunning)
 {
     AVFormatContext *ifmt_ctx=NULL;
+    
+    init_ffmpeg_log_level(AV_LOG_INFO);
     int ret = avformat_open_input(&ifmt_ctx, pSourceFileName, NULL, NULL);
     if (ret < 0) {
         LOGGER(CATEGORY_DEFAULT,AV_LOG_FATAL,"Unable to open input %s %d (%s)",pSourceFileName,ret,av_err2str(ret));
@@ -23,6 +25,8 @@ int stream_from_file(const char* pSourceFileName,bool *keepRunning)
         LOGGER(CATEGORY_DEFAULT,AV_LOG_FATAL,"segmenter: Unable to find any input streams  %d (%s)",ret,av_err2str(ret));
         return ret;
     }
+    
+    init_ffmpeg_log_level(AV_LOG_DEBUG);
     
     int64_t duration=0;
     json_get_int64(GetConfig(),"input.duration",-1,&duration);

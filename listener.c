@@ -15,7 +15,6 @@
 
 
 struct KalturaMediaProtocolContext kmpServer;
-
 pthread_t thread_id;
 
 pthread_cond_t cond1 = PTHREAD_COND_INITIALIZER;
@@ -64,6 +63,7 @@ void* listenerThread(void *vargp)
     
     
     if (KMP_listen(&kmpServer,9999)<0) {
+        exit (-1);
         return NULL;
     }
     LOGGER0(CATEGORY_RECEIVER,AV_LOG_INFO,"Waiting for accept");
@@ -73,14 +73,19 @@ void* listenerThread(void *vargp)
     struct KalturaMediaProtocolContext kmpClient;
 
     if (KMP_accept(&kmpServer,&kmpClient)<0) {
-        
+        exit (-1);
         return NULL;
     }
+    
+
     
     AVRational frameRate;
     
     AVCodecParameters* params=avcodec_parameters_alloc();
-    KMP_read_mediaInfo(&kmpClient,params,&frameRate);
+    if (KMP_read_mediaInfo(&kmpClient,params,&frameRate)<0) {
+        LOGGER0(CATEGORY_RECEIVER,AV_LOG_FATAL,"Invalid mediainfo");
+        exit (-1);
+    }
 
     init_transcoding_context(pContext,params,frameRate);
     init_outputs(pContext,config);
@@ -90,12 +95,11 @@ void* listenerThread(void *vargp)
     AVPacket packet;
     while (true) {
         
-        if (KMP_readPacket(&kmpClient,&packet)<0) {
+        if (KMP_readPacket(&kmpClient,&packet)<=0) {
             break;
         }
 
-        LOGGER(CATEGORY_RECEIVER,AV_LOG_DEBUG,"[0] received packet %s",
-               getPacketDesc(&packet));
+        LOGGER(CATEGORY_RECEIVER,AV_LOG_DEBUG,"[0] received packet %s",getPacketDesc(&packet));
 
         packet.pos=getClock64();
         convert_packet(pContext,&packet);
@@ -126,7 +130,6 @@ void start_listener(struct TranscodeContext *pContext,int port)
 {
     pthread_create(&thread_id, NULL, listenerThread, pContext);
     pthread_cond_wait(&cond1, &lock);
-
 }
 
 
