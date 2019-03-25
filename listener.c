@@ -12,7 +12,7 @@
 #include <pthread.h>
 #include "config.h"
 #include "KMP.h"
-
+#include "TranscodePipeline.h"
 
 struct KalturaMediaProtocolContext kmpServer;
 pthread_t thread_id;
@@ -22,6 +22,7 @@ pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 
 struct TranscodeOutput outputs[100];
 int totalOutputs=0;
+struct FramesStats listnerStats;
 
 int init_outputs(struct TranscodeContext* pContext,json_value_t* json)
 {
@@ -91,8 +92,7 @@ void* listenerThread(void *vargp)
     init_outputs(pContext,config);
     
     
-    struct FramesStats stats;
-    InitFrameStats(&stats,standard_timebase);
+    InitFrameStats(&listnerStats,standard_timebase);
     
     AVPacket packet;
     while (true) {
@@ -101,9 +101,9 @@ void* listenerThread(void *vargp)
             break;
         }
         
-        AddFrameToStats(&stats,packet.pts,packet.size);
+        AddFrameToStats(&listnerStats,packet.pts,packet.size);
 
-        log_frame_stats(CATEGORY_RECEIVER,AV_LOG_DEBUG,&stats,"0");
+        log_frame_stats(CATEGORY_RECEIVER,AV_LOG_DEBUG,&listnerStats,"0");
         LOGGER(CATEGORY_RECEIVER,AV_LOG_DEBUG,"[0] received packet %s",getPacketDesc(&packet));
 
         packet.pos=getClock64();
@@ -142,4 +142,14 @@ void stop_listener() {
     
     KMP_close(&kmpServer);
     pthread_join(thread_id,NULL);
+}
+
+int get_listener_stats(char* buf)
+{
+    char tmp[2048];
+    JSON_SERIALIZE_INIT(buf)
+    stats_to_json(&listnerStats, tmp);
+    JSON_SERIALIZE_OBJECT("stats", tmp)
+    JSON_SERIALIZE_END()
+    return n;
 }

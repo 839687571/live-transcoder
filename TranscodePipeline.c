@@ -56,7 +56,7 @@ void get_filter_config(char *filterConfig, struct TranscoderCodecContext *pDecod
     }
     if (pOutput->codec_type==AVMEDIA_TYPE_AUDIO)
     {
-        sprintf(filterConfig,"aformat=sample_fmts=fltp:channel_layouts=stereo:sample_rates=%d",pOutput->audioParams.samplingRate);
+        sprintf(filterConfig,"aresample=async=1000");
     }
 }
 
@@ -426,6 +426,11 @@ int transcoding_context_to_json(struct TranscodeContext *ctx,char* buf)
         JSON_SERIALIZE_ARRAY_ITEM(tmp)
     }
     JSON_SERIALIZE_ARRAY_END()
+    
+    char tmp[2048];
+    get_listener_stats(&tmp);
+    JSON_SERIALIZE_OBJECT("listner", tmp)
+    
     
     JSON_SERIALIZE_END()
 

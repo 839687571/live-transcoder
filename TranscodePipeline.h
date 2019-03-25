@@ -52,6 +52,6 @@ int init_transcoding_context(struct TranscodeContext *ctx,struct AVCodecParamete
 int convert_packet(struct TranscodeContext *pContext, struct AVPacket* packet);
 int close_transcoding_context(struct TranscodeContext *ctx);
 int transcoding_context_to_json(struct TranscodeContext *ctx,char* buf);
-
+int add_output(struct TranscodeContext* pContext, struct TranscodeOutput * pOutput);
 
 #endif /* TranscodePipeline_hpp */

@@ -15,4 +15,6 @@
 
 void start_listener(struct TranscodeContext *pContext,int port);
 void stop_listener();
+int get_listener_stats(char* buf);
+
 #endif /* listener_h */
