@@ -91,6 +91,8 @@ void* listenerThread(void *vargp)
     init_outputs(pContext,config);
     
     
+    struct FramesStats stats;
+    InitFrameStats(&stats,standard_timebase);
     
     AVPacket packet;
     while (true) {
@@ -98,7 +100,10 @@ void* listenerThread(void *vargp)
         if (KMP_readPacket(&kmpClient,&packet)<=0) {
             break;
         }
+        
+        AddFrameToStats(&stats,packet.pts,packet.size);
 
+        log_frame_stats(CATEGORY_RECEIVER,AV_LOG_DEBUG,&stats,"0");
         LOGGER(CATEGORY_RECEIVER,AV_LOG_DEBUG,"[0] received packet %s",getPacketDesc(&packet));
 
         packet.pos=getClock64();

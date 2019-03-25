@@ -92,3 +92,17 @@ int stats_to_json(struct FramesStats *pStats,char* buf)
     JSON_SERIALIZE_END()
     return n;
 }
+
+
+void log_frame_stats(const char* category,int level,struct FramesStats *stats,const char*prefix)
+{
+    int avgBitrate;
+    double fps,rate;
+    GetFrameStatsAvg(stats,&avgBitrate,&fps,&rate);
+    LOGGER(category,level,"[%s] Stats: total frames: %ld bitrate %.2lf Kbit/s fps=%.2lf rate=x%.2lf",
+           prefix,
+           stats->totalFrames,
+           ((double)avgBitrate)/(1000.0),
+           fps,
+           rate)
+}

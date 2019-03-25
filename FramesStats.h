@@ -36,5 +36,6 @@ void InitFrameStats(struct FramesStats* pStats,AVRational basetime);
 void AddFrameToStats(struct FramesStats* pStats,uint64_t pts,int size);
 void GetFrameStatsAvg(struct FramesStats* pStats,int* bitRate,double *fps,double*rate);
 int stats_to_json(struct FramesStats *pStats,char* buf);
+void log_frame_stats(const char* category,int level,struct FramesStats *stats,const char*prefix);
 
 #endif /* Stats_h */
