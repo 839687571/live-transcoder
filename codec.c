@@ -17,8 +17,8 @@ int init_codec(struct TranscoderCodecContext * pContext)
 {
     pContext->name[0]=0;
     pContext->inPts=pContext->outPts=0;
-    InitFrameStats(&pContext->inStats);
-    InitFrameStats(&pContext->outStats);
+    InitFrameStats(&pContext->inStats,standard_timebase);
+    InitFrameStats(&pContext->outStats,standard_timebase);
     return 0;
 }
 

@@ -12,12 +12,13 @@
 #include "json_parser.h"
 
 
-void InitFrameStats(struct FramesStats* pStats)
+void InitFrameStats(struct FramesStats* pStats,AVRational basetime)
 {
     pStats->totalFrames=0;
     pStats->head=-1;
     pStats->tail=-1;
-    pStats->totalBitrateInWindow=0;
+    pStats->totalWindowSizeInBytes=0;
+    pStats->basetime=basetime;
 }
 
 void drain(struct FramesStats* pStats,uint64_t clock)
@@ -28,7 +29,7 @@ void drain(struct FramesStats* pStats,uint64_t clock)
         if (timePassed<HISTORY_DURATION*90000) {
             break;
         }
-        pStats->totalBitrateInWindow-=pTail->frameSize;
+        pStats->totalWindowSizeInBytes-=pTail->frameSize;
         pStats->tail++;
     }
 }
@@ -48,7 +49,7 @@ void AddFrameToStats(struct FramesStats* pStats,uint64_t pts,int frameSize)
     pHead->clock=getTime64();
     
     pStats->totalFrames++;
-    pStats->totalBitrateInWindow+=frameSize*8;
+    pStats->totalWindowSizeInBytes+=frameSize;
     
     drain(pStats,pHead->pts);
 }
@@ -68,7 +69,7 @@ void GetFrameStatsAvg(struct FramesStats* pStats,int* bitRate,double *fps,double
         int64_t frames=(pStats->head - pStats->tail + 1);
 
         if (ptsPassedInSec>0 && timePassedInSec>0) {
-            double dbitRate= (double)(pStats->totalBitrateInWindow)/ptsPassedInSec;
+            double dbitRate= (double)(pStats->totalWindowSizeInBytes*8)/ptsPassedInSec;
             *bitRate=(int)dbitRate;
             *fps=frames/timePassedInSec;
             *rate=ptsPassedInSec/timePassedInSec;

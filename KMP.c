@@ -198,6 +198,10 @@ int KMP_accept(struct KalturaMediaProtocolContext *context,struct KalturaMediaPr
 
 int recvEx(int socket,char* buffer,int bytesToRead) {
     
+    if (bytesToRead==0) {
+        LOGGER(CATEGORY_KMP,AV_LOG_FATAL,"!!!!recvEx invalid bytesToRead=  %d",bytesToRead);
+
+    }
     int bytesRead=0;
     while (bytesToRead>0) {
         
@@ -274,7 +278,7 @@ int KMP_readPacket(struct KalturaMediaProtocolContext *context,AVPacket *packet)
         return valread;
     }
     
-    if (header.data_size==0 && header.header_size==0) {
+    if (header.data_size==0 || header.header_size==0) {
         LOGGER0(CATEGORY_KMP,AV_LOG_FATAL,"recieved termination packet");
         return -1;
     }

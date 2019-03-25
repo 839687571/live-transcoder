@@ -27,11 +27,12 @@ struct FramesStats
     uint64_t head,tail;
     struct FramesStatsHistory history[HISTORY_SIZE];
     
-    int64_t totalBitrateInWindow;
+    int64_t totalWindowSizeInBytes;
+    AVRational basetime;
     
 };
 
-void InitFrameStats(struct FramesStats* pStats);
+void InitFrameStats(struct FramesStats* pStats,AVRational basetime);
 void AddFrameToStats(struct FramesStats* pStats,uint64_t pts,int size);
 void GetFrameStatsAvg(struct FramesStats* pStats,int* bitRate,double *fps,double*rate);
 int stats_to_json(struct FramesStats *pStats,char* buf);

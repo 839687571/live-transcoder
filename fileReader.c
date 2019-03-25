@@ -8,6 +8,7 @@
 
 #include "fileReader.h"
 #include "KMP.h"
+#include "FramesStats.h"
 
 int stream_from_file(const char* pSourceFileName,bool *keepRunning)
 {
@@ -58,6 +59,11 @@ int stream_from_file(const char* pSourceFileName,bool *keepRunning)
     srand((int)time(NULL));
     uint64_t lastDts=0;
     int64_t start_time=av_gettime_relative();
+    
+    
+    struct FramesStats stats;
+    InitFrameStats(&stats,standard_timebase);
+    
     while (*keepRunning && !kbhit()) {
         
         if ((ret = av_read_frame(ifmt_ctx, &packet)) < 0)
@@ -103,7 +109,21 @@ int stream_from_file(const char* pSourceFileName,bool *keepRunning)
         }
         
         lastDts=packet.dts;
-        KMP_send_packet(&kmp,&packet);
+        
+        
+        AddFrameToStats(&stats,packet.pts,packet.size);
+        
+        /*
+        int avgBitrate;
+        double fps,rate;
+        GetFrameStatsAvg(&stats,&avgBitrate,&fps,&rate);
+        LOGGER(CATEGORY_DEFAULT,AV_LOG_DEBUG,"Sender: total frames: %ld bitrate %.2lf Kbit/s fps=%.2lf rate=x%.2lf",
+               stats.totalFrames,
+               ((double)avgBitrate)/(1000.0),
+               fps,
+               rate)*/
+        
+         KMP_send_packet(&kmp,&packet);
         
         /*
          LOGGER("SENDER",AV_LOG_DEBUG,"sent packet pts=%s dts=%s  size=%d",

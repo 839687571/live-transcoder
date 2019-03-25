@@ -30,7 +30,7 @@ int init_Transcode_output(struct TranscodeOutput* pOutput)  {
     pOutput->videoParams.profile="";
     pOutput->audioParams.samplingRate=pOutput->audioParams.channels=-1;
     
-    InitFrameStats(&pOutput->stats);
+    InitFrameStats(&pOutput->stats,standard_timebase);
     return 0;
 }
 
