@@ -841,6 +841,15 @@ json_decode_string(str_t* dest, str_t* src)
     return JSON_OK;
 }
 
+int strlen2(char *str,size_t count)
+{
+    int len=0;
+    while (str[len]!='.' && str[len]!=0 && len<count) {
+        len++;
+    }
+    return len;
+}
+
 json_status_t json_get(const json_value_t* obj,char* path,const json_value_t** result)
 {
     if (path==NULL || *path==0) {
@@ -861,7 +870,7 @@ json_status_t json_get(const json_value_t* obj,char* path,const json_value_t** r
                 {
                     char* k=elobj->key.data;
                     size_t count=elobj->key.len;
-                    if (strncasecmp(k,key,count)==0) {
+                    if (strncasecmp(key,k,count)==0 && strlen2(key,100)==strlen2(k,count)) {
                         if (*path=='.')
                             path++;
                         return json_get(&elobj->value,path,result);
@@ -870,7 +879,7 @@ json_status_t json_get(const json_value_t* obj,char* path,const json_value_t** r
                 }
             }
             if (obj->type==JSON_ARRAY) {
-                return json_get_array_index(obj,0,&result);
+                return json_get_array_index(obj,0,result);
             }
             return JSON_BAD_DATA;
         }

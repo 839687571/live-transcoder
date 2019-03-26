@@ -148,10 +148,9 @@ int send_output_packet(struct TranscodeOutput *pOutput,struct AVPacket* packet)
 }
 
 int set_output_format(struct TranscodeOutput *pOutput,struct AVCodecParameters* codecParams)
-{
-    
+{    
     bool saveFile;
-    json_get_bool(GetConfig(),"debug.saveFile",false,&saveFile);
+    json_get_bool(GetConfig(),"output.saveFile",false,&saveFile);
     
     if (saveFile && pOutput->oc==NULL) {
         char* fileNamePattern;

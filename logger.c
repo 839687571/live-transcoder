@@ -107,15 +107,10 @@ void ffmpeg_log_callback(void *ptr, int level, const char *fmt, va_list vargs)
 void log_init(int level)
 {
     logLevel=level;
-}
-
-void init_ffmpeg_log_level(int logLevel)
-{
-    av_log_set_level(logLevel);
     av_log_set_callback(ffmpeg_log_callback);
-
 }
-int get_log_level(const char* category,int level)
+
+int get_log_level(const char* category)
 {
     return logLevel;
 }

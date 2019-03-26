@@ -22,10 +22,9 @@
 void logger1(const char* category,int level,const char *fmt, ...);
 void loggerFlush();
 void log_init(int level);
-int get_log_level(const char* category,int level);
-void init_ffmpeg_log_level(int logLevel);
+int get_log_level(const char* category);
 
-#define LOGGER(CATEGORY,LEVEL,FMT,...) { if (get_log_level(CATEGORY,LEVEL)>=LEVEL) { logger1(CATEGORY,LEVEL,FMT,__VA_ARGS__); }}
-#define LOGGER0(CATEGORY,LEVEL,FMT) {  if (get_log_level(CATEGORY,LEVEL)>=LEVEL) { logger1(CATEGORY,LEVEL,FMT); } }
+#define LOGGER(CATEGORY,LEVEL,FMT,...) { if (get_log_level(CATEGORY)>=LEVEL) { logger1(CATEGORY,LEVEL,FMT,__VA_ARGS__); }}
+#define LOGGER0(CATEGORY,LEVEL,FMT) {  if (get_log_level(CATEGORY)>=LEVEL) { logger1(CATEGORY,LEVEL,FMT); } }
 
 #endif /* LOGGER_h */

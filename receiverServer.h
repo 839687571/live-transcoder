@@ -26,6 +26,7 @@ struct ReceiverServer
     struct TranscodeOutput outputs[100];
     int totalOutputs;
     struct FramesStats listnerStats;
+    int port;
 };
 
 void start_receiver_server(struct ReceiverServer *server);

@@ -30,6 +30,7 @@
 static volatile bool keepRunning = true;
 
 struct TranscodeContext ctx;
+struct ReceiverServer receiver;
 
 void intHandler(int dummy) {
     LOGGER0(CATEGORY_DEFAULT,AV_LOG_WARNING,"SIGINT detected!");
@@ -46,7 +47,7 @@ int on_http_request(const char* uri, char* buf,int bufSize,int* bytesWritten)
     char tmp[2048];
     strcpy(tmp,"{}");
     if (strcmp(uri,"/stats")==0) {
-        transcoding_context_to_json(&ctx,tmp);
+        get_receiver_stats(&receiver,tmp);
         retVal=200;
     }
     
@@ -75,7 +76,6 @@ int main(int argc, char **argv)
     char* pSourceFileName;
     json_get_string(GetConfig(),"input.file","",&pSourceFileName);
     
-    init_ffmpeg_log_level(AV_LOG_DEBUG);
     avformat_network_init();
     
     
@@ -84,9 +84,11 @@ int main(int argc, char **argv)
 
     start_http_server(12345, on_http_request);
     
-    struct ReceiverServer receiver;
     receiver.transcodeContext=&ctx;
+    receiver.port=9999;
     start_receiver_server(&receiver);
+    //dummyPackager.port=10000;
+    //start_receiver_server(&dummyPackager);
     
     if (strlen(pSourceFileName)>0)
     {

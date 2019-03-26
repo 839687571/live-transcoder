@@ -22,7 +22,7 @@ int init_outputs(struct ReceiverServer *server,struct TranscodeContext* pContext
     
     for (int i=0;i<json_get_array_count(outputsJson);i++)
     {
-        const json_value_t outputJson;
+        json_value_t outputJson;
         json_get_array_index(outputsJson,i,&outputJson);
         
         bool enabled=true;
@@ -55,7 +55,7 @@ void* listenerThread(void *vargp)
     json_value_t* config=GetConfig();
     
     
-    if (KMP_listen(&server->kmpServer,9999)<0) {
+    if (KMP_listen(&server->kmpServer,server->port)<0) {
         exit (-1);
         return NULL;
     }
@@ -66,7 +66,6 @@ void* listenerThread(void *vargp)
     struct KalturaMediaProtocolContext kmpClient;
 
     if (KMP_accept(&server->kmpServer,&kmpClient)<0) {
-        exit (-1);
         return NULL;
     }
     
@@ -152,7 +151,9 @@ int get_receiver_stats(struct ReceiverServer *server,char* buf)
     char tmp[2048];
     JSON_SERIALIZE_INIT(buf)
     stats_to_json(&server->listnerStats, tmp);
-    JSON_SERIALIZE_OBJECT("stats", tmp)
+    JSON_SERIALIZE_OBJECT("receiver", tmp)
+    transcoding_context_to_json(server->transcodeContext,tmp);
+    JSON_SERIALIZE_OBJECT("transcoder", tmp)
     JSON_SERIALIZE_END()
     return n;
 }

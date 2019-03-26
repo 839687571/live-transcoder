@@ -12,6 +12,7 @@
 #include "core.h"
 #include "FramesStats.h"
 #include "json_parser.h"
+#include "KMP.h"
 
 enum TranscodeOutputType
 {
@@ -46,7 +47,6 @@ struct TranscodeOutput
     int encoderId;
     
     struct FramesStats stats;
-    
     
     AVFormatContext *oc;
     AVBSFContext* bsf;
