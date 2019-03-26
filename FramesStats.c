@@ -42,6 +42,7 @@ void AddFrameToStats(struct FramesStats* pStats,uint64_t pts,int frameSize)
     pStats->head++;
     if (pStats->head==0){
         pStats->tail=0;
+        pStats->firstPts=pts;
     }
     struct FramesStatsHistory  *pHead=getIndex(pStats,pStats->head);
     pHead->frameSize=frameSize;
@@ -85,7 +86,7 @@ int stats_to_json(struct FramesStats *pStats,char* buf)
     GetFrameStatsAvg(pStats,&bitRate,&fps,&rate);
     
     JSON_SERIALIZE_INIT(buf)
-    JSON_SERIALIZE_INT64("totalSamples",(int64_t)pStats->totalFrames)
+    JSON_SERIALIZE_INT64("totalSamples",pStats->totalFrames)
     JSON_SERIALIZE_INT("bitrate",bitRate)
     JSON_SERIALIZE_DOUBLE("fps",fps)
     JSON_SERIALIZE_DOUBLE("rate",rate)

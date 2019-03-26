@@ -6,7 +6,7 @@
 //  Copyright © 2019 Kaltura. All rights reserved.
 //
 
-#include "listener.h"
+#include "receiverServer.h"
 #include "utils.h"
 #include "logger.h"
 #include <pthread.h>
@@ -14,17 +14,8 @@
 #include "KMP.h"
 #include "TranscodePipeline.h"
 
-struct KalturaMediaProtocolContext kmpServer;
-pthread_t thread_id;
 
-pthread_cond_t cond1 = PTHREAD_COND_INITIALIZER;
-pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
-
-struct TranscodeOutput outputs[100];
-int totalOutputs=0;
-struct FramesStats listnerStats;
-
-int init_outputs(struct TranscodeContext* pContext,json_value_t* json)
+int init_outputs(struct ReceiverServer *server,struct TranscodeContext* pContext,json_value_t* json)
 {
     const json_value_t* outputsJson;
     json_get(json,"outputs",&outputsJson);
@@ -42,11 +33,11 @@ int init_outputs(struct TranscodeContext* pContext,json_value_t* json)
             LOGGER(CATEGORY_RECEIVER,AV_LOG_INFO,"Skipping output %s since it's disabled",name);
             continue;
         }
-        struct TranscodeOutput *pOutput=&outputs[totalOutputs];
+        struct TranscodeOutput *pOutput=&server->outputs[server->totalOutputs];
         init_Transcode_output_from_json(pOutput,&outputJson);
         
         add_output(pContext,pOutput);
-        totalOutputs++;
+        server->totalOutputs++;
     }
     return 0;
 }
@@ -58,22 +49,23 @@ void* listenerThread(void *vargp)
     
     LOGGER0(CATEGORY_RECEIVER,AV_LOG_INFO,"listenerThread");
     
-    struct TranscodeContext *pContext = (struct TranscodeContext *)vargp;
+    struct ReceiverServer *server=(struct ReceiverServer *)vargp;
+    struct TranscodeContext *transcodeContext = server->transcodeContext;
     
-    struct json_value_t* config=GetConfig();
+    json_value_t* config=GetConfig();
     
     
-    if (KMP_listen(&kmpServer,9999)<0) {
+    if (KMP_listen(&server->kmpServer,9999)<0) {
         exit (-1);
         return NULL;
     }
     LOGGER0(CATEGORY_RECEIVER,AV_LOG_INFO,"Waiting for accept");
-    pthread_cond_signal(&cond1);
+    pthread_cond_signal(&server->cond);
 
     
     struct KalturaMediaProtocolContext kmpClient;
 
-    if (KMP_accept(&kmpServer,&kmpClient)<0) {
+    if (KMP_accept(&server->kmpServer,&kmpClient)<0) {
         exit (-1);
         return NULL;
     }
@@ -88,38 +80,46 @@ void* listenerThread(void *vargp)
         exit (-1);
     }
 
-    init_transcoding_context(pContext,params,frameRate);
-    init_outputs(pContext,config);
+    if (transcodeContext!=NULL) {
+        init_transcoding_context(transcodeContext,params,frameRate);
+        init_outputs(server,transcodeContext,config);
+    }
     
     
-    InitFrameStats(&listnerStats,standard_timebase);
+    InitFrameStats(&server->listnerStats,standard_timebase);
     
     AVPacket packet;
+    
     while (true) {
         
         if (KMP_readPacket(&kmpClient,&packet)<=0) {
             break;
         }
         
-        AddFrameToStats(&listnerStats,packet.pts,packet.size);
+        AddFrameToStats(&server->listnerStats,packet.pts,packet.size);
 
-        log_frame_stats(CATEGORY_RECEIVER,AV_LOG_DEBUG,&listnerStats,"0");
+        log_frame_stats(CATEGORY_RECEIVER,AV_LOG_DEBUG,&server->listnerStats,"0");
         LOGGER(CATEGORY_RECEIVER,AV_LOG_DEBUG,"[0] received packet %s",getPacketDesc(&packet));
 
         packet.pos=getClock64();
-        convert_packet(pContext,&packet);
         
+        if (transcodeContext!=NULL)
+        {
+            convert_packet(transcodeContext,&packet);
+        }
         av_packet_unref(&packet);
         
     }
     LOGGER0(CATEGORY_RECEIVER,AV_LOG_INFO,"Destorying receive thread");
 
-    close_transcoding_context(pContext);
     
-    for (int i=0;i<totalOutputs;i++){
-        LOGGER(CATEGORY_RECEIVER,AV_LOG_INFO,"Closing output %s",outputs[i].name);
-        close_Transcode_output(&outputs[i]);
-        
+    if (transcodeContext!=NULL)
+    {
+        close_transcoding_context(transcodeContext);
+        for (int i=0;i<server->totalOutputs;i++){
+            LOGGER(CATEGORY_RECEIVER,AV_LOG_INFO,"Closing output %s",server->outputs[i].name);
+            close_Transcode_output(&server->outputs[i]);
+        }
     }
     
     avcodec_parameters_free(&params);
@@ -131,24 +131,27 @@ void* listenerThread(void *vargp)
 }
 
 
-void start_listener(struct TranscodeContext *pContext,int port)
+void start_receiver_server(struct ReceiverServer *server)
 {
-    pthread_create(&thread_id, NULL, listenerThread, pContext);
-    pthread_cond_wait(&cond1, &lock);
+    server->totalOutputs=0;
+    pthread_cond_init(&server->cond, NULL);
+    pthread_mutex_init(&server->lock, NULL);
+    pthread_create(&server->thread_id, NULL, listenerThread, server);
+    pthread_cond_wait(&server->cond, &server->lock);
 }
 
 
-void stop_listener() {
+void stop_receiver_server(struct ReceiverServer *server) {
     
-    KMP_close(&kmpServer);
-    pthread_join(thread_id,NULL);
+    KMP_close(&server->kmpServer);
+    pthread_join(server->thread_id,NULL);
 }
 
-int get_listener_stats(char* buf)
+int get_receiver_stats(struct ReceiverServer *server,char* buf)
 {
     char tmp[2048];
     JSON_SERIALIZE_INIT(buf)
-    stats_to_json(&listnerStats, tmp);
+    stats_to_json(&server->listnerStats, tmp);
     JSON_SERIALIZE_OBJECT("stats", tmp)
     JSON_SERIALIZE_END()
     return n;

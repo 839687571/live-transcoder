@@ -19,10 +19,10 @@
 #define CATEGORY_RECEIVER "RECEIVER"
 #define CATEGORY_KMP "KMP"
 
-void logger1(char* category,int level,const char *fmt, ...);
+void logger1(const char* category,int level,const char *fmt, ...);
 void loggerFlush();
 void log_init(int level);
-int get_log_level(char* category,int level);
+int get_log_level(const char* category,int level);
 void init_ffmpeg_log_level(int logLevel);
 
 #define LOGGER(CATEGORY,LEVEL,FMT,...) { if (get_log_level(CATEGORY,LEVEL)>=LEVEL) { logger1(CATEGORY,LEVEL,FMT,__VA_ARGS__); }}

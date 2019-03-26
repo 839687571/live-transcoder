@@ -44,7 +44,7 @@
 		0874214F21D8ED6E00F0D6E6 /* libbz2.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 0874214E21D8ED6E00F0D6E6 /* libbz2.tbd */; };
 		0886F1D422439B5D005C4B5B /* KMP.c in Sources */ = {isa = PBXBuildFile; fileRef = 0886F1D322439B5D005C4B5B /* KMP.c */; };
 		08C4211A2219D78F003AA42F /* FramesStats.c in Sources */ = {isa = PBXBuildFile; fileRef = 08C421192219D78F003AA42F /* FramesStats.c */; };
-		08C4211D2219EAB7003AA42F /* listener.c in Sources */ = {isa = PBXBuildFile; fileRef = 08C4211C2219EAB7003AA42F /* listener.c */; };
+		08C4211D2219EAB7003AA42F /* receiverServer.c in Sources */ = {isa = PBXBuildFile; fileRef = 08C4211C2219EAB7003AA42F /* receiverServer.c */; };
 		08DA39172244D22100C57507 /* fileReader.c in Sources */ = {isa = PBXBuildFile; fileRef = 08DA39162244D22100C57507 /* fileReader.c */; };
 		08DA391A22453CA400C57507 /* httpServer.c in Sources */ = {isa = PBXBuildFile; fileRef = 08DA391922453CA400C57507 /* httpServer.c */; };
 		08F2959E21DDF7FF0028EEE5 /* codec.c in Sources */ = {isa = PBXBuildFile; fileRef = 08F2959D21DDF7FF0028EEE5 /* codec.c */; };
@@ -118,8 +118,8 @@
 		0886F1D322439B5D005C4B5B /* KMP.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = KMP.c; sourceTree = "<group>"; };
 		08C421182219D78F003AA42F /* FramesStats.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FramesStats.h; sourceTree = "<group>"; };
 		08C421192219D78F003AA42F /* FramesStats.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = FramesStats.c; sourceTree = "<group>"; };
-		08C4211B2219EAB7003AA42F /* listener.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = listener.h; sourceTree = "<group>"; };
-		08C4211C2219EAB7003AA42F /* listener.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = listener.c; sourceTree = "<group>"; };
+		08C4211B2219EAB7003AA42F /* receiverServer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = receiverServer.h; sourceTree = "<group>"; };
+		08C4211C2219EAB7003AA42F /* receiverServer.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = receiverServer.c; sourceTree = "<group>"; };
 		08DA39152244D22100C57507 /* fileReader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = fileReader.h; sourceTree = "<group>"; };
 		08DA39162244D22100C57507 /* fileReader.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = fileReader.c; sourceTree = "<group>"; };
 		08DA391822453CA400C57507 /* httpServer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = httpServer.h; sourceTree = "<group>"; };
@@ -182,8 +182,8 @@
 				0822C6AC221FEF300095F76B /* config.json */,
 				0822C6A9221ED3310095F76B /* json_parser.c */,
 				0822C6AA221ED3310095F76B /* json_parser.h */,
-				08C4211B2219EAB7003AA42F /* listener.h */,
-				08C4211C2219EAB7003AA42F /* listener.c */,
+				08C4211B2219EAB7003AA42F /* receiverServer.h */,
+				08C4211C2219EAB7003AA42F /* receiverServer.c */,
 				08C421182219D78F003AA42F /* FramesStats.h */,
 				08C421192219D78F003AA42F /* FramesStats.c */,
 				08F2959C21DDF7FF0028EEE5 /* codec.h */,
@@ -318,7 +318,7 @@
 				08C4211A2219D78F003AA42F /* FramesStats.c in Sources */,
 				0822C6B0221FEF690095F76B /* utils.c in Sources */,
 				0886F1D422439B5D005C4B5B /* KMP.c in Sources */,
-				08C4211D2219EAB7003AA42F /* listener.c in Sources */,
+				08C4211D2219EAB7003AA42F /* receiverServer.c in Sources */,
 				0822C6B32221C7880095F76B /* config.c in Sources */,
 				08DA39172244D22100C57507 /* fileReader.c in Sources */,
 				0822C6AD221FEF300095F76B /* config.json in Sources */,

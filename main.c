@@ -13,7 +13,7 @@
 #endif
 
 #include "TranscodePipeline.h"
-#include "listener.h"
+#include "receiverServer.h"
 #include "output.h"
 #include "json_parser.h"
 #include "utils.h"
@@ -84,7 +84,9 @@ int main(int argc, char **argv)
 
     start_http_server(12345, on_http_request);
     
-    start_listener(&ctx,listenPort);
+    struct ReceiverServer receiver;
+    receiver.transcodeContext=&ctx;
+    start_receiver_server(&receiver);
     
     if (strlen(pSourceFileName)>0)
     {
@@ -101,7 +103,7 @@ int main(int argc, char **argv)
     
     LOGGER0(CATEGORY_DEFAULT,AV_LOG_INFO,"stopping!");
     
-    stop_listener();
+    stop_receiver_server(&receiver);
     
     stop_http_server();
     

@@ -56,7 +56,7 @@ void logger2(const char* category,const char* subcategory,int level,const char *
 
 
 
-void logger1(char* category,int level,const char *fmt, ...)
+void logger1(const char* category,int level,const char *fmt, ...)
 {
     va_list args;
     va_start( args, fmt );
@@ -115,7 +115,7 @@ void init_ffmpeg_log_level(int logLevel)
     av_log_set_callback(ffmpeg_log_callback);
 
 }
-int get_log_level(char* category,int level)
+int get_log_level(const char* category,int level)
 {
     return logLevel;
 }

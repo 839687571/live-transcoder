@@ -427,10 +427,6 @@ int transcoding_context_to_json(struct TranscodeContext *ctx,char* buf)
     }
     JSON_SERIALIZE_ARRAY_END()
     
-    char tmp[2048];
-    get_listener_stats(&tmp);
-    JSON_SERIALIZE_OBJECT("listner", tmp)
-    
     
     JSON_SERIALIZE_END()
 

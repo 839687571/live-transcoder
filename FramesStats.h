@@ -23,6 +23,7 @@ struct FramesStatsHistory
 
 struct FramesStats
 {
+    uint64_t firstPts;
     uint64_t totalFrames;
     uint64_t head,tail;
     struct FramesStatsHistory history[HISTORY_SIZE];
