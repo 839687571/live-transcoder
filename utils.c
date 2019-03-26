@@ -100,7 +100,7 @@ char *av_ts_make_time_stringEx(char *buf, int64_t ts,bool shortFormat)
     size_t written = (size_t)strftime(buf, K_TS_MAX_STRING_SIZE, shortFormat ? "%H:%M:%S" : "%Y-%m-%dT%H:%M:%S", gm);
     if ((written > 0) && ((size_t)written < K_TS_MAX_STRING_SIZE))
     {
-        snprintf(buf+written, K_TS_MAX_STRING_SIZE-(size_t)written, ".%03ld", ((1000*ts) / standard_timebase.den) % 1000);
+        snprintf(buf+written, K_TS_MAX_STRING_SIZE-(size_t)written, ".%03lld", ((1000*ts) / standard_timebase.den) % 1000);
         
     }
     return buf;
@@ -139,7 +139,7 @@ char *av_get_frame_desc(char* buf, int size,const AVFrame * pFrame)
              pFrame->width,
              pFrame->height);
     } else {
-        snprintf(buf,size,"pts=%s;channels=%d;sampleRate=%d;format=%d;size=%d;channel_layout=%ld",
+        snprintf(buf,size,"pts=%s;channels=%d;sampleRate=%d;format=%d;size=%d;channel_layout=%lld",
                  ts2str(pFrame->pts,true),
                  pFrame->channels,pFrame->sample_rate,pFrame->format,pFrame->nb_samples,pFrame->channel_layout);
     }

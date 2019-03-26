@@ -287,6 +287,7 @@ int init_audio_encoder(struct TranscoderCodecContext * pContext,struct Transcode
     enc_ctx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
 
     enc_ctx->bit_rate=pOutput->bitrate*1000;
+    enc_ctx->pkt_timebase=standard_timebase;
     ret = avcodec_open2(enc_ctx, codec,NULL);
     if (ret<0) {
         LOGGER(CATEGORY_CODEC,AV_LOG_ERROR,"error initilizing video encoder %d (%s)",ret,av_err2str(ret));
@@ -296,7 +297,7 @@ int init_audio_encoder(struct TranscoderCodecContext * pContext,struct Transcode
 
     pContext->codec=codec;
     pContext->ctx=enc_ctx;
-    LOGGER(CATEGORY_CODEC,AV_LOG_INFO,"audio encoder  %dKhz %d Kbit/s initilaized",enc_ctx->sample_rate ,0);
+    LOGGER(CATEGORY_CODEC,AV_LOG_INFO,"audio encoder  %dKhz %d Kbit/s initilaized",enc_ctx->sample_rate ,pOutput->bitrate);
 
     return 0;
 }

@@ -43,7 +43,7 @@ void logger2(const char* category,const char* subcategory,int level,const char *
     
     FILE* out=stdout;
     
-    fprintf( out, "%s.%03d %s:%s %s [%p] ",buf,(int)( (now % 1000000)/1000 ),category,subcategory!=NULL ? subcategory : "", levelStr,pthread_self());
+    fprintf( out, "%s.%03lld %s:%s %s [%p] ",buf,( (now % 1000000)/1000 ),category,subcategory!=NULL ? subcategory : "", levelStr,pthread_self());
     if (args!=NULL) {
         vfprintf( out, fmt, args );
     } else {
