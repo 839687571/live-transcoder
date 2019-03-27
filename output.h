@@ -12,7 +12,7 @@
 #include "core.h"
 #include "FramesStats.h"
 #include "json_parser.h"
-#include "KMP.h"
+#include "KMP/KMP.h"
 
 enum TranscodeOutputType
 {

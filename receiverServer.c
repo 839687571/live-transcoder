@@ -11,7 +11,7 @@
 #include "logger.h"
 #include <pthread.h>
 #include "config.h"
-#include "KMP.h"
+#include "KMP/KMP.h"
 #include "TranscodePipeline.h"
 
 
@@ -44,41 +44,22 @@ int init_outputs(struct ReceiverServer *server,struct TranscodeContext* pContext
 
 
 
-void* listenerThread(void *vargp)
+void* processClient(void *vargp)
 {
-    
-    LOGGER0(CATEGORY_RECEIVER,AV_LOG_INFO,"listenerThread");
-    
-    struct ReceiverServer *server=(struct ReceiverServer *)vargp;
+    struct ReceiverServerSession* session=(struct ReceiverServerSession *)vargp;
+    struct ReceiverServer *server=session->server;
     struct TranscodeContext *transcodeContext = server->transcodeContext;
     
     json_value_t* config=GetConfig();
-    
-    
-    if (KMP_listen(&server->kmpServer,server->port)<0) {
-        exit (-1);
-        return NULL;
-    }
-    LOGGER0(CATEGORY_RECEIVER,AV_LOG_INFO,"Waiting for accept");
-    pthread_cond_signal(&server->cond);
 
-    
-    struct KalturaMediaProtocolContext kmpClient;
-
-    if (KMP_accept(&server->kmpServer,&kmpClient)<0) {
-        return NULL;
-    }
-    
-
-    
     AVRational frameRate;
     
     AVCodecParameters* params=avcodec_parameters_alloc();
-    if (KMP_read_mediaInfo(&kmpClient,params,&frameRate)<0) {
+    if (KMP_read_mediaInfo(&session->kmpClient,params,&frameRate)<0) {
         LOGGER0(CATEGORY_RECEIVER,AV_LOG_FATAL,"Invalid mediainfo");
         exit (-1);
     }
-
+    
     if (transcodeContext!=NULL) {
         init_transcoding_context(transcodeContext,params,frameRate);
         init_outputs(server,transcodeContext,config);
@@ -91,15 +72,15 @@ void* listenerThread(void *vargp)
     
     while (true) {
         
-        if (KMP_readPacket(&kmpClient,&packet)<=0) {
+        if (KMP_readPacket(&session->kmpClient,&packet)<=0) {
             break;
         }
         
         AddFrameToStats(&server->listnerStats,packet.pts,packet.size);
-
+        
         log_frame_stats(CATEGORY_RECEIVER,AV_LOG_DEBUG,&server->listnerStats,"0");
         LOGGER(CATEGORY_RECEIVER,AV_LOG_DEBUG,"[0] received packet %s",getPacketDesc(&packet));
-
+        
         packet.pos=getClock64();
         
         if (transcodeContext!=NULL)
@@ -110,7 +91,7 @@ void* listenerThread(void *vargp)
         
     }
     LOGGER0(CATEGORY_RECEIVER,AV_LOG_INFO,"Destorying receive thread");
-
+    
     
     if (transcodeContext!=NULL)
     {
@@ -122,9 +103,53 @@ void* listenerThread(void *vargp)
     }
     
     avcodec_parameters_free(&params);
-
-    KMP_close(&kmpClient);
+    
+    KMP_close(&session->kmpClient);
+    
     LOGGER0(CATEGORY_RECEIVER,AV_LOG_INFO,"Completed receive thread");
+    return NULL;
+}
+
+
+void* listenerThread(void *vargp)
+{
+    
+    LOGGER0(CATEGORY_RECEIVER,AV_LOG_INFO,"listenerThread");
+    
+    struct ReceiverServer *server=(struct ReceiverServer *)vargp;
+    struct TranscodeContext *transcodeContext = server->transcodeContext;
+    
+    
+    
+    if (KMP_listen(&server->kmpServer,server->port)<0) {
+        exit (-1);
+        return NULL;
+    }
+    LOGGER0(CATEGORY_RECEIVER,AV_LOG_INFO,"Waiting for accept");
+    pthread_cond_signal(&server->cond);
+
+    vector_init(&server->sessions);
+
+    struct ReceiverServerSession* session = (struct ReceiverServerSession*)av_malloc(sizeof(struct ReceiverServerSession));
+    
+    VECTOR_ADD(server->sessions,session);
+    session->thread_id=0;
+    session->server=server;
+    while (true)
+    {
+        if (KMP_accept(&server->kmpServer,&session->kmpClient)<0) {
+            return NULL;
+        }
+        
+        if (false)
+        {
+            pthread_create(&session->thread_id, NULL, processClient, session);
+        } else {
+            processClient(session);
+        }
+
+    }
+    
     
     return NULL;
 }
@@ -144,6 +169,15 @@ void stop_receiver_server(struct ReceiverServer *server) {
     
     KMP_close(&server->kmpServer);
     pthread_join(server->thread_id,NULL);
+    
+    for (int i=0;i<VECTOR_TOTAL(server->sessions);i++) {
+        
+        struct ReceiverServerSession* session=VECTOR_GET(server->sessions,struct ReceiverServerSession*,i);
+        if (session->thread_id>0) {
+            pthread_join(session->thread_id,NULL);
+        }
+        av_free(session);
+    }
 }
 
 int get_receiver_stats(struct ReceiverServer *server,char* buf)

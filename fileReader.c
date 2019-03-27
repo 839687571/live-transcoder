@@ -7,7 +7,7 @@
 //
 
 #include "fileReader.h"
-#include "KMP.h"
+#include "KMP/KMP.h"
 #include "FramesStats.h"
 
 int stream_from_file(const char* pSourceFileName,bool *keepRunning)

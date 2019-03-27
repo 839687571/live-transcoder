@@ -12,7 +12,15 @@
 #include <stdio.h>
 #include "TranscodePipeline.h"
 #include "kalturaMediaProtocol.h"
-#include "KMP.h"
+#include "KMP/KMP.h"
+#include "vector.h"
+
+struct ReceiverServerSession
+{
+    struct ReceiverServer *server;
+    struct KalturaMediaProtocolContext kmpClient;
+    pthread_t thread_id;
+};
 
 struct ReceiverServer
 {
@@ -27,7 +35,9 @@ struct ReceiverServer
     int totalOutputs;
     struct FramesStats listnerStats;
     int port;
+    struct vector sessions;
 };
+
 
 void start_receiver_server(struct ReceiverServer *server);
 void stop_receiver_server(struct ReceiverServer *server);

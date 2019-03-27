@@ -38,7 +38,7 @@ static void process_client(AVIOContext *client,http_request_callback callback)
     if (ret < 0)
         goto end;
     
-    av_log(client, AV_LOG_TRACE, "resource=%p\n", resource);
+    //av_log(client, AV_LOG_TRACE, "resource=%p\n", resource);
     
     if (resource && resource[0] == '/') {
         reply_code =  callback(resource,buf,sizeof(buf),&n);
@@ -46,31 +46,30 @@ static void process_client(AVIOContext *client,http_request_callback callback)
         reply_code = AVERROR_HTTP_NOT_FOUND;
     }
     if ((ret = av_opt_set_int(client, "reply_code", reply_code, AV_OPT_SEARCH_CHILDREN)) < 0) {
-        av_log(client, AV_LOG_ERROR, "Failed to set reply_code: %s.\n", av_err2str(ret));
+        LOGGER(CATEGORY_HTTP_SERVER,AV_LOG_ERROR, "Failed to set reply_code: %d (%s)", av_err2str(ret));
         goto end;
     }
     if ((ret = av_opt_set(client, "content_type", "application/json", AV_OPT_SEARCH_CHILDREN)) < 0) {
-        av_log(client, AV_LOG_ERROR, "Failed to set reply_code: %s.\n", av_err2str(ret));
+        LOGGER(CATEGORY_HTTP_SERVER,AV_LOG_ERROR, "Failed to set content_type: %d (%s)", ret,av_err2str(ret));
         goto end;
     }
-    
-    
-    av_log(client, AV_LOG_TRACE, "Set reply code to %d\n", reply_code);
+
+    LOGGER(CATEGORY_HTTP_SERVER,AV_LOG_DEBUG,  "Setting reply code to %d", reply_code);
     
     while ((ret = avio_handshake(client)) > 0);
     
     if (ret < 0)
         goto end;
     
-    fprintf(stderr, "Handshake performed.\n");
+    LOGGER0(CATEGORY_HTTP_SERVER,AV_LOG_DEBUG, "Handshake performed");
     if (reply_code != 200)
         goto end;
     
     avio_write(client, buf, n);
 end:
-    fprintf(stderr, "Flushing client\n");
+    LOGGER0(CATEGORY_HTTP_SERVER,AV_LOG_DEBUG, "Flushing client");
     avio_flush(client);
-    fprintf(stderr, "Closing client\n");
+    LOGGER0(CATEGORY_HTTP_SERVER,AV_LOG_DEBUG, "Closing client");
     avio_close(client);
     av_freep(&resource);
 }

@@ -1,6 +1,7 @@
 {
     "input": {
         "file": "/Users/guyjacubovski/Sample_video/bbb_sunflower_1080p_30fps_normal.mp4",
+        "file1": "/Users/guyjacubovski/Sample_video/900.mp4",
         "realTime": false,
         "activeStream": 0,
         "duration": 900000,
@@ -9,9 +10,10 @@
     "listener": {
         "port": 9000
     },
-    "debug": {
-        "saveFile": true,
-        "outputFileNamePattern": "/Users/guyjacubovski/Sample_video/output_%s.mp4"
+    "output": {
+        "saveFile": false,
+        "outputFileNamePattern": "/Users/guyjacubovski/Sample_video/output_%s.mp4",
+        "streamingUrl": "kmp://localhost:10000"
     },
     "engine": {
         "useNvidiaDecoder": true,
@@ -30,7 +32,7 @@
             "passthrough": false,
             "codec": "aac",
             "audioParams": {
-                "samplingRate": 44100,
+                "samplingRate": -1,
                 "channels": 2
             }
         },

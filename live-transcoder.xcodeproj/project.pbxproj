@@ -47,6 +47,7 @@
 		08C4211D2219EAB7003AA42F /* receiverServer.c in Sources */ = {isa = PBXBuildFile; fileRef = 08C4211C2219EAB7003AA42F /* receiverServer.c */; };
 		08DA39172244D22100C57507 /* fileReader.c in Sources */ = {isa = PBXBuildFile; fileRef = 08DA39162244D22100C57507 /* fileReader.c */; };
 		08DA391A22453CA400C57507 /* httpServer.c in Sources */ = {isa = PBXBuildFile; fileRef = 08DA391922453CA400C57507 /* httpServer.c */; };
+		08DD3783224AE2D400B51A0D /* vector.c in Sources */ = {isa = PBXBuildFile; fileRef = 08DD3782224AE2D400B51A0D /* vector.c */; };
 		08F2959E21DDF7FF0028EEE5 /* codec.c in Sources */ = {isa = PBXBuildFile; fileRef = 08F2959D21DDF7FF0028EEE5 /* codec.c */; };
 /* End PBXBuildFile section */
 
@@ -124,6 +125,8 @@
 		08DA39162244D22100C57507 /* fileReader.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = fileReader.c; sourceTree = "<group>"; };
 		08DA391822453CA400C57507 /* httpServer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = httpServer.h; sourceTree = "<group>"; };
 		08DA391922453CA400C57507 /* httpServer.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = httpServer.c; sourceTree = "<group>"; };
+		08DD3781224AE2D400B51A0D /* vector.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = vector.h; sourceTree = "<group>"; };
+		08DD3782224AE2D400B51A0D /* vector.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = vector.c; sourceTree = "<group>"; };
 		08F2959C21DDF7FF0028EEE5 /* codec.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = codec.h; sourceTree = "<group>"; };
 		08F2959D21DDF7FF0028EEE5 /* codec.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = codec.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -164,24 +167,52 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		086E7AC41E044C7400206F21 = {
+		082CAB89224ACED400B304EA /* common */ = {
 			isa = PBXGroup;
 			children = (
-				08DA391822453CA400C57507 /* httpServer.h */,
-				08DA391922453CA400C57507 /* httpServer.c */,
-				08DA39152244D22100C57507 /* fileReader.h */,
-				08DA39162244D22100C57507 /* fileReader.c */,
+				0822C6A9221ED3310095F76B /* json_parser.c */,
+				0822C6AA221ED3310095F76B /* json_parser.h */,
+				08DD3781224AE2D400B51A0D /* vector.h */,
+				08DD3782224AE2D400B51A0D /* vector.c */,
+			);
+			path = common;
+			sourceTree = "<group>";
+		};
+		082CAB8A224AD06500B304EA /* KMP */ = {
+			isa = PBXGroup;
+			children = (
 				0886F1D222439B5D005C4B5B /* KMP.h */,
 				0886F1D322439B5D005C4B5B /* KMP.c */,
 				0865E41122240FFA00B8F793 /* kalturaMediaProtocol.h */,
-				08141DBA2222B23700EA1219 /* core.h */,
+			);
+			path = KMP;
+			sourceTree = "<group>";
+		};
+		082CAB8B224AD13300B304EA /* utils */ = {
+			isa = PBXGroup;
+			children = (
+				0869F1E921DA089F003F3538 /* logger.c */,
+				0869F1E821DA0885003F3538 /* logger.h */,
 				0822C6B12221C7880095F76B /* config.h */,
 				0822C6B22221C7880095F76B /* config.c */,
 				0822C6AE221FEF690095F76B /* utils.h */,
 				0822C6AF221FEF690095F76B /* utils.c */,
+			);
+			path = utils;
+			sourceTree = "<group>";
+		};
+		086E7AC41E044C7400206F21 = {
+			isa = PBXGroup;
+			children = (
+				082CAB8B224AD13300B304EA /* utils */,
+				082CAB8A224AD06500B304EA /* KMP */,
+				082CAB89224ACED400B304EA /* common */,
+				08DA391822453CA400C57507 /* httpServer.h */,
+				08DA391922453CA400C57507 /* httpServer.c */,
+				08DA39152244D22100C57507 /* fileReader.h */,
+				08DA39162244D22100C57507 /* fileReader.c */,
+				08141DBA2222B23700EA1219 /* core.h */,
 				0822C6AC221FEF300095F76B /* config.json */,
-				0822C6A9221ED3310095F76B /* json_parser.c */,
-				0822C6AA221ED3310095F76B /* json_parser.h */,
 				08C4211B2219EAB7003AA42F /* receiverServer.h */,
 				08C4211C2219EAB7003AA42F /* receiverServer.c */,
 				08C421182219D78F003AA42F /* FramesStats.h */,
@@ -192,8 +223,6 @@
 				0869F20621DB3B60003F3538 /* filter.c */,
 				0869F1EF21DA216A003F3538 /* output.h */,
 				0869F1F021DA216A003F3538 /* output.c */,
-				0869F1E921DA089F003F3538 /* logger.c */,
-				0869F1E821DA0885003F3538 /* logger.h */,
 				0869F1E521D9F9F4003F3538 /* TranscodePipeline.c */,
 				0869F1E621D9F9F4003F3538 /* TranscodePipeline.h */,
 				084335A021D89A7C0031BF3B /* install_ffmpeg.sh */,
@@ -309,6 +338,7 @@
 				0869F1F121DA216A003F3538 /* output.c in Sources */,
 				08F2959E21DDF7FF0028EEE5 /* codec.c in Sources */,
 				0822C6AB221ED3310095F76B /* json_parser.c in Sources */,
+				08DD3783224AE2D400B51A0D /* vector.c in Sources */,
 				0869F1E721D9F9F4003F3538 /* TranscodePipeline.c in Sources */,
 				08DA391A22453CA400C57507 /* httpServer.c in Sources */,
 				0869F1EA21DA089F003F3538 /* logger.c in Sources */,
