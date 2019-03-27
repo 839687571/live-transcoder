@@ -30,6 +30,7 @@ int KMP_close(struct KalturaMediaProtocolContext *context);
 
 int KMP_listen(struct KalturaMediaProtocolContext *context,int port);
 int KMP_accept(struct KalturaMediaProtocolContext *context,struct KalturaMediaProtocolContext *client);
-int KMP_read_mediaInfo(struct KalturaMediaProtocolContext *context,AVCodecParameters* params,AVRational *frameRate);
-int KMP_readPacket(struct KalturaMediaProtocolContext *context,AVPacket *packet);
+int KMP_read_header(struct KalturaMediaProtocolContext *context,packet_header_t *header);
+int KMP_read_mediaInfo(struct KalturaMediaProtocolContext *context,packet_header_t *header,AVCodecParameters* params,AVRational *frameRate);
+int KMP_readPacket(struct KalturaMediaProtocolContext *context,packet_header_t *header,AVPacket *packet);
 #endif /* sender_h */

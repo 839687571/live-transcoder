@@ -31,6 +31,8 @@ static volatile bool keepRunning = true;
 
 struct TranscodeContext ctx;
 struct ReceiverServer receiver;
+struct ReceiverServer *pDummyPackager=NULL ;
+
 
 void intHandler(int dummy) {
     LOGGER0(CATEGORY_DEFAULT,AV_LOG_WARNING,"SIGINT detected!");
@@ -76,6 +78,10 @@ int main(int argc, char **argv)
     char* pSourceFileName;
     json_get_string(GetConfig(),"input.file","",&pSourceFileName);
     
+    
+    bool useDummyPackager;
+    json_get_bool(GetConfig(),"debug.dummyPackager",false,&useDummyPackager);
+    
     avformat_network_init();
     
     
@@ -86,9 +92,15 @@ int main(int argc, char **argv)
     
     receiver.transcodeContext=&ctx;
     receiver.port=9999;
+    receiver.multiThreaded=false;
     start_receiver_server(&receiver);
-    //dummyPackager.port=10000;
-    //start_receiver_server(&dummyPackager);
+    if (useDummyPackager) {
+        pDummyPackager=malloc(sizeof(*pDummyPackager));
+        pDummyPackager->port=10000;
+        pDummyPackager->multiThreaded=true;
+        pDummyPackager->transcodeContext=NULL;
+        start_receiver_server(pDummyPackager);
+    }
     
     if (strlen(pSourceFileName)>0)
     {
@@ -107,6 +119,9 @@ int main(int argc, char **argv)
     
     stop_receiver_server(&receiver);
     
+    if (pDummyPackager!=NULL) {
+        stop_receiver_server(pDummyPackager);
+    }
     stop_http_server();
     
     

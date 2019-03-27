@@ -10,6 +10,7 @@
 #define kalturaMediaProtocol_h
 #define PACKET_TYPE_HEADER (1)
 #define PACKET_TYPE_FRAME (2)
+#define PACKET_TYPE_EOS (0)
 
 typedef struct {
     uint32_t packet_type;
@@ -58,6 +59,8 @@ typedef struct {
     uint32_t pts_delay;
     uint64_t dts;
 } output_frame_t;
+
+
 
 
 #endif /* kalturaMediaProtocol_h */

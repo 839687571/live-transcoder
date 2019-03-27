@@ -29,6 +29,7 @@ int init_Transcode_output(struct TranscodeOutput* pOutput)  {
     pOutput->videoParams.level="";
     pOutput->videoParams.profile="";
     pOutput->audioParams.samplingRate=pOutput->audioParams.channels=-1;
+    pOutput->sender=NULL;
     
     InitFrameStats(&pOutput->stats,standard_timebase);
     return 0;
@@ -116,7 +117,10 @@ int send_output_packet(struct TranscodeOutput *pOutput,struct AVPacket* packet)
         
         av_packet_free(&cpPacket);
     }
-
+    
+    if (pOutput->sender!=NULL) {
+        KMP_send_packet(pOutput->sender,packet);
+    }
     /*
     if (pOutput->pOutputFile!=NULL && packet->data) {
         
@@ -147,11 +151,18 @@ int send_output_packet(struct TranscodeOutput *pOutput,struct AVPacket* packet)
     return 0;
 }
 
-int set_output_format(struct TranscodeOutput *pOutput,struct AVCodecParameters* codecParams)
-{    
+int set_output_format(struct TranscodeOutput *pOutput,struct AVCodecParameters* codecParams,AVRational framerate)
+{
+    char* senderUrl;
+    json_get_string(GetConfig(),"output.streamingUrl","",&senderUrl);
+    if (strlen(senderUrl)>0) {
+        pOutput->sender=(struct KalturaMediaProtocolContext* )malloc(sizeof(struct KalturaMediaProtocolContext* ));
+        KMP_connect(pOutput->sender, senderUrl);
+        KMP_send_header(pOutput->sender,codecParams,framerate);
+    }
+    
     bool saveFile;
     json_get_bool(GetConfig(),"output.saveFile",false,&saveFile);
-    
     if (saveFile && pOutput->oc==NULL) {
         char* fileNamePattern;
         char filename[1000];
@@ -221,12 +232,17 @@ int close_Transcode_output(struct TranscodeOutput* pOutput)
 {
     log_frame_stats(CATEGORY_OUTPUT,AV_LOG_DEBUG,&pOutput->stats,pOutput->name);
     if (pOutput->oc!=NULL) {
-        int ret = av_write_trailer(pOutput->oc);
+        av_write_trailer(pOutput->oc);
     
         avio_closep(&pOutput->oc->pb);
         /* free the stream */
         avformat_free_context(pOutput->oc);
-        return ret;
+    }
+    if (pOutput->sender!=NULL) {
+        KMP_send_eof(pOutput->sender);
+        KMP_close(pOutput->sender);
+
+        av_free(pOutput->sender);
     }
     return 0;
 }

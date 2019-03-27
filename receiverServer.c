@@ -55,49 +55,60 @@ void* processClient(void *vargp)
     AVRational frameRate;
     
     AVCodecParameters* params=avcodec_parameters_alloc();
-    if (KMP_read_mediaInfo(&session->kmpClient,params,&frameRate)<0) {
-        LOGGER0(CATEGORY_RECEIVER,AV_LOG_FATAL,"Invalid mediainfo");
-        exit (-1);
-    }
-    
-    if (transcodeContext!=NULL) {
-        init_transcoding_context(transcodeContext,params,frameRate);
-        init_outputs(server,transcodeContext,config);
-    }
-    
     
     InitFrameStats(&server->listnerStats,standard_timebase);
     
     AVPacket packet;
+    packet_header_t header;
     
     while (true) {
         
-        if (KMP_readPacket(&session->kmpClient,&packet)<=0) {
+        KMP_read_header(&session->kmpClient,&header);
+        if (header.packet_type==PACKET_TYPE_EOS) {
+            LOGGER(CATEGORY_KMP,AV_LOG_FATAL,"[%s] recieved termination packet",session->name);
             break;
         }
-        
-        AddFrameToStats(&server->listnerStats,packet.pts,packet.size);
-        
-        log_frame_stats(CATEGORY_RECEIVER,AV_LOG_DEBUG,&server->listnerStats,"0");
-        LOGGER(CATEGORY_RECEIVER,AV_LOG_DEBUG,"[0] received packet %s",getPacketDesc(&packet));
-        
-        packet.pos=getClock64();
-        
-        if (transcodeContext!=NULL)
+        if (header.packet_type==PACKET_TYPE_HEADER)
         {
-            convert_packet(transcodeContext,&packet);
+            if (KMP_read_mediaInfo(&session->kmpClient,&header,params,&frameRate)<0) {
+                LOGGER(CATEGORY_RECEIVER,AV_LOG_FATAL,"[%s] Invalid mediainfo",session->name);
+                exit (-1);
+            }
+            
+            if (transcodeContext!=NULL) {
+                init_transcoding_context(transcodeContext,params,frameRate);
+                init_outputs(server,transcodeContext,config);
+            }
         }
-        av_packet_unref(&packet);
+        if (header.packet_type==PACKET_TYPE_FRAME)
+        {
+            if (KMP_readPacket(&session->kmpClient,&header,&packet)<=0) {
+                break;
+            }
+            
+            AddFrameToStats(&server->listnerStats,packet.pts,packet.size);
+            
+            log_frame_stats(CATEGORY_RECEIVER,AV_LOG_DEBUG,&server->listnerStats,"0");
+            LOGGER(CATEGORY_RECEIVER,AV_LOG_DEBUG,"[%s] received packet %s (%p)",session->name,getPacketDesc(&packet),transcodeContext);
+            
+            packet.pos=getClock64();
+            
+            if (transcodeContext!=NULL)
+            {
+                convert_packet(transcodeContext,&packet);
+            } 
+            av_packet_unref(&packet);
+        }
         
     }
-    LOGGER0(CATEGORY_RECEIVER,AV_LOG_INFO,"Destorying receive thread");
+    LOGGER(CATEGORY_RECEIVER,AV_LOG_INFO,"[%s] Destorying receive thread",session->name);
     
     
     if (transcodeContext!=NULL)
     {
         close_transcoding_context(transcodeContext);
         for (int i=0;i<server->totalOutputs;i++){
-            LOGGER(CATEGORY_RECEIVER,AV_LOG_INFO,"Closing output %s",server->outputs[i].name);
+            LOGGER(CATEGORY_RECEIVER,AV_LOG_INFO,"[%s] Closing output %s",session->name,server->outputs[i].name);
             close_Transcode_output(&server->outputs[i]);
         }
     }
@@ -106,7 +117,7 @@ void* processClient(void *vargp)
     
     KMP_close(&session->kmpClient);
     
-    LOGGER0(CATEGORY_RECEIVER,AV_LOG_INFO,"Completed receive thread");
+    LOGGER(CATEGORY_RECEIVER,AV_LOG_INFO,"[%s] Completed receive thread",session->name);
     return NULL;
 }
 
@@ -130,18 +141,24 @@ void* listenerThread(void *vargp)
 
     vector_init(&server->sessions);
 
-    struct ReceiverServerSession* session = (struct ReceiverServerSession*)av_malloc(sizeof(struct ReceiverServerSession));
-    
-    VECTOR_ADD(server->sessions,session);
-    session->thread_id=0;
-    session->server=server;
     while (true)
     {
+        struct ReceiverServerSession* session = (struct ReceiverServerSession*)av_malloc(sizeof(struct ReceiverServerSession));
+        
+        VECTOR_ADD(server->sessions,session);
+        session->thread_id=0;
+        session->server=server;
+        if (transcodeContext==NULL) {
+            sprintf(session->name,"Receiver-%d",VECTOR_TOTAL(server->sessions));
+        } else {
+            session->name[0]=0;
+        }
+        
         if (KMP_accept(&server->kmpServer,&session->kmpClient)<0) {
             return NULL;
         }
         
-        if (false)
+        if (server->multiThreaded)
         {
             pthread_create(&session->thread_id, NULL, processClient, session);
         } else {

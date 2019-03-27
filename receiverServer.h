@@ -17,6 +17,7 @@
 
 struct ReceiverServerSession
 {
+    char name[256];
     struct ReceiverServer *server;
     struct KalturaMediaProtocolContext kmpClient;
     pthread_t thread_id;
@@ -30,6 +31,7 @@ struct ReceiverServer
     
     pthread_cond_t cond;
     pthread_mutex_t lock;
+    bool multiThreaded;
     
     struct TranscodeOutput outputs[100];
     int totalOutputs;

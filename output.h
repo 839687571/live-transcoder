@@ -50,6 +50,8 @@ struct TranscodeOutput
     
     AVFormatContext *oc;
     AVBSFContext* bsf;
+    
+    struct KalturaMediaProtocolContext* sender;
 };
 
 
@@ -57,7 +59,7 @@ int init_Transcode_output(struct TranscodeOutput* pOutput) ;
 int init_Transcode_output_from_json(struct TranscodeOutput* ,const json_value_t* json);
 int close_Transcode_output(struct TranscodeOutput* pOutput) ;
 
-int set_output_format(struct TranscodeOutput *pOutput,struct AVCodecParameters* output) ;
+int set_output_format(struct TranscodeOutput *pOutput,struct AVCodecParameters* output,AVRational framerate) ;
 int send_output_packet(struct TranscodeOutput *pOutput,struct AVPacket* output) ;
 
 int output_to_json(struct TranscodeOutput *pOutput,char* buf);

@@ -109,7 +109,7 @@ int KMP_send_packet(struct KalturaMediaProtocolContext *context,AVPacket* packet
     packet_header_t packetHeader;
     output_frame_t frame;
     
-    packetHeader.packet_type=PACKET_TYPE_HEADER;
+    packetHeader.packet_type=PACKET_TYPE_FRAME;
     packetHeader.header_size=sizeof(output_frame_t);
     packetHeader.data_size=packet->size;
     if (AV_NOPTS_VALUE!=packet->pts) {
@@ -130,13 +130,14 @@ int KMP_send_packet(struct KalturaMediaProtocolContext *context,AVPacket* packet
 int KMP_send_eof(struct KalturaMediaProtocolContext *context)
 {
     packet_header_t packetHeader;
-    packetHeader.packet_type=PACKET_TYPE_HEADER;
+    packetHeader.packet_type=PACKET_TYPE_EOS;
     packetHeader.header_size=0;
     packetHeader.data_size=0;
     send(context->socket, &packetHeader, sizeof(packetHeader), 0);
     
     return 0;
 }
+
 
 int KMP_close(struct KalturaMediaProtocolContext *context)
 {
@@ -217,20 +218,21 @@ int recvEx(int socket,char* buffer,int bytesToRead) {
     return bytesRead;
 }
 
-int KMP_read_mediaInfo(struct KalturaMediaProtocolContext *context,AVCodecParameters* params,AVRational *frameRate)
-{
-    packet_header_t header;
-    media_info_t mediaInfo;
 
-    int valread =recvEx(context->socket,(char*)&header,sizeof(header));
-    if (valread<=0) {
-        return valread;
-    }
-    if (header.packet_type!=PACKET_TYPE_HEADER) {
-        LOGGER(CATEGORY_KMP,AV_LOG_FATAL,"invalid packet, expceted PACKET_TYPE_HEADER received packet_type=%d",header.packet_type);
+int KMP_read_header(struct KalturaMediaProtocolContext *context,packet_header_t *header)
+{
+    int valread =recvEx(context->socket,(char*)header,sizeof(packet_header_t));
+    return valread;
+}
+
+int KMP_read_mediaInfo(struct KalturaMediaProtocolContext *context,packet_header_t *header,AVCodecParameters* params,AVRational *frameRate)
+{
+    media_info_t mediaInfo;
+    if (header->packet_type!=PACKET_TYPE_HEADER) {
+        LOGGER(CATEGORY_KMP,AV_LOG_FATAL,"invalid packet, expceted PACKET_TYPE_HEADER received packet_type=%d",header->packet_type);
         return -1;
     }
-    valread =recvEx(context->socket,(char*)&mediaInfo,sizeof(mediaInfo));
+    int valread =recvEx(context->socket,(char*)&mediaInfo,sizeof(mediaInfo));
     if (valread<=0) {
         return valread;
     }
@@ -254,11 +256,11 @@ int KMP_read_mediaInfo(struct KalturaMediaProtocolContext *context,AVCodecParame
     }
     params->bit_rate=mediaInfo.bitrate;
     params->codec_id=mediaInfo.format;
-    params->extradata_size=header.data_size;
+    params->extradata_size=header->data_size;
     params->extradata=NULL;
     if (params->extradata_size>0) {
         params->extradata=av_mallocz(params->extradata_size + AV_INPUT_BUFFER_PADDING_SIZE);
-        valread =recvEx(context->socket,(char*)params->extradata,header.data_size);
+        valread =recvEx(context->socket,(char*)params->extradata,header->data_size);
         if (valread<=0) {
             return valread;
         }
@@ -268,27 +270,16 @@ int KMP_read_mediaInfo(struct KalturaMediaProtocolContext *context,AVCodecParame
     
 }
 
-int KMP_readPacket(struct KalturaMediaProtocolContext *context,AVPacket *packet)
+int KMP_readPacket(struct KalturaMediaProtocolContext *context,packet_header_t *header,AVPacket *packet)
 {
-    packet_header_t header;
     output_frame_t networkFrame;
     
-    int valread =recvEx(context->socket,(char*)&header,sizeof(header));
-    if (valread<=0) {
-        return valread;
-    }
-    
-    if (header.data_size==0 || header.header_size==0) {
-        LOGGER0(CATEGORY_KMP,AV_LOG_FATAL,"recieved termination packet");
-        return -1;
-    }
-    
-    valread =recvEx(context->socket,(char*)&networkFrame,header.header_size);
+    int valread =recvEx(context->socket,(char*)&networkFrame,header->header_size);
     if (valread<=0){
         return valread;
     }
     
-    av_new_packet(packet,(int)header.data_size);
+    av_new_packet(packet,(int)header->data_size);
     packet->dts=networkFrame.dts;
     if (networkFrame.pts_delay!=-999999) {
         packet->pts=networkFrame.dts+networkFrame.pts_delay;
@@ -297,6 +288,6 @@ int KMP_readPacket(struct KalturaMediaProtocolContext *context,AVPacket *packet)
     }
     packet->duration=0;
     
-    valread =recvEx(context->socket,(char*)packet->data,(int)header.data_size);
+    valread =recvEx(context->socket,(char*)packet->data,(int)header->data_size);
     return valread;
 }

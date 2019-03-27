@@ -156,10 +156,10 @@ int add_output(struct TranscodeContext* pContext, struct TranscodeOutput * pOutp
         
         struct AVCodecParameters* pCodecParams=avcodec_parameters_alloc();
         avcodec_parameters_from_context(pCodecParams,pEncoderContext->ctx);
-        set_output_format(pOutput,pCodecParams);
+        set_output_format(pOutput,pCodecParams,pEncoderContext->ctx->framerate);
     } else
     {
-        set_output_format(pOutput,pContext->inputCodecParams);
+        set_output_format(pOutput,pContext->inputCodecParams,pDecoderContext->ctx->framerate);
         
     }
     

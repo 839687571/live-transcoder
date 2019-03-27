@@ -10,6 +10,9 @@
     "listener": {
         "port": 9000
     },
+    "debug": {
+        "dummyPackager": true
+    },
     "output": {
         "saveFile": false,
         "outputFileNamePattern": "/Users/guyjacubovski/Sample_video/output_%s.mp4",
