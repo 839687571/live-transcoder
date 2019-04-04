@@ -1,0 +1,34 @@
+@startuml
+actor Encoder
+entity "nginx-rtmp"
+entity controller
+entity transcoder
+entity packager
+entity API
+
+
+Encoder->"nginx-rtmp"
+"nginx-rtmp"->controller : authenticate(setid)
+controller->API: authenticate
+API->controller: clear
+controller->"nginx-rtmp": OK
+Encoder->"nginx-rtmp": send frames
+"nginx-rtmp"->controller: setup(setid,stream info)
+controller->API: getEntry
+API->controller: entry info
+controller->API: getTranscodingProfile
+API->controller: transcoding json
+controller->API: register
+controller->controller: spawn transcoder
+controller->transcoder: setup
+transcoder->controller: ready
+controller->controller: assign packager
+controller->packager:  setup(setid,stream info)
+controller->"nginx-rtmp": json
+"nginx-rtmp"->transcoder: KMP protocol: tcp connect, send connect and mediainfo packets
+transcoder->packager:   KMP protocol: tcp connect, send connect and mediainfo packets
+Encoder->"nginx-rtmp": frames
+"nginx-rtmp"->transcoder: KMP
+transcoder->packager: KMP
+
+@enduml

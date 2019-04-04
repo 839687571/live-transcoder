@@ -1,0 +1,104 @@
+{
+    "input": {
+        "file2": "/Users/guyjacubovski/Sample_video/bbb_sunflower_1080p_30fps_normal.mp4",
+        "file": "/Users/guyjacubovski/Sample_video/900.mp4",
+        "realTime": false,
+        "activeStream": 0,
+        "duration": 900000,
+        "randomDataPercentage": 0
+    },
+    "listener": {
+        "port": 9000
+    },
+    "debug": {
+        "dummyPackager": false
+    },
+    "output": {
+        "saveFile": false,
+        "outputFileNamePattern": "/Users/guyjacubovski/Sample_video/output_%s.mp4",
+        "streamingUrl1": "kmp://localhost:10000"
+    },
+    "engine": {
+        "useNvidiaDecoder": true,
+        "codecs":"libx264|h264_videotoolbox|h264_nvenc"
+    },
+    "outputs": [
+        {
+            "name": "1_abcdefgh_32",
+            "enabled": true,
+            "passthrough": true
+        },
+        {
+            "name": "1_abcdefgh_32t",
+            "enabled": false,
+            "bitrate": 64,
+            "passthrough": false,
+            "codec": "aac",
+            "audioParams": {
+                "samplingRate": -1,
+                "channels": 2
+            }
+        },
+        {
+            "name": "1_abcdefgh_33",
+            "passthrough": false,
+            "enabled": true,
+            "bitrate": 900,
+            "codec": "libx264",
+            "videoParams": {
+                "profile": "main",
+                "preset": "veryfast",
+                "height": 480
+            }
+        },
+        {
+            "name": "1_abcdefgh_34",
+            "enabled": false,
+            "passthrough": false,
+            "bitrate": 600,
+            "codec": "libx264",
+            "videoParams": {
+                "profile": "baseline",
+                "preset": "veryfast",
+                "height": 360
+            }
+        },
+        {
+            "name": "1_abcdefgh_35",
+            "enabled": false,
+            "passthrough": false,
+            "bitrate": 400,
+            "codec": "libx264",
+            "videoParams": {
+                "profile": "baseline",
+                "preset": "veryfast",
+                "height": 360
+            }
+        },
+        {
+            "name": "1_abcdefgh_42",
+            "enabled": false,
+            "passthrough": false,
+            "bitrate": 1500,
+            "codec": "libx264",
+            "videoParams": {
+                "profile": "high",
+                "preset": "veryfast",
+                "height": 720
+            }
+        },
+        {
+            "name": "1_abcdefgh_43",
+            "enabled": false,
+            "passthrough": false,
+            "bitrate": 2500,
+            "codec": "libx264",
+            "videoParams": {
+                "profile": "high",
+                "preset": "veryfast",
+                "height": 720,
+                "skipFrame": 1
+            }
+        }
+    ]
+}
