@@ -23,7 +23,11 @@ export class AuthenticateRequest
 }
 export class SetupRequest extends  BaseRequest
 {
-
+    bitrate:number;
+    codec:string;
+    videoWidth:number;
+    videoHeight:number;
+    audioSamplingRate:number;
 }
 
 export class SetupResponse
@@ -70,7 +74,7 @@ export class BusinessLogic {
             let res:SetupResponse = new SetupResponse();
             res.setupRequest=req;
             res.entryInfo = await this.dal.getEntryInfo(req.setId);
-            res.transcodingProfile = new TranscodingProfile();  ////await this.dal.getTranscodingProfile(entryInfo)
+            res.transcodingProfile = await this.dal.getTranscodingProfile(res.entryInfo)
 
             //get transcoding profile
 

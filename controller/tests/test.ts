@@ -1,20 +1,39 @@
 import {getLogger} from 'log4js';
 import {Application} from "../src/app"
 import {Network} from '../src/utils'
-import {RenditionTrackType} from "../src/interfaces/transcodingProfile";
+import {RenditionTrackType, TranscodingProfile} from "../src/interfaces/transcodingProfile";
 import {SetupRequest} from "../src/BusinessLogic";
+import {KalturaDAL} from "../src/KalturaDAL";
+import {EntryInfo, IDAL} from "../src/interfaces/interfaces";
 
 const logger = getLogger("test");
 
 async function test() {
 
- /*
+
+
     let dal:IDAL=new KalturaDAL();
     let entry:EntryInfo=await dal.getEntryInfo("1_rdwhia6e");
     let tp:TranscodingProfile=await dal.getTranscodingProfile(entry);
 
-    let z1=tp.translate("video")
-    let z2=tp.translate("audio")
+    let s1:SetupRequest= new SetupRequest();
+    s1.setId="1_rdwhia6e"
+    s1.variantId="1";
+    s1.trackType=RenditionTrackType.Video;
+    s1.videoHeight=720;
+    s1.bitrate=3000;
+    s1.codec="h264";
+
+    let z1=tp.getTranscoderInstructions(s1);
+
+    let s2:SetupRequest= new SetupRequest();
+    s2.setId="1_rdwhia6e"
+    s2.variantId="1";
+    s2.bitrate=128;
+    s2.trackType=RenditionTrackType.Audio;
+    s2.codec="aac";
+
+    let z2=tp.getTranscoderInstructions(s2);
     console.warn("%j %j",z1,z2);
 
     //let k:IRegistry=new KubernetesRegistry();
@@ -22,7 +41,7 @@ async function test() {
     //let x= await k.getPackagers();
    // let x=await  k.runTranscoder("1",null)
 
-    return;*/
+    return;
     Network.addMock("http://localhost:9001/status", { "state": "ready"})
     Network.addMock("http://localhost:9002/status", { "state": "ready"})
     Network.addMock("http://localhost:19001/status", { "state": "ready"})

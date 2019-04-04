@@ -52,15 +52,15 @@ export class KalturaDAL implements  IDAL
     {
         let fp:RenditionParams = new RenditionParams();
 
-
         fp.name=obj.name;
         fp.id=obj.id;
         fp.description=obj.description;
-
+        fp.inputId=obj.streamSuffix;
+        fp.isSource=obj.tags.indexOf("source")>-1;
         fp.audioTrack=new RenditionAudioTrackParams();
         fp.audioTrack.bitrate=obj.audioBitrate;
         fp.audioTrack.codec=obj.audioCodec;
-        fp.audioTrack.sampleRate=obj.audioSampleRate;
+        fp.audioTrack.SamplingRate=obj.audioSampleRate;
         fp.audioTrack.channels=obj.channels;
 
         fp.videoTrack=new RenditionVideoTrackParams();
@@ -99,6 +99,18 @@ export class KalturaDAL implements  IDAL
         return KalturaDAL.convertToEntryInfo(entry);
     }
 
+    static ConversionProfileToTranscodingProfile(cp:any,flavorsParams:Array<any>): TranscodingProfile {
+
+
+        let res: TranscodingProfile = new TranscodingProfile();
+        res.id=cp.id;
+        res.description=cp.description;
+        res.name=cp.name;
+        res.renditions=flavorsParams.map(KalturaDAL.convertToRenditionParams) as  RenditionParams[];
+
+        return res;
+    }
+
     async getTranscodingProfile(entryInfo:EntryInfo) : Promise<TranscodingProfile>
     {
         let cp:any=await this.api.call({
@@ -115,13 +127,7 @@ export class KalturaDAL implements  IDAL
 
         let flavorParams=await this.api.call(requests) as Array<any>;
 
-        let res: TranscodingProfile = new TranscodingProfile();
-        res.id=cp.id;
-        res.description=cp.description;
-        res.name=cp.name;
-        res.renditions=flavorParams.map(KalturaDAL.convertToRenditionParams) as  RenditionParams[];
-
-        return  res;
+        return KalturaDAL.ConversionProfileToTranscodingProfile(cp,flavorParams);
     }
 
     async authenticate(id:string,token:string,mediaServerIndex:SessionType) : Promise<EntryInfo>
