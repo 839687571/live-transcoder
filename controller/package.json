@@ -3,22 +3,23 @@
   "version": "1.0.0",
   "scripts": {
     "start": "npm run build:live",
+    "test": "jest",
     "build": "tsc -p .",
     "build:live": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/index.ts"
   },
   "dependencies": {
     "@kubernetes/client-node": "^0.8.2",
     "body-parser": "^1.18.3",
+    "config": "^3.1.0",
     "express": "^4.16.4",
-    "kubernetes-client": "^6.11.1",
     "log4js": "^4.1.0",
+    "lru-cache": "^5.1.1",
     "request": "^2.88.0",
-    "request-promise-native": "^1.0.7",
-    "memcached": "^2.2.2"
-
+    "request-promise-native": "^1.0.7"
   },
   "devDependencies": {
     "@types/node": "^11.13.0",
+    "ts-jest": "^24.0.2",
     "ts-node": "^8.0.3",
     "typescript": "^3.4.1"
   }

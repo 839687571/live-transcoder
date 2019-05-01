@@ -1,36 +1,37 @@
 import {IRegistry} from '../../interfaces/interfaces'
+import {Packager} from "../../SystemObjects/Packager";
+import {Transcoder} from "../../SystemObjects/Transcoder";
+import {SingleServerJob} from './SingleServerJob'
+import {Logger} from "../../logger";
+import {retry} from "../../utils";
+import * as config from 'config';
+import {TrackType} from "../../interfaces/channelOutput";
+import {Source} from "../../SystemObjects/Source";
 
-import { Packager} from "../../SystemObjects/Packager";
-import { Transcoder } from "../../SystemObjects/Transcoder";
+export class SingleServerRegistry  implements IRegistry {
 
-import { getLogger } from 'log4js';
-const logger = getLogger("SingleServerRegistry");
-
-import { SingleServerJob } from './SingleServerJob'
-import {SystemObjectState} from "../../SystemObjects/SystemObject";
-import {TranscodingProfile} from "../../interfaces/transcodingProfile";
-
-export class SingleServerRegistry  implements IRegistry{
-
-    packagers: Array<Packager> = [];
-
-    localJobs: Map<string,SingleServerJob> = new Map<string,SingleServerJob>();
+    private packagers: Array<Packager> = [];
+    private logger: Logger =new Logger("SingleServerRegistry");
+    private localJobs: Map<string,SingleServerJob> = new Map<string,SingleServerJob>();
 
     constructor() {
-        this.discoverSystemObjects();
     }
 
+    initialize(): Promise<boolean> {
+        this.discoverSystemObjects();
+        return Promise.resolve(true);
+    }
 
     discoverSystemObjects() {
         let packager1: Packager = new Packager();
-        packager1.id="1228321832131";
+        packager1.id="==1==";
         packager1.baseUrl="http://localhost:9001";
-        let packager2: Packager = new Packager();
-        packager2.id="1228321832131";
-        packager2.baseUrl="http://localhost:9002";
-
         this.packagers.push(packager1);
-        this.packagers.push(packager2);
+    }
+    async getPackagerById(packagerId:string): Promise<Packager> {
+        return Promise.resolve(this.packagers.find( (packager)=>{
+            return packager.id==packagerId;
+        }));
     }
 
     async getPackagers(): Promise<Array<Packager>> {
@@ -40,21 +41,41 @@ export class SingleServerRegistry  implements IRegistry{
     async getTranscoders(): Promise<Array<Transcoder>> {
         return Promise.resolve( [] );
     }
-
-    removeJob(job) {
-        this.localJobs.delete(job.setId)
+    getSources(): Promise<Array<Source>> {
+        return Promise.resolve( [] );
     }
 
-    async runTranscoder(setId:string,profile:TranscodingProfile): Promise<Transcoder> {
+    removeJob(job) {
+        this.localJobs.delete(job.channelId)
+    }
+
+    async runTranscoder(setId: string, inputId:string,trackType:TrackType, args:string[]): Promise<Transcoder> {
         let transcoder: Transcoder = new Transcoder();
-        transcoder.baseUrl="http://localhost:19001";
-        let job:SingleServerJob = new SingleServerJob(setId,transcoder);
+        transcoder.id=`${setId}:${inputId}:${trackType==TrackType.Video ? "v" : "a"}`;
+        transcoder.baseUrl="http://localhost";
+
+        this.logger.info("Starting transcoder %j",args)
+        let job:SingleServerJob = new SingleServerJob(transcoder);
         job.on("finished", this.removeJob.bind(this));
         job.start("ls",[]);
         this.localJobs.set(setId,job);
 
-        return transcoder;
+        return await retry( async()=> {
+            this.logger.info("testing if transcoder %s has started",transcoder.id);
+            if (await transcoder.isReady()) {
+                //await this.registry.setTranscoderId(req.channelId,"",transcoder.id);
+                return transcoder;
+            }
+            return null;
+        },config.get("transcoderSpawn.retries"),config.get("transcoderSpawn.interval"),0,this.logger);
     }
 
 
+
+    associateChannelIdAndPackager(setId:string, packagerId:string): Promise<boolean> {
+        return Promise.resolve(true);
+    }
+    getPackagerByChannelId(setId:string): Promise<Packager> {
+        return Promise.resolve(this.packagers[0]);
+    }
 }

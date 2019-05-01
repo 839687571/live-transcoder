@@ -1,0 +1,40 @@
+{
+  "namespace": "site-1",
+  "port": 8084,
+  "packagerAssignment": {
+    "retries": 3,
+    "interval": 1000
+  },
+  "transcoderSpawn":{
+    "retries": 3,
+    "interval": 1000
+  },
+  "backend": {
+    "url": "http://www.kaltura.com/api_v3/index.php",
+    "secret": "",
+    "userId": "",
+    "partnerId":  0,
+    "serverNodeHostName": "@HOSTNAME@"
+  },
+  "channel": {
+    "authenticationTimeout": 20000
+  },
+
+  "channelStopper": {
+    "stopGracePeriod": 5000
+  },
+  "channelStarter": {
+    "playableTestWaitTime": 5000,
+    "playableTestInterval": 2000,
+    "playableTestTries": 10
+  },
+  "registry": "SingleServerRegistry",
+  "SingleServerRegistry": {
+
+  },
+
+  "cache": {
+    "lockInterval": 100,
+    "lockTimeout": 10000
+  }
+}

@@ -3,7 +3,7 @@ import {SystemObject} from "./SystemObject";
 
 export class Source extends SystemObject{
 
-    setup():Promise<boolean> {
-        return Promise.resolve(true);
+    getChannels():Promise<any> {
+        return Promise.resolve({})
     }
 }

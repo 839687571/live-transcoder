@@ -14,9 +14,8 @@ export class SingleServerJob extends  EventEmitter
     private readonly setId: string;
     private readonly sysObject: SystemObject;
 
-    constructor(setId:string,sysObject:SystemObject) {
+    constructor(sysObject:SystemObject) {
         super();
-        this.setId=setId;
         this.sysObject=sysObject;
         this.sysObject.state=SystemObjectState.Pending;
         this.id=randomBytes(20).toString('hex');

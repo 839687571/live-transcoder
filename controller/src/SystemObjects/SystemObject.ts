@@ -1,4 +1,5 @@
 import { Network } from "../utils";
+import {Logger} from "../logger";
 
 class SystemObjectStatus {
     state:string;
@@ -11,13 +12,12 @@ export enum SystemObjectState {
     Completed
 }
 
-export abstract class SystemObject {
+export class SystemObject {
 
     id:string;
     state:SystemObjectState;
     baseUrl:string;
-
-    abstract setup():Promise<boolean>
+    logger: Logger =new Logger("Packager");
 
     async isReady(): Promise<boolean> {
         let status=await this.getStatus();

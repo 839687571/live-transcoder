@@ -1,10 +1,11 @@
-const request = require('request');
-const njsCrypto = require('crypto');
-const querystring = require('querystring');
-const logger = require("log4js").getLogger("KalturaAPI");
-const util = require('util');
-const http = require('http');
-const https = require('https');
+import {Logger} from "../logger";
+
+const moduleLogger = require("log4js").getLogger("KalturaAPI");
+import * as http from 'http'
+import * as https from 'https'
+import {createCipheriv, createHash, randomBytes} from "crypto";
+import {stringify} from "querystring";
+import {Network, timePassed} from "../utils";
 
 
 http.globalAgent.maxSockets = 10000;
@@ -21,7 +22,7 @@ export class KalturaAPIConfig {
 }
 
 function hash(buf) {
-    let sha1 = njsCrypto.createHash('sha1');
+    let sha1 = createHash('sha1');
     sha1.update(buf);
     return sha1.digest();
 }
@@ -44,7 +45,8 @@ export class KalturaAPI {
         this._ks=null;
         this._config = config;
         let lib=this._config.url.startsWith("https:") ?  https : http;
-        this._httpAgent = new lib.Agent({ keepAlive: true });
+        this._httpAgent = new lib.Agent({ keepAlive: true});
+
     }
 
     private _generateKS() {
@@ -57,7 +59,7 @@ export class KalturaAPI {
         fields._t = this._config.ksType;
         fields._u = this._config.userId;
         this._config.privileges.split(',').forEach( privilege => {
-            privilege = privilege.trim()
+            privilege = privilege.trim();
             if (privilege.length === 0) {
                 return;
             }
@@ -74,11 +76,11 @@ export class KalturaAPI {
         });
 
 
-        let fieldsStr = querystring.stringify(fields);
+        let fieldsStr = stringify(fields);
 
         let fieldsBuf = Buffer.from(fieldsStr);
 
-        let rnd = Buffer.from(njsCrypto.randomBytes(16));
+        let rnd = Buffer.from(randomBytes(16));
 
         fieldsBuf = Buffer.concat([rnd,fieldsBuf]);
 
@@ -93,7 +95,7 @@ export class KalturaAPI {
 
         let iv =  Buffer.alloc(16,0,'binary');
         let key = hash(this._config.secret).slice(0, 16);
-        let cipher = njsCrypto.createCipheriv("aes-128-cbc", key, iv);
+        let cipher = createCipheriv("aes-128-cbc", key, iv);
 
         cipher.setAutoPadding(false);
 
@@ -105,15 +107,15 @@ export class KalturaAPI {
         this._ks = $decodedKs.split('+').join('-').split('/').join('_');
 
         //console.warn("Generated KS ",this._ks)
-        this._ks_expiry =   new Date(1000*(fields._e - 1*60*60));// - 1 hour...
+        this._ks_expiry =   new Date(1000*(fields._e - 2*60*60));// new KS every 2 hour...
     }
 
-    async call(requests,context=null) {
+    async call(requests,logger=null) {
         let now = new Date();
         if (now > this._ks_expiry) {
             this._generateKS()
         }
-        return this._kcall(requests,context);
+        return this.internalAPICall(requests,logger);
     }
 
     private static convertException(res) {
@@ -125,10 +127,9 @@ export class KalturaAPI {
         return e;
     }
 
-    private _kcall(requests,context=null) {
+    private async internalAPICall(requests:any,logger:Logger):Promise<any> {
         //we chain the requests in a multi-request calls
         let startTime: Date = new Date();
-        let id:string = ""
         let body: any = {
             format: 1
         };
@@ -136,13 +137,13 @@ export class KalturaAPI {
         if (this._ks)
             body.ks = this._ks;
 
-        if (context) {
-            id = context.id
-        } else {
-            id = njsCrypto.randomBytes(8).toString("hex");
+        if (!logger) {
+            logger = moduleLogger
         }
 
-        let isMultirequest = Array.isArray(requests);
+        let  id = randomBytes(8).toString("hex");
+
+        let isMultirequest:boolean = Array.isArray(requests);
 
         if (isMultirequest) {
             body['service'] = "multirequest";
@@ -156,41 +157,47 @@ export class KalturaAPI {
         }
         logger.debug(`[${id}], Sending request to kaltura server:  curl -i -d '${JSON.stringify(body)}' -H "Content-Type: application/json" -X POST ${this._config.url}`);
 
-        return new Promise( (resolve, reject)=> {
-            request.post({
+
+        let response=null;
+        try {
+            response = await Network.post({
                 url: this._config.url,
-                json: true,
-                agent: this._httpAgent,
-                body: body,
-                headers: {"Connection":"Keep-Alive"},
-                timeout: this._config.timeout,
-            },  (error, response, result)=> {
-                let headersString = "";
-                if (response && response.headers) {
-                    headersString = `X-Me: ${response.headers['x-me']}; X-Kaltura-Session: ${response.headers['x-kaltura-session']}; x-kaltura: ${response.headers["x-kaltura"]}`;
-                }
-                let totalTime:number = new Date().valueOf()  - startTime.valueOf() ;
-                delete body.ks;
-
-                if (error || (result && result.objectType === "KalturaAPIException")) {
-                    logger.warn(`${id} Exception doing API call: ${this._config.url} %j ${headersString} %j with error ${util.inspect(error)} time it took ${totalTime}  ms`,body,result);
-                    return reject(error || KalturaAPI.convertException(result));
-                }
-
-                if (isMultirequest) {
-                    for (let index=0; index<result.length;index++) {
-                        let res=result[index];
-                        if (res && res.objectType === "KalturaAPIException") {
-                            console.warn(`${id} Exception doing API call: ${this._config.url} %j ${headersString} %j time it took ${totalTime}  ms`, requests[index],res);
-                            return reject( KalturaAPI.convertException(res));
-                        }
-                    }
-                }
-
-                logger.info(`API call was successful: ${this._config.url} %j ${headersString}  time it took ${totalTime}  ms`,body);
-
-                return resolve(result);
+                json: body,
+                resolveWithFullResponse: true,
+                timeout: this._config.timeout
+                //agent: this._httpAgent,
             });
-        });
+        }
+        catch(e) {
+            logger.warn(`[${id}] Exception doing API call: ${this._config.url} %j  with error %j time it took ${timePassed(startTime)}  ms`,body,e);
+            throw e;
+        }
+        let result = response.body;
+
+        let headersString = "";
+        if (response && response.headers) {
+            headersString = `Connection: ${response.headers["connection"]}; X-Me: ${response.headers['x-me']}; X-Kaltura-Session: ${response.headers['x-kaltura-session']}; x-kaltura: ${response.headers["x-kaltura"]}`;
+        }
+        let totalTime:number = timePassed(startTime);
+        delete body.ks;
+
+        if (result && result.objectType === "KalturaAPIException") {
+            logger.warn(`[${id}] Exception doing API call: ${this._config.url} %j ${headersString} %j  time it took ${totalTime}  ms`,body,result);
+            throw KalturaAPI.convertException(result);
+        }
+
+        if (isMultirequest) {
+            for (let index=0; index<result.length;index++) {
+                let res=result[index];
+                if (res && res.objectType === "KalturaAPIException") {
+                    console.warn(`${id} Exception doing API call: ${this._config.url} %j ${headersString} %j time it took ${totalTime}  ms`, requests[index],res);
+                    throw KalturaAPI.convertException(res);
+                }
+            }
+        }
+
+        logger.info(`[${id}] API call was successful: ${this._config.url} %j ${headersString}  time it took ${totalTime}  ms`,body);
+
+        return result;
     }
 }

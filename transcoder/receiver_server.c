@@ -19,7 +19,7 @@
 int init_outputs(receiver_server_t *server,receiver_server_session_t* session,json_value_t* json)
 {
     const json_value_t* outputsJson;
-    json_get(json,"outputs",&outputsJson);
+    json_get(json,"outputTracks",&outputsJson);
     
     for (int i=0;i<json_get_array_count(outputsJson);i++)
     {

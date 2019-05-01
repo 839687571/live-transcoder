@@ -22,14 +22,14 @@
         "useNvidiaDecoder": true,
         "codecs":"libx264|h264_videotoolbox|h264_nvenc"
     },
-    "outputs": [
+    "outputTracks": [
         {
-            "name": "1_abcdefgh_32",
+            "trackId": "v32",
             "enabled": true,
             "passthrough": true
         },
         {
-            "name": "1_abcdefgh_32t",
+            "trackId": "a32t",
             "enabled": false,
             "bitrate": 64,
             "passthrough": false,
@@ -40,7 +40,7 @@
             }
         },
         {
-            "name": "1_abcdefgh_33",
+            "trackId": "v33",
             "passthrough": false,
             "enabled": true,
             "bitrate": 900,
@@ -52,7 +52,7 @@
             }
         },
         {
-            "name": "1_abcdefgh_34",
+            "trackId": "v34",
             "enabled": false,
             "passthrough": false,
             "bitrate": 600,
@@ -64,7 +64,7 @@
             }
         },
         {
-            "name": "1_abcdefgh_35",
+            "trackId": "v35",
             "enabled": false,
             "passthrough": false,
             "bitrate": 400,
@@ -76,7 +76,7 @@
             }
         },
         {
-            "name": "1_abcdefgh_42",
+            "trackId": "v42",
             "enabled": false,
             "passthrough": false,
             "bitrate": 1500,
@@ -88,7 +88,7 @@
             }
         },
         {
-            "name": "1_abcdefgh_43",
+            "trackId": "v43",
             "enabled": false,
             "passthrough": false,
             "bitrate": 2500,
